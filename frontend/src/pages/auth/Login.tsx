@@ -2,24 +2,38 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import Button from '../../components/Button'
 import Input from '../../components/Input'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google"
 import config from '../../config/config'
-import { jwtDecode } from 'jwt-decode'
+import { jwtDecode, JwtPayload } from 'jwt-decode'
+import DataService from '../../hooks/DataService'
 
 const animation = { opacity: [0, 1], x: [20, 0], transition: { duration: 0.5 } }
 const fadeOut = { opacity: [0, 1], transition: { duration: 0.8 } }
+interface CustomJwtPayload extends JwtPayload {
+    name: string;
+    email: string;
+    picture: string;
+}
 
 const Login = () => {
+    const navigate = useNavigate()
     const [passwordtype, setpasswordtype] = useState(false)
-    const handleSuccess = (response: any) => {
-        const decodedUser = jwtDecode(response.credential);
-        console.log(decodedUser)
+
+    const handleSuccess = async (response: any) => {
+        const decodedUser = jwtDecode(response.credential) as CustomJwtPayload;
+
+        const res = await DataService.post('/user', {
+            email: decodedUser.email,
+            name: decodedUser.name,
+            avator: decodedUser.picture
+        })
+        if (res.success) navigate('/dashboard')
     }
 
-    // const handleFailure = (error: any) => {
-    //     console.error("Google Login Failed:", error);
-    // }
+    const handleFailure = (error: void) => {
+        console.error("Google Login Failed:", error)
+    }
     return (
         <>
             <title>Login</title>
@@ -56,7 +70,7 @@ const Login = () => {
                     <p className="p line">Or With</p>
                     <motion.div animate={fadeOut} className="flex-row justify-content-center">
                         <GoogleOAuthProvider clientId={config.googleClientID}>
-                            <GoogleLogin onSuccess={handleSuccess} />
+                            <GoogleLogin onSuccess={handleSuccess} onError={handleFailure} />
                         </GoogleOAuthProvider>
                     </motion.div>
                 </form>

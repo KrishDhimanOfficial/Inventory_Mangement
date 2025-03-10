@@ -6,12 +6,6 @@ const userSchema = new mongoose.Schema({
         match: [/^[A-Za-z\s]{1,30}$/, 'Name must be 1-30 characters long.'],
         required: [true, 'Your Name is required!']
     },
-    username: {
-        type: mongoose.Schema.Types.String,
-        required: [true, 'Username is required!'],
-        unique: true,
-        match: [/^[a-z0-9@_-]{3,20}$/, 'Username must be 3-20 characters long and can include letters, numbers,@ ,underscores, or hyphens.']
-    },
     email: {
         type: mongoose.Schema.Types.String,
         required: [true, 'Email is required!'],
@@ -20,18 +14,16 @@ const userSchema = new mongoose.Schema({
     },
     avator: {
         type: mongoose.Schema.Types.String,
-        match: [/^[0-9]$/, 'Invalid Image Formation!'],
-        default: ''
+        default: 'user.svg'
     },
     phone: {
         type: mongoose.Schema.Types.String,
-        required: [true, 'Phone Number is required!'],
         match: [/^[0-9]{10}$/, 'Invalid Phone Number!'],
-        unique: true
+        unique: true,
+        default: ''
     },
     password: {
         type: mongoose.Schema.Types.String,
-        required: [true, 'Password must be required!'],
     },
     role: {
         type: mongoose.Schema.Types.String,

@@ -10,11 +10,10 @@ import DataService from '../../hooks/DataService'
 
 const animation = { opacity: [0, 1], x: [20, 0], transition: { duration: 0.5 } }
 const fadeOut = { opacity: [0, 1], transition: { duration: 0.8 } }
-const defaultValues = { name: '', username: '', phone: '', email: '', password: '', confirmPassword: '' }
+const defaultValues = { name: '', phone: '', email: '', password: '', confirmPassword: '' }
 
 const validationSchema = yup.object().shape({
     name: yup.string().required().matches(/^[A-Za-z\s]{1,30}$/, 'Name must be 1-30 characters long.'),
-    username: yup.string().required().matches(/^[a-z0-9@_-]{3,20}$/, 'Username must be 3-20 characters long and can include letters, numbers,@ ,underscores, or hyphens.'),
     email: yup.string().email().required().matches(/^[a-z0-9]+@gmail.com$/, 'Incorrect Email!'),
     phone: yup.string().required().matches(/^[0-9]{10}$/, 'Invalid Phone Number!'),
     password: yup.string().required(),
@@ -32,7 +31,7 @@ const Register = () => {
 
     const registeration = async (formdata: object) => {
         try {
-            const res = await DataService.post('/user', { formdata })
+            const res = await DataService.post('/register/user', { formdata })
             if (res.success) navigate('/login')
         } catch (error) {
             console.error(error)
@@ -60,26 +59,6 @@ const Register = () => {
                                             type="text"
                                             className="input"
                                             placeholder="Enter your Name"
-                                            {...field}
-                                        />
-                                    )}
-                                />
-                            </div>
-                        </motion.div>
-                        <motion.div animate={animation} className='w-100'>
-                            <div className="flex-column mb-2">
-                                <label>Username </label>
-                                <span className='importantField'>*</span>
-                            </div>
-                            <div className={`inputForm ${errors.username?.message ? 'inputError' : ''}`}>
-                                <Controller
-                                    name="username"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Input
-                                            type="text"
-                                            className="input"
-                                            placeholder="Enter your username"
                                             {...field}
                                         />
                                     )}
