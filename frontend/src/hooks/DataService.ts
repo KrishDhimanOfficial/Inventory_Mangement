@@ -44,7 +44,7 @@ class DataSerice {
         return await res.json()
     }
 
-    async patch(endURL: string, data: object, headers?: HeadersInit): Promise<any> {
+    async patch(endURL: string, data?: object, headers?: HeadersInit): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
             ...(headers || {})

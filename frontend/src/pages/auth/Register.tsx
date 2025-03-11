@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import Button from '../../components/Button'
-import Input from '../../components/Input'
+import Button from '../../components/micro_components/Button'
+import Input from '../../components/micro_components/Input'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { yupResolver } from '@hookform/resolvers/yup'
 import DataService from '../../hooks/DataService'
 
@@ -21,7 +21,6 @@ const validationSchema = yup.object().shape({
 })
 
 const Register = () => {
-    const navigate = useNavigate()
     const [passwordtype, setpasswordtype] = useState(false)
     const [confirmPassword, setconfirmPassword] = useState(false)
     const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm({
@@ -32,7 +31,7 @@ const Register = () => {
     const registeration = async (formdata: object) => {
         try {
             const res = await DataService.post('/register/user', { formdata })
-            if (res.success) navigate('/login')
+            console.log(res)
         } catch (error) {
             console.error(error)
         }

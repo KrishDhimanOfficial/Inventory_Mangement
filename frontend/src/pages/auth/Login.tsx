@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import Button from '../../components/Button'
-import Input from '../../components/Input'
+import Button from '../../components/micro_components/Button'
+import Input from '../../components/micro_components/Input'
 import { Link, useNavigate } from 'react-router'
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google"
 import config from '../../config/config'
@@ -28,6 +28,7 @@ const Login = () => {
             name: decodedUser.name,
             avator: decodedUser.picture
         })
+        localStorage.setItem(`${config.token_name}`, res.stockify_auth_token)
         if (res.success) navigate('/dashboard')
     }
 

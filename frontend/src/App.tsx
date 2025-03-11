@@ -1,18 +1,33 @@
-import { BrowserRouter, Route, Routes, } from "react-router"
-import Register from "./pages/auth/Register"
+import { createBrowserRouter, RouterProvider } from "react-router"
 import Login from "./pages/auth/Login"
 import Dashboard from "./pages/dashboard/Dashboard"
+import Verify_Email from "./pages/auth/Verify_Email"
+import Users from "./pages/peoples/user/Users"
+
+const routes = [
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    path: '/verify-email/:token',
+    element: <Verify_Email />,
+  },
+  {
+    path: '/dashboard',
+    element: <Dashboard />,
+    children: [
+      {
+        path: '/dashboard/user/permissions',
+        element: <Users />
+      }
+    ]
+  }
+]
 
 const App = () => {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/register" element={<Register />}></Route>
-        <Route path="/login" element={<Login />}></Route>
-        <Route path="/dashboard" element={<Dashboard/>}></Route>
-      </Routes>
-    </BrowserRouter>
-  )
+  const router = createBrowserRouter(routes)
+  return <RouterProvider router={router} />
 }
 
 export default App
