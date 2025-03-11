@@ -2,6 +2,7 @@ import express from 'express'
 import cookieParser from 'cookie-parser'
 import apiRouter from './routes/api.routes.js'
 import cors from 'cors'
+import './services/cronJob.js'
 
 const app = express()
 

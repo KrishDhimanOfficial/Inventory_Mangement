@@ -3,6 +3,7 @@ const router = express.Router()
 import users_controllers from '../controllers/users.controller.js'
 
 router.post('/register/user',users_controllers.registerUserwithEmail)
+router.patch('/verify-email/:token',users_controllers.Verify_Email)
 router.route('/user/:id?')
     .post(users_controllers.createUser)
     .get(users_controllers.getSingleUser)

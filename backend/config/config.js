@@ -9,6 +9,7 @@ const config = {
     emailService: process.env.SERVICE,
     emailAuth: process.env.SENDER_EMAIL,
     emailPass: process.env.EMAIL_APP_PASSWORD,
+    security_key: process.env.SECURITY_KEY
 }
 
 export default config
