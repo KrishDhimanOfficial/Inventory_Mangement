@@ -12,10 +12,6 @@ const userSchema = new mongoose.Schema({
         unique: true,
         match: [/^[a-z0-9]+@gmail.com$/, 'Incorrect Email!']
     },
-    isVerified: {
-        type: mongoose.Schema.Types.Boolean,
-        default: false
-    },
     avator: {
         type: mongoose.Schema.Types.String,
         default: 'user.svg'
@@ -34,7 +30,7 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'manager'],
         default: 'admin'
     },
-    parrentAC: {
+    parentownerId: {
         type: mongoose.Schema.Types.ObjectId,
     },
     permissions: {
