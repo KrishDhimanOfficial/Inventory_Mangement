@@ -3,6 +3,7 @@ import Login from "./pages/auth/Login"
 import Dashboard from "./pages/dashboard/Dashboard"
 import Verify_Email from "./pages/auth/Verify_Email"
 import Users from "./pages/peoples/user/Users"
+import Warehouses from "./pages/settings/warehouse/Warehouses"
 
 const routes = [
   {
@@ -20,6 +21,10 @@ const routes = [
       {
         path: '/dashboard/user/permissions',
         element: <Users />
+      },
+      {
+        path: '/dashboard/setting/warehouse',
+        element: <Warehouses />
       }
     ]
   }

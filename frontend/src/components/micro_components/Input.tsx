@@ -1,22 +1,23 @@
 import React from "react";
-interface InputProps {
+interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
     type: string;
     placeholder?: string;
-    value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    value?: string | boolean | number;
+    onChange?: (e: any) => void,
     className?: string,
-    id?: string
+    id?: string,
 }
 
-const Input: React.FC<InputProps> = ({ type = 'text', placeholder, value, onChange, className, id }) => {
+const Input: React.FC<InputProps> = ({ type = 'text', placeholder, value, onChange, className, id,...props }) => {
     return (
         <input
             type={type}
             placeholder={placeholder}
-            value={value}
+            value={value?.toString()}
             onChange={onChange}
             className={className}
             id={id}
+            {...props}
         />
     )
 }

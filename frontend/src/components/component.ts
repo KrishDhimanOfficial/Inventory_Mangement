@@ -6,6 +6,7 @@ import Footer from './layout/Footer'
 import Image from './micro_components/Image'
 import Sec_Heading from './layout/Sec_Heading'
 import Section from './layout/Section'
+import Loader from './micro_components/Loader'
 
 export {
     Button,
@@ -15,5 +16,6 @@ export {
     Footer,
     Image,
     Sec_Heading,
-    Section
+    Section,
+    Loader
 }

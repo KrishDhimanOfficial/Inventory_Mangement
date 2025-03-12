@@ -36,7 +36,7 @@ const Users = () => {
                                 </div>
                             </div>
                             <DataTable
-                                title="Group Permissions"
+                                title="Users"
                                 columns={columns}
                                 data={data}
                                 pagination

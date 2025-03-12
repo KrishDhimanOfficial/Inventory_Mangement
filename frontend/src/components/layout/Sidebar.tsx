@@ -27,7 +27,6 @@ const Sidebar = () => {
                                 <p> Brands</p>
                             </a>
                         </li>
-                        {/* settings */}
                         <li className="nav-item">
                             <Link to="#" className="nav-link">
                             <i className="fa-solid fa-users me-2"></i>
@@ -47,6 +46,24 @@ const Sidebar = () => {
                                     <Link to="/dashboard/user/permissions" className="nav-link">
                                         <i className="far fa-circle nav-icon"></i>
                                         <p className="text">Users</p>
+                                    </Link>
+                                </li>
+                            </ul>
+                        </li>
+                        {/* settings */}
+                        <li className="nav-item">
+                            <Link to="#" className="nav-link">
+                            <i className="fa-solid fa-gear me-2"></i>
+                                <p>
+                                    Settings
+                                    <i className="right fas fa-angle-left"></i>
+                                </p>
+                            </Link>
+                            <ul className="nav nav-treeview">
+                            <li className="nav-item">
+                                    <Link to="/dashboard/setting/warehouse" className="nav-link">
+                                        <i className="fa-solid fa-warehouse nav-icon"></i>
+                                        <p className="text">Warehouse</p>
                                     </Link>
                                 </li>
                             </ul>
