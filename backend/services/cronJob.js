@@ -15,7 +15,7 @@ cron.schedule('0 23 * * *', () => { // Run every day at 11 PM
 })
 
 cron.schedule('* * * * *', () => { // Run every day at 10 PM
-    exec('cd ../ && git add . && git commit -m "Daily code push" && git push', (error, stdout, stderr) => {
+    exec('cd ../ cd frontend && git add . && git commit -m "Daily code push" && git push', (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing git push: ${error}`)
             return;
