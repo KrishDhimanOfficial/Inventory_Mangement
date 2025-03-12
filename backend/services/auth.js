@@ -9,5 +9,6 @@ function getUser(token) {
     if (!token) { return null }
     return jwt.verify(token, config.security_key)
 }
+console.log("helo");
 
 export { setUser, getUser }
