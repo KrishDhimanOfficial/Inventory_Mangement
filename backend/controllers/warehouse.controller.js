@@ -19,7 +19,7 @@ const warehouse_controllers = {
     getAllWarehouses: async (req, res) => {
         try {
             const response = await warehouseModel.find({})
-            if (response.length > 0) return res.json(response)
+            return res.json(response)
         } catch (error) {
             console.log('getAllWarehouses : ' + error.message)
         }
@@ -43,7 +43,9 @@ const warehouse_controllers = {
     },
     deleteWarehouse: async (req, res) => {
         try {
-
+            const response = await warehouseModel.findByIdAndDelete({ _id: req.params.id })
+            if (!response) return res.json({ error: 'Deleted Unsuccessfull!' })
+            return res.json({ success: 'Deleted Successfully!' })
         } catch (error) {
             console.log('deleteWarehouse : ' + error.message)
         }

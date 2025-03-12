@@ -2,7 +2,7 @@ import { useState } from 'react';
 import DataService from './DataService';
 
 const useFetchData = () => {
-    const [apiData, setData] = useState()
+    const [apiData, setData] = useState<[] | {} | null>(null)
     const [isloading, setIsLoading] = useState(false)
     const [error, setError] = useState(null)
 
@@ -10,7 +10,7 @@ const useFetchData = () => {
         try {
             setIsLoading(true)
             const res = await DataService.get(api)
-            if (res.error) setError(res.error)
+            if (res.error) setError(res.error), setIsLoading(false)
             setData(res)
         } catch (error) {
             console.error(error)

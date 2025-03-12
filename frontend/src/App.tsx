@@ -1,7 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router"
 import Login from "./pages/auth/Login"
 import Dashboard from "./pages/dashboard/Dashboard"
-import Verify_Email from "./pages/auth/Verify_Email"
 import Users from "./pages/peoples/user/Users"
 import Warehouses from "./pages/settings/warehouse/Warehouses"
 
@@ -9,10 +8,6 @@ const routes = [
   {
     path: '/login',
     element: <Login />,
-  },
-  {
-    path: '/verify-email/:token',
-    element: <Verify_Email />,
   },
   {
     path: '/dashboard',

@@ -14,5 +14,6 @@ router.get('/warehouses', warehouse_controllers.getAllWarehouses)
 router.route('/warehouse/:id?')
     .post(warehouse_controllers.createWarehouse)
     .get(warehouse_controllers.getSingleWarehouse)
+    .delete(warehouse_controllers.deleteWarehouse)
 
 export default router

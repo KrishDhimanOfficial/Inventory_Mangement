@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Sec_Heading, Section, Loader } from '../../../components/component';
+import { Button, Sec_Heading, Section, Loader, Static_Modal } from '../../../components/component';
 import DataTable from "react-data-table-component"
 import Warehouse_Modal from './WareHouse_Modal';
 import DataService from '../../../hooks/DataService';
@@ -17,9 +17,12 @@ interface Warehouse {
 
 const Warehouses = () => {
   const [showmodal, setmodal] = useState(false)
-  const [isloading, setloading] = useState(false)
+  const [warnModal, setwarnmodal] = useState(false)
+  const [loading, setloading] = useState(false)
   const [data, setdata] = useState([])
+  const [Id, setId] = useState('')
   const { apiData: singleWarehouse, fetchData: fetchSingleWarehouse } = useFetchData()
+
 
   const columns = [
     { name: "ID", selector: (row: any) => row.id, sortable: true },
@@ -33,12 +36,13 @@ const Warehouses = () => {
       cell: (row: any) => (
         <div className="d-flex justify-content-between">
           <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
-          <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+          <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
         </div>
       )
     },
   ]
   const handleTableRow = async (id: string) => fetchSingleWarehouse(`/warehouse/${id}`)
+  const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
   const fetch = async () => {
     try {
@@ -57,6 +61,7 @@ const Warehouses = () => {
   useEffect(() => { fetch() }, [])
   return (
     <>
+      <Static_Modal id={Id} show={warnModal} handleClose={() => setwarnmodal(!warnModal)} />
       <Warehouse_Modal show={showmodal} handleClose={() => setmodal(!showmodal)} />
       <title>Dashboard | Warehouse Management</title>
       <Sec_Heading page='Warehouse Management' subtitle='settings' />
@@ -78,7 +83,7 @@ const Warehouses = () => {
                 columns={columns}
                 data={data}
                 selectableRows
-                progressPending={isloading}
+                progressPending={loading}
                 progressComponent={<Loader />}
                 pagination
               />
