@@ -4,4 +4,6 @@ const config = {
     token_name: import.meta.env.VITE_TOKEN_NAME
 }
 
+console.log('rdtf');
+
 export default config
