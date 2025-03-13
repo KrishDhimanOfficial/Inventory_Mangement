@@ -48,7 +48,7 @@
     height: 100%;
 }
 
-.input:focus {
+.input:focus{
     outline: none;
 }
 
@@ -208,4 +208,5 @@
         stroke-dashoffset: -125px;
     }
 }
+
 /* cricle loader  */

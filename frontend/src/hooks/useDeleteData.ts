@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import DataService from './DataService';
+import { DataService, Notify } from '../hooks/hook'
 
 const useDeleteData = () => {
     const [isloading, setIsLoading] = useState(false)
@@ -9,14 +9,14 @@ const useDeleteData = () => {
         try {
             setIsLoading(true)
             const res = await DataService.delete(api, headers)
-            setapiResponse(res)
+            setapiResponse(res), Notify(res)
         } catch (error) {
             console.error(error)
         } finally {
             setIsLoading(false)
         }
     }
-    
+
     return { isloading, apiResponse, deleteData }
 }
 

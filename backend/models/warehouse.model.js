@@ -21,24 +21,28 @@ const warehouseSchema = new mongoose.Schema({
         type: String, required: true,
         trim: true,
         unique: true,
-        match: [/[A-Za-z\s]/, 'Invalid City Name!']
+        match: [/[A-Za-z\s]/, 'Invalid City Name!'],
+        maxlength: [20, 'Warehouse city cannot exceed 20 characters'],
     },
     state: {
         type: String, required: true,
         trim: true,
         unique: true,
-        match: [/[A-Za-z\s]/, 'Invalid State Name!']
+        match: [/[A-Za-z\s]/, 'Invalid State Name!'],
+        maxlength: [25, 'Warehouse state cannot exceed 25 characters'],
     },
     country: {
         type: String, required: true,
         trim: true,
         unique: true,
-        match: [/[A-Za-z\s]/, 'Invalid Country Name!']
+        match: [/[A-Za-z\s]/, 'Invalid Country Name!'],
+        maxlength: [25, 'Warehouse country cannot exceed 25 characters'],
     },
     zipcode: {
         type: String, required: true,
         trim: true,
         unique: true,
+        maxlength: [6, 'Zipcode must be digits of 6!'],
         match: [/[0-9]/, 'Invalid zipcode!']
     }
 }, {

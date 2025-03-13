@@ -3,9 +3,9 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useDeleteData } from '../../hooks/hook'
 
-interface Modal { id: string, show: boolean; handleClose: () => void }
+interface Modal { endApi: string, show: boolean; handleClose: () => void }
 
-const Static_Modal: React.FC<Modal> = ({ id, show, handleClose }) => {
+const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose }) => {
     const { isloading, deleteData } = useDeleteData()
 
     return (
@@ -27,7 +27,7 @@ const Static_Modal: React.FC<Modal> = ({ id, show, handleClose }) => {
                         Close
                     </Button>
                     <Button
-                        variant="primary" onClick={() => deleteData(`/warehouse/${id}`)}>
+                        variant="primary" onClick={() => deleteData(endApi)}>
                         {isloading ? 'Deleting...' : ' Understood'}
                     </Button>
                 </Modal.Footer>

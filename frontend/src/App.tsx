@@ -3,6 +3,8 @@ import Login from "./pages/auth/Login"
 import Dashboard from "./pages/dashboard/Dashboard"
 import Users from "./pages/peoples/user/Users"
 import Warehouses from "./pages/settings/warehouse/Warehouses"
+import Suppliers from "./pages/peoples/suppliers/Suppliers"
+import Customers from "./pages/peoples/customers/Customers"
 
 const routes = [
   {
@@ -18,9 +20,17 @@ const routes = [
         element: <Users />
       },
       {
+        path: '/dashboard/suppliers',
+        element: <Suppliers />
+      },
+      {
+        path: '/dashboard/customers',
+        element: <Customers />
+      },
+      {
         path: '/dashboard/setting/warehouse',
         element: <Warehouses />
-      }
+      },
     ]
   }
 ]

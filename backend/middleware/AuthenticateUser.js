@@ -6,8 +6,8 @@ const ObjectId = mongoose.Types.ObjectId;
 const AuthenticateUser = async (req, res, next) => {
     try {
         const token = req.headers['authorization'].split(' ')[1]
-        const seller = getUser(token)
-        const response = await userModel.findById({ _id: new ObjectId(seller?.id), isVerified: true })
+        const user = getUser(token)
+        const response = await userModel.findById({ _id: new ObjectId(user?.id) })
         if (!response) return res.json({ middlewareError: 'Unauthorized!' })
         next()
     } catch (error) {

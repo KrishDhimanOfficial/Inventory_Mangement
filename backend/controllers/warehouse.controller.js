@@ -19,25 +19,29 @@ const warehouse_controllers = {
     getAllWarehouses: async (req, res) => {
         try {
             const response = await warehouseModel.find({})
-            return res.json(response)
+            setTimeout(() => res.json(response), 1500)
         } catch (error) {
             console.log('getAllWarehouses : ' + error.message)
         }
     },
     getSingleWarehouse: async (req, res) => {
         try {
-            const response = await warehouseModel.findById({ _id: req.params.id }, { state: 0 })
+            const response = await warehouseModel.findById({ _id: req.params.id })
             if (!response) return res.json({ error: 'Not Found!' })
             return res.json(response)
         } catch (error) {
             console.log('getSingleWarehouse : ' + error.message)
         }
     },
-    updateWarehouse: async (req, res) => {
+    updateWarehouseDetails: async (req, res) => {
         try {
-            if (!response) return res.json({ error: 'Not Found!' })
-            return res.json(response)
+            const response = await warehouseModel.findByIdAndUpdate(
+                { _id: req.params.id }, req.body, { new: true, runValidators: true }
+            )
+            if (!response) return res.json({ error: 'Updated Unsuccessfull!' })
+            return res.json({ success: 'Updated Successfully!' })
         } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updateWarehouse : ' + error.message)
         }
     },

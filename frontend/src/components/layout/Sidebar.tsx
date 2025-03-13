@@ -29,22 +29,28 @@ const Sidebar = () => {
                         </li>
                         <li className="nav-item">
                             <Link to="#" className="nav-link">
-                            <i className="fa-solid fa-users me-2"></i>
+                                <i className="fa-solid fa-users me-2"></i>
                                 <p>
                                     People
                                     <i className="right fas fa-angle-left"></i>
                                 </p>
                             </Link>
                             <ul className="nav nav-treeview">
-                            <li className="nav-item">
-                                    <Link to="" className="nav-link">
-                                        <i className="far fa-circle nav-icon"></i>
+                                <li className="nav-item">
+                                    <Link to="/dashboard/suppliers" className="nav-link">
+                                    <i className="fa-regular fa-user nav-icon"></i>
                                         <p className="text">Suppliers</p>
                                     </Link>
                                 </li>
                                 <li className="nav-item">
+                                    <Link to="/dashboard/customers" className="nav-link">
+                                        <i className="fa-regular fa-user nav-icon"></i>
+                                        <p className="text">Customers</p>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
                                     <Link to="/dashboard/user/permissions" className="nav-link">
-                                        <i className="far fa-circle nav-icon"></i>
+                                    <i className="fa-regular fa-user nav-icon"></i>
                                         <p className="text">Users</p>
                                     </Link>
                                 </li>
@@ -53,14 +59,14 @@ const Sidebar = () => {
                         {/* settings */}
                         <li className="nav-item">
                             <Link to="#" className="nav-link">
-                            <i className="fa-solid fa-gear me-2"></i>
+                                <i className="fa-solid fa-gear me-2"></i>
                                 <p>
                                     Settings
                                     <i className="right fas fa-angle-left"></i>
                                 </p>
                             </Link>
                             <ul className="nav nav-treeview">
-                            <li className="nav-item">
+                                <li className="nav-item">
                                     <Link to="/dashboard/setting/warehouse" className="nav-link">
                                         <i className="fa-solid fa-warehouse nav-icon"></i>
                                         <p className="text">Warehouse</p>

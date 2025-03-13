@@ -1,13 +1,17 @@
 import config from '../config/config'
 
 class DataSerice {
+
     ClientAPI: string | undefined;
     constructor() { this.ClientAPI = config.serverURL; }
-    async post(endURL: string, data: object, headers?: HeadersInit): Promise<any> {
+
+    async post(endURL: string, data: object, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
             ...(headers || {})
         }
+        console.log(finalHeaders);
+        
         const res: Response = await fetch(`${this.ClientAPI}${endURL}`, {
             method: 'POST',
             headers: finalHeaders,
@@ -17,7 +21,7 @@ class DataSerice {
         return await res.json()
     }
 
-    async get(endURL: string, headers?: HeadersInit): Promise<any> {
+    async get(endURL: string, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
             ...(headers || {})
@@ -30,7 +34,7 @@ class DataSerice {
         return await res.json()
     }
 
-    async put(endURL: string, data: object, headers?: HeadersInit): Promise<any> {
+    async put(endURL: string, data: object, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
             ...(headers || {})
@@ -44,7 +48,7 @@ class DataSerice {
         return await res.json()
     }
 
-    async patch(endURL: string, data?: object, headers?: HeadersInit): Promise<any> {
+    async patch(endURL: string, data?: object, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
             ...(headers || {})
@@ -58,7 +62,7 @@ class DataSerice {
         return await res.json()
     }
 
-    async delete(endURL: string, headers?: HeadersInit): Promise<any> {
+    async delete(endURL: string, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
             ...(headers || {})

@@ -1,7 +1,8 @@
 import cron from 'node-cron'
 import { exec } from 'child_process';
 
-cron.schedule('0 23 * * *', () => { // Run every day at 11 PM
+
+cron.schedule('0 22 * * *', () => { // Run every day at 10 PM
     exec('git add . && git commit -m "Daily code push" && git push', (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing git push: ${error}`)
@@ -14,7 +15,7 @@ cron.schedule('0 23 * * *', () => { // Run every day at 11 PM
     })
 })
 
-cron.schedule('* * * * *', () => { // Run every day at 10 PM
+cron.schedule('0 21 * * *', () => { // Run every day at 9 PM
     exec('cd ../ cd frontend && git add . && git commit -m "Daily code push" && git push', (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing git push: ${error}`)

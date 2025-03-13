@@ -5,23 +5,32 @@ import { Input } from '../../../components/component'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useForm, Controller, useFieldArray } from 'react-hook-form'
-import DataService from '../../../hooks/DataService'
+import { DataService, Notify } from '../../../hooks/hook'
+import Select from 'react-select'
+import config from '../../../config/config';
 
 interface Modal { show: boolean; handleClose: () => void }
 
-const defaultValues = { name: '', phone: '', email: '', password: '', purchase: [], sales: [], product: [], supplier: [], customer: [] }
+const defaultValues = { name: '', phone: '', email: '', password: '', purchase: [], sales: [], product: [], supplier: [], customer: [], warehouseAccess: true, warehousesId: [] }
 const validationSchema = yup.object().shape({
     name: yup.string().required().matches(/^[A-Za-z\s]{1,30}$/, 'Name must be 1-30 characters long.'),
     email: yup.string().email().required().matches(/^[a-z0-9]+@gmail.com$/, 'Incorrect Email!'),
     phone: yup.string().required().matches(/^[0-9]{10}$/, 'Invalid Phone Number!'),
     password: yup.string().required(),
+    warehouseAccess: yup.boolean().required(),
+    warehousesId: yup.array().of(
+        yup.object().shape({
+            name: yup.string().trim(),
+            value: yup.string().trim()
+        })
+    ),
     purchase: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
     sales: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
     product: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
     customer: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
     supplier: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
 })
-const permissions = [{ permission: 'All', value: false }, { permission: 'View', value: false }, { permission: 'Create', value: false }, { permission: 'Edit', value: false }, { permission: 'Delete', value: false }]
+const permissions = [{ permission: 'Access', value: false }, { permission: 'View', value: false }, { permission: 'Create', value: false }, { permission: 'Edit', value: false }, { permission: 'Delete', value: false }]
 
 const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
     const purchaseRef = useRef(false)
@@ -29,8 +38,10 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
     const productRef = useRef(false)
     const supplierRef = useRef(false)
     const customerRef = useRef(false)
+    const [warehouseAccess, setwarehouseAccess] = useState(true)
     const [passwordtype, setpasswordtype] = useState(false)
-    const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+    const [warehouses, setwarehouses] = useState([])
+    const { control, reset, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
         resolver: yupResolver(validationSchema)
     })
@@ -42,15 +53,21 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
 
     const registeration = async (formdata: object) => {
         try {
-            console.log(formdata);
-
-            // const res = await DataService.post('/register/user', { formdata })
-            // console.log(res)
+            const res = await DataService.post('/user', formdata, {
+                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+            })
+            Notify(res), reset()
         } catch (error) {
             console.error(error)
         }
     }
+    const setWarehouseSelectBox = async () => {
+        const res = await DataService.get('/warehouses')
+        const warehouses = res?.map((item: any) => ({ value: item._id, label: item.name }))
+        setwarehouses(warehouses)
+    }
     useEffect(() => {
+        setWarehouseSelectBox()
         if (!purchaseRef.current) appendPurchase(permissions), purchaseRef.current = true;
         if (!salesRef.current) appendSales(permissions), salesRef.current = true;
         if (!productRef.current) appendProduct(permissions), productRef.current = true;
@@ -69,7 +86,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
                 <h1>Invite User</h1>
             </Modal.Header>
             <Modal.Body>
-                <form onSubmit={handleSubmit(registeration)} autoComplete='off' className="form p-0">
+                <form onSubmit={handleSubmit(registeration)} className="form p-0">
                     <div className="row">
                         <div className="col-md-6">
                             <div className="flex-column">
@@ -156,133 +173,183 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
                             </div>
                         </div>
                     </div>
-                    <div className='w-100'>
-                        <div className="flex-column">
-                            <label className='m-0'>Set Permission </label>
-                        </div>
-                    </div>
-                    <div className="d-flex gap-2 mb-1">
-                        <div>
-                            <label className='mb-0'>Purchase : </label>
-                        </div>
-                        <div className="form-group d-flex flex-wrap gap-2 mb-0">
-                            {
-                                purchasFields.map((field, i) => (
-                                    <div className="form-check" key={field.id}>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <div className="d-flex justify-content-between">
+                                <div>
+                                    <label>Access Warehouse </label>
+                                    <span className='importantField'>*</span>
+                                </div>
+                                <div>
+                                    <div className="form-check">
                                         <Controller
-                                            name={`purchase.${i}.value`}
+                                            name='warehouseAccess'
                                             control={control}
                                             render={({ field }) => (
                                                 <Input
                                                     type="checkbox"
                                                     className="form-check-input"
+                                                    onClick={() => setwarehouseAccess(!warehouseAccess)}
+                                                    defaultChecked={warehouseAccess}
                                                     {...field}
                                                 />
                                             )}
                                         />
-                                        <label className="form-check-label">{field.permission}</label>
+                                        <label className="form-check-label">All Warehouses</label>
                                     </div>
-                                ))
-                            }
+                                </div>
+                            </div>
+                            <Controller
+                                name="warehousesId"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        {...field}
+                                        isClearable
+                                        isSearchable
+                                        className='select'
+                                        isRtl={false}
+                                        isDisabled={warehouseAccess}
+                                        placeholder='Select Warehouses'
+                                        isMulti={true}
+                                        options={warehouses}
+                                        onChange={(selectedoption) => field.onChange(selectedoption)}
+                                    />
+                                )}
+                            />
                         </div>
                     </div>
-                    <div className="d-flex gap-2 mb-1">
-                        <div>
-                            <label className='mb-0'>Sales : </label>
+                    <div className="row">
+                        <div className="col-12 mb-2">
+                            <div className="flex-column">
+                                <label className='m-0'>Set Permission </label>
+                            </div>
                         </div>
-                        <div className="form-group d-flex flex-wrap gap-2 mb-0">
-                            {
-                                salesFields.map((field, i) => (
-                                    <div className="form-check" key={field.id}>
-                                        <Controller
-                                            name={`sales.${i}.value`}
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Input
-                                                    type="checkbox"
-                                                    className="form-check-input"
-                                                    {...field}
+                        <div className="col-12">
+                            <div className="d-flex gap-3 mb-2">
+                                <div>
+                                    <label className='mb-0'>Purchase : </label>
+                                </div>
+                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                    {
+                                        purchasFields.map((field, i) => (
+                                            <div className="form-check" key={field.id}>
+                                                <Controller
+                                                    name={`purchase.${i}.value`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Input
+                                                            type="checkbox"
+                                                            className="form-check-input"
+                                                            {...field}
+                                                        />
+                                                    )}
                                                 />
-                                            )}
-                                        />
-                                        <label className="form-check-label">{field.permission}</label>
-                                    </div>
-                                ))
-                            }
-                        </div>
-                    </div>
-                    <div className="d-flex gap-2 mb-1">
-                        <div>
-                            <label className='mb-0'>Product : </label>
-                        </div>
-                        <div className="form-group d-flex flex-wrap gap-2 mb-0">
-                            {
-                                productFields.map((field, i) => (
-                                    <div className="form-check" key={field.id}>
-                                        <Controller
-                                            name={`product.${i}.value`}
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Input
-                                                    type="checkbox"
-                                                    className="form-check-input"
-                                                    {...field}
+                                                <label className="form-check-label">{field.permission}</label>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                            <div className="d-flex gap-3 mb-2">
+                                <div>
+                                    <label className='mb-0'>Sales : </label>
+                                </div>
+                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                    {
+                                        salesFields.map((field, i) => (
+                                            <div className="form-check" key={field.id}>
+                                                <Controller
+                                                    name={`sales.${i}.value`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Input
+                                                            type="checkbox"
+                                                            className="form-check-input"
+                                                            {...field}
+                                                        />
+                                                    )}
                                                 />
-                                            )}
-                                        />
-                                        <label className="form-check-label">{field.permission}</label>
-                                    </div>
-                                ))
-                            }
-                        </div>
-                    </div>
-                    <div className="d-flex gap-2 mb-1">
-                        <div>
-                            <label className='mb-0'>Customers : </label>
-                        </div>
-                        <div className="form-group d-flex flex-wrap gap-2 mb-0">
-                            {
-                                customerFields.map((field, i) => (
-                                    <div className="form-check" key={field.id}>
-                                        <Controller
-                                            name={`product.${i}.value`}
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Input
-                                                    type="checkbox"
-                                                    className="form-check-input"
-                                                    {...field}
+                                                <label className="form-check-label">{field.permission}</label>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                            <div className="d-flex gap-3 mb-2">
+                                <div>
+                                    <label className='mb-0'>Product : </label>
+                                </div>
+                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                    {
+                                        productFields.map((field, i) => (
+                                            <div className="form-check" key={field.id}>
+                                                <Controller
+                                                    name={`product.${i}.value`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Input
+                                                            type="checkbox"
+                                                            className="form-check-input"
+                                                            {...field}
+                                                        />
+                                                    )}
                                                 />
-                                            )}
-                                        />
-                                        <label className="form-check-label">{field.permission}</label>
-                                    </div>
-                                ))
-                            }
-                        </div>
-                    </div>
-                    <div className="d-flex gap-2 mb-1">
-                        <div>
-                            <label className='mb-0'>Supplier :</label>
-                        </div>
-                        <div className="form-group d-flex flex-wrap gap-2 mb-0">
-                            {
-                                supplierFields.map((field, i) => (
-                                    <div className="form-check" key={field.id}>
-                                        <Controller name={`product.${i}.value`}
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Input
-                                                    type="checkbox"
-                                                    className="form-check-input"
-                                                    {...field}
+                                                <label className="form-check-label">{field.permission}</label>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                            <div className="d-flex gap-3 mb-2">
+                                <div>
+                                    <label className='mb-0'>Customers : </label>
+                                </div>
+                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                    {
+                                        customerFields.map((field, i) => (
+                                            <div className="form-check" key={field.id}>
+                                                <Controller
+                                                    name={`customer.${i}.value`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Input
+                                                            type="checkbox"
+                                                            className="form-check-input"
+                                                            {...field}
+                                                        />
+                                                    )}
                                                 />
-                                            )}
-                                        />
-                                        <label className="form-check-label">{field.permission}</label>
-                                    </div>
-                                ))
-                            }
+                                                <label className="form-check-label">{field.permission}</label>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                            <div className="d-flex gap-3">
+                                <div>
+                                    <label className='mb-0'>Supplier :</label>
+                                </div>
+                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                    {
+                                        supplierFields.map((field, i) => (
+                                            <div className="form-check" key={field.id}>
+                                                <Controller name={`supplier.${i}.value`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Input
+                                                            type="checkbox"
+                                                            className="form-check-input"
+                                                            {...field}
+                                                        />
+                                                    )}
+                                                />
+                                                <label className="form-check-label">{field.permission}</label>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <Button type='submit' className="button-submit" disabled={isSubmitting}>

@@ -12,10 +12,6 @@ const userSchema = new mongoose.Schema({
         unique: true,
         match: [/^[a-z0-9]+@gmail.com$/, 'Incorrect Email!']
     },
-    avator: {
-        type: mongoose.Schema.Types.String,
-        default: 'user.svg'
-    },
     phone: {
         type: mongoose.Schema.Types.String,
         match: [/^[0-9]{10}$/, 'Invalid Phone Number!'],
@@ -32,6 +28,14 @@ const userSchema = new mongoose.Schema({
     },
     parentownerId: {
         type: mongoose.Schema.Types.ObjectId,
+    },
+    warehouseAccess: {
+        type: mongoose.Schema.Types.Boolean,
+        default: true
+    },
+    warehousesId: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: []
     },
     permissions: {
         product: {

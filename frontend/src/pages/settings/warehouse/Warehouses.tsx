@@ -4,6 +4,8 @@ import DataTable from "react-data-table-component"
 import Warehouse_Modal from './WareHouse_Modal';
 import DataService from '../../../hooks/DataService';
 import { useFetchData } from '../../../hooks/hook'
+import { useDispatch } from 'react-redux';
+import { setSingleData } from '../../../controller/singleData'
 
 interface Warehouse {
   _id: string;
@@ -16,12 +18,14 @@ interface Warehouse {
 
 
 const Warehouses = () => {
+  const dispatch = useDispatch()
   const [showmodal, setmodal] = useState(false)
   const [warnModal, setwarnmodal] = useState(false)
   const [loading, setloading] = useState(false)
   const [data, setdata] = useState([])
+  const [refreshTable, setrefreshTable] = useState(false)
   const [Id, setId] = useState('')
-  const { apiData: singleWarehouse, fetchData: fetchSingleWarehouse } = useFetchData()
+  const { fetchData: fetchSingleWarehouse } = useFetchData()
 
 
   const columns = [
@@ -41,7 +45,7 @@ const Warehouses = () => {
       )
     },
   ]
-  const handleTableRow = async (id: string) => fetchSingleWarehouse(`/warehouse/${id}`)
+  const handleTableRow = async (id: string) => { fetchSingleWarehouse(`/warehouse/${id}`), setmodal(!showmodal) }
   const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
   const fetch = async () => {
@@ -58,12 +62,25 @@ const Warehouses = () => {
       console.error(error)
     }
   }
-  useEffect(() => { fetch() }, [])
+
+  useEffect(() => { fetch() }, [refreshTable])
   return (
     <>
-      <Static_Modal id={Id} show={warnModal} handleClose={() => setwarnmodal(!warnModal)} />
-      <Warehouse_Modal show={showmodal} handleClose={() => setmodal(!showmodal)} />
       <title>Dashboard | Warehouse Management</title>
+      <Static_Modal show={warnModal} endApi={`/warehouse/${Id}`}
+        handleClose={() => {
+          setwarnmodal(!warnModal)
+          setrefreshTable(!refreshTable)
+          setloading(!loading)
+        }} />
+      <Warehouse_Modal
+        show={showmodal}
+        handleClose={() => {
+          setmodal(!showmodal)
+          dispatch(setSingleData({}))
+          setrefreshTable(!refreshTable)
+          setloading(!loading)
+        }} />
       <Sec_Heading page='Warehouse Management' subtitle='settings' />
       <Section>
         <div className="col-12">
@@ -82,7 +99,6 @@ const Warehouses = () => {
                 title="Warehouses"
                 columns={columns}
                 data={data}
-                selectableRows
                 progressPending={loading}
                 progressComponent={<Loader />}
                 pagination
