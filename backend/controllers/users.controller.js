@@ -27,37 +27,138 @@ const users_controllers = {
     createUser: async (req, res) => {
         try {
             const parentID = getUser(req.headers['authorization'].split(' ')[1])
-            console.log(parentID);
+            const { name, email, phone, password, purchase,
+                sales, product, supplier, customer, warehousesId } = req.body;
 
+            const existingUser = await userModel.findOne({ email })
+            if (existingUser) return res.json({ info: 'User with Email already exists!' })
 
-            const { email, password } = req.body.formdata || req.body;
-
-            const CheckEmail = await userModel.findOne({ email }) // Check user with Email
-            if (!CheckEmail) return res.json({ success: 'Unauthorized!' })
-
+            const response = await userModel.create({
+                name, email, phone,
+                password: await bcrypt.hash(password, 10),
+                warehousesId: warehousesId.map(id => new ObjectId(id.value)),
+                role: 'manager',
+                parentownerId: new ObjectId(parentID.id),
+                permissions: {
+                    purchase: purchase.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                    product: product.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                    sales: sales.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                    supplier: supplier.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                    customer: customer.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                }
+            })
+            if (!response) return res.json({ error: 'Unable to handle request!' })
             return res.json({ success: 'Registeration Successfull!' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('createUser : ', error.message)
         }
     },
+    getAllUsersDetails: async (req, res) => {
+        try {
+            const response = await userModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: '_id',
+                        foreignField: 'parentownerId',
+                        as: 'sub_accounts'
+                    }
+                },
+                { $unwind: '$sub_accounts' },
+                { $replaceRoot: { newRoot: '$sub_accounts' } },
+                { $project: { _id: 1, name: 1, email: 1, phone: 1 } }
+            ])
+            return res.json(response)
+        } catch (error) {
+            console.log('getAllUsersDetails : ' + error.message)
+        }
+    },
     getSingleUser: async (req, res) => {
         try {
-
+            const response = await userModel.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(req.params.id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehousesId',
+                        foreignField: '_id',
+                        as: 'warehouses'
+                    }
+                }
+            ])
+            if (response.length == 0) return res.json({ error: 'User not found!' })
+            return res.json(response[0])
         } catch (error) {
             console.log('getSingleUser : ', error.message)
         }
     },
     updateUserDetails: async (req, res) => {
         try {
+            const { name, email, phone, password, purchase,
+                sales, product, supplier, customer, warehousesId } = req.body;
+            console.log(req.body);
 
+            const response = await userModel.findByIdAndUpdate({ _id: req.params.id }, {
+                name, email, phone,
+                warehousesId: warehousesId.map(id => new ObjectId(id.value)),
+                permissions: {
+                    purchase: purchase.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                    product: product.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                    sales: sales.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                    supplier: supplier.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                    customer: customer.reduce((acc, current) => {
+                        acc[current.permission.toLowerCase()] = current.value
+                        return acc
+                    }, {}),
+                }
+            }, {
+                new: true,
+                runValidators: true
+            })
+            if (password) response.password = await bcrypt.hash(password, 10)
+            if (!response) return res.json({ error: 'Unable to handle request!' })
+            return res.json({ success: 'Updated Successfully!' })
         } catch (error) {
             console.log('updateUserDetails : ', error.message)
         }
     },
     deleteUserDetails: async (req, res) => {
         try {
-
+            const response = await userModel.findByIdAndDelete({ _id: req.params.id })
+            if (!response) return res.json({ error: 'Deleted Unsuccessfull!' })
+            return res.json({ success: 'Deleted Successfully!' })
         } catch (error) {
             console.log('deleteUserDetails : ', error.message)
         }

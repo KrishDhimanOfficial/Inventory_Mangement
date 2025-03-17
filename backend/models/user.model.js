@@ -29,47 +29,39 @@ const userSchema = new mongoose.Schema({
     parentownerId: {
         type: mongoose.Schema.Types.ObjectId,
     },
-    warehouseAccess: {
-        type: mongoose.Schema.Types.Boolean,
-        default: true
-    },
     warehousesId: {
         type: [mongoose.Schema.Types.ObjectId],
-        default: []
+        default: [],
+        ref: 'warehouses'
     },
     permissions: {
         product: {
-            access: { type: mongoose.Schema.Types.Boolean, default: true, },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
-            update: { type: mongoose.Schema.Types.Boolean, default: true },
+            edit: { type: mongoose.Schema.Types.Boolean, default: true },
             view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         },
         purchase: {
-            access: { type: mongoose.Schema.Types.Boolean, default: true, },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
-            update: { type: mongoose.Schema.Types.Boolean, default: true },
+            edit: { type: mongoose.Schema.Types.Boolean, default: true },
             view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         },
         sales: {
-            access: { type: mongoose.Schema.Types.Boolean, default: true, },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
-            update: { type: mongoose.Schema.Types.Boolean, default: true },
+            edit: { type: mongoose.Schema.Types.Boolean, default: true },
             view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         },
         supplier: {
-            access: { type: mongoose.Schema.Types.Boolean, default: true, },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
-            update: { type: mongoose.Schema.Types.Boolean, default: true },
+            edit: { type: mongoose.Schema.Types.Boolean, default: true },
             view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         },
-        customers: {
-            access: { type: mongoose.Schema.Types.Boolean, default: true, },
+        customer: {
             create: { type: mongoose.Schema.Types.Boolean, default: true },
-            update: { type: mongoose.Schema.Types.Boolean, default: true },
+            edit: { type: mongoose.Schema.Types.Boolean, default: true },
             view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         }

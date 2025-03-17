@@ -4,6 +4,7 @@ import apiRouter from './routes/api.routes.js'
 import cors from 'cors'
 import './services/cronJob.js'
 
+
 const app = express()
 
 // view engine setup
