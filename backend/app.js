@@ -20,6 +20,7 @@ app.use(cors(
     credentials: true,
   }
 ))
+console.log('fre,o');
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
