@@ -10,8 +10,6 @@ import http from 'http'
 import config from '../config/config.js'
 import cluster from 'cluster'
 import numcpu from 'os'
-import cron from 'node-cron'
-import { exec } from 'child_process';
 
 const log = debug('backend:server')
 

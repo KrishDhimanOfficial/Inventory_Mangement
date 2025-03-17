@@ -1,9 +1,7 @@
 import cron from 'node-cron'
 import { exec } from 'child_process'
-console.log('df');
 
-
-cron.schedule('* * * * *', () => { // Run every day at 9 PM
+cron.schedule('0 20 * * *', () => { // Run every day at 8 PM
     exec('cd ../  && git add . && git commit -m "Daily code push" && git push', (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing git push: ${error}`)
