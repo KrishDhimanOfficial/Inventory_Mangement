@@ -20,14 +20,12 @@ app.use(cors(
     credentials: true,
   }
 ))
-console.log('fre,o');
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use('/uploads', express.static('uploads'))
 app.use('/public', express.static('public'))
-
 
 app.use('/api', apiRouter)
 
