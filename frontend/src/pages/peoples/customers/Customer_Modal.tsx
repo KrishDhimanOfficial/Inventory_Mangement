@@ -7,7 +7,7 @@ import { DataService, Notify } from '../../../hooks/hook'
 import { Input, Button } from '../../../components/component'
 import { useSelector } from 'react-redux'
 
-interface Modal { show: boolean; handleClose: () => void }
+interface Modal { show: boolean; handleClose: () => void, refreshTable: () => void }
 interface Data { _id: string, name: string, address: string, country: string, city: string, phone: string, email: string, }
 
 const defaultValues = { name: '', phone: '', email: '', country: '', city: '', address: '' }
@@ -20,7 +20,7 @@ const validationSchema = yup.object().shape({
     address: yup.string().required(),
 })
 
-const Customer_Modal: React.FC<Modal> = ({ show, handleClose }) => {
+const Customer_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     const { data }: { data: Data } = useSelector((state: any) => state.singleData)
 
     const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
@@ -35,6 +35,7 @@ const Customer_Modal: React.FC<Modal> = ({ show, handleClose }) => {
                 : await DataService.post('/customer', formdata)
             if (!data._id) reset()
             Notify(res) // Show API Response
+            refreshTable()
         } catch (error) {
             console.error(error)
         }

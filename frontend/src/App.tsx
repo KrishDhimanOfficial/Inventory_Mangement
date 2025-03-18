@@ -5,6 +5,7 @@ import Users from "./pages/peoples/user/Users"
 import Warehouses from "./pages/settings/warehouse/Warehouses"
 import Suppliers from "./pages/peoples/suppliers/Suppliers"
 import Customers from "./pages/peoples/customers/Customers"
+import Category from "./pages/category/Category"
 
 const routes = [
   {
@@ -31,6 +32,10 @@ const routes = [
         path: '/dashboard/setting/warehouse',
         element: <Warehouses />
       },
+      {
+        path: '/dashboard/product/category',
+        element: <Category />
+      }
     ]
   }
 ]

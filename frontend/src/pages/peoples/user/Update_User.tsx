@@ -10,7 +10,7 @@ import Select from 'react-select'
 import config from '../../../config/config'
 import { useSelector } from 'react-redux';
 
-interface Modal { show: boolean; handleClose: () => void }
+interface Modal { show: boolean; handleClose: () => void, refreshTable: () => void }
 interface Data {
     _id: string, name: string, phone: string, password: string, email: string, warehouses: [], permissions:
     { purchase: [], sales: [], customer: [], supplier: [], product: [] },
@@ -30,7 +30,7 @@ const validationSchema = yup.object().shape({
     supplier: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
 })
 
-const Update_User: React.FC<Modal> = ({ show, handleClose }) => {
+const Update_User: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     const { data }: { data: Data } = useSelector((state: any) => state.singleData)
     const [warehouseAccess, setwarehouseAccess] = useState(true)
     const [passwordtype, setpasswordtype] = useState(false)
@@ -59,7 +59,7 @@ const Update_User: React.FC<Modal> = ({ show, handleClose }) => {
             const res = await DataService.put(`/user/${data._id}`, formdata, {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
-            if (res.success) handleModalClose()
+            if (res.success) handleModalClose(), refreshTable()
             Notify(res)
         } catch (error) {
             console.error(error)
@@ -189,7 +189,7 @@ const Update_User: React.FC<Modal> = ({ show, handleClose }) => {
                                         <Input
                                             type="checkbox"
                                             className="form-check-input"
-                                            // checked={warehouseAccess}
+                                            checked={warehouseAccess}
                                             onClick={() => setwarehouseAccess(!warehouseAccess)}
                                         />
                                         <label className="form-check-label">All Warehouses</label>
@@ -287,6 +287,7 @@ const Update_User: React.FC<Modal> = ({ show, handleClose }) => {
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Input
+                                                            checked={field.value}
                                                             type="checkbox"
                                                             className="form-check-input"
                                                             {...field}
@@ -312,6 +313,7 @@ const Update_User: React.FC<Modal> = ({ show, handleClose }) => {
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Input
+                                                            checked={field.value}
                                                             type="checkbox"
                                                             className="form-check-input"
                                                             {...field}
@@ -336,6 +338,7 @@ const Update_User: React.FC<Modal> = ({ show, handleClose }) => {
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Input
+                                                            checked={field.value}
                                                             type="checkbox"
                                                             className="form-check-input"
                                                             {...field}

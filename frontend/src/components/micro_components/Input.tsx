@@ -5,7 +5,7 @@ interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
     onChange?: (e: any) => void,
     className?: string,
     id?: string,
-    checked?: boolean
+    checked?: boolean,
 }
 
 const Input: React.FC<InputProps> = ({ type = 'text', placeholder, onChange, className, checked, id, ...props }) => {

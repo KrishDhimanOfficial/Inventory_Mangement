@@ -57,19 +57,18 @@ const Customers = () => {
     useEffect(() => { fetch() }, [refreshTable])
     return (
         <>
-            <Static_Modal show={warnModal} endApi={`/supplier/${Id}`}
+            <Static_Modal show={warnModal} endApi={`/customer/${Id}`}
                 handleClose={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
                 }} />
             <Customer_Modal show={showmodal}
-                handleClose={() => {
-                    setmodal(!showmodal)
+                refreshTable={() => {
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
                 }}
-            />
+                handleClose={() => setmodal(!showmodal)} />
             <title>Dashboard | Customer Management</title>
             <Sec_Heading page='Customer Management' subtitle='customers' />
             <Section>

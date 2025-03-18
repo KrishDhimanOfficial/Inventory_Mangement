@@ -9,7 +9,7 @@ import { DataService, Notify } from '../../../hooks/hook'
 import Select from 'react-select'
 import config from '../../../config/config';
 
-interface Modal { show: boolean; handleClose: () => void }
+interface Modal { show: boolean; handleClose: () => void, refreshTable: () => void }
 
 const defaultValues = { name: '', phone: '', email: '', password: '', purchase: [], sales: [], product: [], supplier: [], customer: [], warehouseAccess: true, warehousesId: [] }
 const validationSchema = yup.object().shape({
@@ -18,12 +18,7 @@ const validationSchema = yup.object().shape({
     phone: yup.string().required().matches(/^[0-9]{10}$/, 'Invalid Phone Number!'),
     password: yup.string().required(),
     warehouseAccess: yup.boolean().required(),
-    warehousesId: yup.array().of(
-        yup.object().shape({
-            name: yup.string().trim(),
-            value: yup.string().trim()
-        })
-    ),
+    warehousesId: yup.array().of(yup.object().shape({ name: yup.string().trim(), value: yup.string().trim() })),
     purchase: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
     sales: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
     product: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
@@ -32,7 +27,7 @@ const validationSchema = yup.object().shape({
 })
 const permissions = [{ permission: 'Access', value: false }, { permission: 'View', value: false }, { permission: 'Create', value: false }, { permission: 'Edit', value: false }, { permission: 'Delete', value: false }]
 
-const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
+const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     const purchaseRef = useRef(false)
     const salesRef = useRef(false)
     const productRef = useRef(false)
@@ -56,7 +51,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
             const res = await DataService.post('/user', formdata, {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
-            Notify(res), reset()
+            Notify(res), reset(), handleClose(), refreshTable()
         } catch (error) {
             console.error(error)
         }
@@ -83,7 +78,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
             keyboard={false}
         >
             <Modal.Header closeButton>
-                <h1>Invite User</h1>
+                <h1>Create User</h1>
             </Modal.Header>
             <Modal.Body>
                 <form onSubmit={handleSubmit(registeration)} className="form p-0">
@@ -353,7 +348,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose }) => {
                         </div>
                     </div>
                     <Button type='submit' className="button-submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Sending...' : 'Send Invitation'}
+                        {isSubmitting ? 'Creating...' : 'Create'}
                     </Button>
                 </form>
             </Modal.Body>

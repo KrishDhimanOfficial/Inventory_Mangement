@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import Button from '../../components/micro_components/Button'
 import Input from '../../components/micro_components/Input'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import config from '../../config/config'
 import { DataService, Notify } from '../../hooks/hook'
 import { useForm } from 'react-hook-form'
@@ -22,16 +22,18 @@ const Login = () => {
             Notify(res)
             localStorage.setItem(`${config.token_name}`, res.stockify_auth_token)
             if (res.success) navigate('/dashboard')
+            else navigate('/login')
         } catch (error) {
             console.error(error)
         }
     }
+
     return (
         <>
             <title>Login</title>
             <ToastContainer />
             <div className='min-vh-100 d-flex flex-column align-items-center justify-content-center'>
-                <form onSubmit={handleSubmit(handleLogin)} className="form col-md-4 col">
+                <form onSubmit={handleSubmit(handleLogin)} autoComplete='off' className="form col-md-4 col">
                     <h1>Login</h1>
                     <motion.div animate={animation}>
                         <div className="flex-column mb-2">

@@ -1,3 +1,29 @@
+.content-wrapper {
+    background: #F5F7FF;
+}
+
+/* .main-sidebar .nav-pills.nav-sidebar li.nav-item:not(.nav-treeview li) {
+    border-bottom: 1px solid #fff;
+    margin-bottom: 5px;
+} */
+
+[class*="sidebar-dark-"] {
+    background: #000000;
+}
+
+[class*="sidebar-dark-"] .sidebar a {
+    color: #fff;
+}
+
+[class*="sidebar-dark-"] .nav-treeview>.nav-item>.nav-link {
+    color: #fff;
+}
+
+.elevation-4 {
+    box-shadow: none;
+}
+
+
 .importantField {
     color: #d00000;
     margin-left: 3px;
@@ -48,7 +74,7 @@
     height: 100%;
 }
 
-.input:focus{
+.input:focus {
     outline: none;
 }
 

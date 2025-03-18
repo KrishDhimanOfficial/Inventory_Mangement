@@ -10,6 +10,29 @@ import { getUser, setUser } from '../services/auth.js'
 
 /** @type {Object.<string, import('express').RequestHandler>} */
 const users_controllers = {
+    checkUserIsLoggin: async (req, res) => {
+        try {
+            const user = getUser(req.headers['authorization'].split(' ')[1])
+            const response = await userModel.findById({ _id: new ObjectId(user?.id) })
+
+            if (!response) return res.json({ error: 'Not Found!' })
+            return res.json(response)
+        } catch (error) {
+            if(error.message === 'jwt malformed') return res.json({ error: 'Not Found!' })
+
+            console.log('checkUserIsLoggin : ' + error.message)
+        }
+    },
+    getUserPermission: async (req, res) => {
+        try {
+            const user = getUser(req.headers['authorization'].split(' ')[1])
+            const response = await userModel.findById({ _id: user.id }, { permissions: 1, role: 1 })
+            if (!response) return res.json({ error: 'Not Found!' })
+            return res.json(response)
+        } catch (error) {
+            console.log('getUserPermission : ' + error.message)
+        }
+    },
     handleUserLogin: async (req, res) => {
         try {
             const { email, password } = req.body;

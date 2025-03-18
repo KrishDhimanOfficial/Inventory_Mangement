@@ -5,6 +5,8 @@ import warehouse_controllers from '../controllers/warehouse.controller.js'
 
 router.post('/user/login', users_controllers.handleUserLogin)
 router.get('/all/users',users_controllers.getAllUsersDetails)
+router.get('/get/user-permission',users_controllers.getUserPermission)
+router.get('/user/auth',users_controllers.checkUserIsLoggin)
 router.route('/user/:id?')
     .post(users_controllers.createUser)
     .get(users_controllers.getSingleUser)

@@ -10,8 +10,6 @@ class DataSerice {
             'Content-Type': 'application/json',
             ...(headers || {})
         }
-        console.log(finalHeaders);
-        
         const res: Response = await fetch(`${this.ClientAPI}${endURL}`, {
             method: 'POST',
             headers: finalHeaders,

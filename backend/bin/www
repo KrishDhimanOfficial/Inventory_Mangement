@@ -13,16 +13,10 @@ import numcpu from 'os'
 
 const log = debug('backend:server')
 
-/**
- * Get port from environment and store in Express.
-*/
-
-
 if (cluster.isPrimary) {
   for (let i = 0; i < numcpu.availableParallelism(); ++i)  cluster.fork()
   console.log(`Primary ${process.pid} is running`)
   cluster.on('exit', (worker, code, signal) => console.log(`worker ${worker.process.pid} died`))
-
 } else {
   const port = normalizePort(config.port || 8000)
   app.set('port', port)
