@@ -2,6 +2,7 @@ import { useState } from 'react';
 import DataService from './DataService';
 import { useDispatch } from 'react-redux';
 import { setSingleData } from '../controller/singleData'
+import Notify from './Notify';
 
 const useFetchData = () => {
     const dispatch = useDispatch()
@@ -14,7 +15,7 @@ const useFetchData = () => {
             setIsLoading(true)
             const res = await DataService.get(api)
             if (res.error) setError(res.error), setIsLoading(false)
-            setData(res), dispatch(setSingleData(res))
+            Notify(res), setData(res), dispatch(setSingleData(res))
         } catch (error) {
             console.error(error)
         } finally {

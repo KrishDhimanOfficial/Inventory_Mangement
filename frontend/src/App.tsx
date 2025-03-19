@@ -5,7 +5,8 @@ import Users from "./pages/peoples/user/Users"
 import Warehouses from "./pages/settings/warehouse/Warehouses"
 import Suppliers from "./pages/peoples/suppliers/Suppliers"
 import Customers from "./pages/peoples/customers/Customers"
-import Category from "./pages/category/Category"
+import Category from "./pages/product/category/Category"
+import Home from "./pages/dashboard/Home"
 
 const routes = [
   {
@@ -16,6 +17,10 @@ const routes = [
     path: '/dashboard',
     element: <Dashboard />,
     children: [
+      {
+        path: '/dashboard',
+        element: <Home />,
+      },
       {
         path: '/dashboard/user/permissions',
         element: <Users />

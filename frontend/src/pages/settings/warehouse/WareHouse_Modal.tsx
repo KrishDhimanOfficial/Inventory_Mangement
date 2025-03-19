@@ -17,7 +17,7 @@ interface Data {
     state: string
 }
 
-interface Modal { show: boolean; handleClose: () => void }
+interface Modal { show: boolean; handleClose: () => void, refreshTable: () => void }
 const defaultValues = { name: '', address: '', zipcode: '', country: '', city: '', state: '' }
 const validationSchema = yup.object().shape({
     name: yup.string().required().matches(/^[A-Za-z0-9\s]{1,30}$/, 'Name must be 1-30 characters long.'),
@@ -28,7 +28,7 @@ const validationSchema = yup.object().shape({
     state: yup.string().required().matches(/^[A-Za-z\s]{1,30}$/, 'Invalid State Name.'),
 })
 
-const Warehouse_Modal: React.FC<Modal> = ({ show, handleClose }) => {
+const Warehouse_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     const { data }: { data: Data } = useSelector((state: any) => state.singleData)
 
     const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
@@ -42,6 +42,7 @@ const Warehouse_Modal: React.FC<Modal> = ({ show, handleClose }) => {
                 : await DataService.post('/warehouse', formdata)
             if (!data._id) reset()
             Notify(res) // Show API Response
+            refreshTable()
         } catch (error) {
             console.error(error)
         }
@@ -57,7 +58,7 @@ const Warehouse_Modal: React.FC<Modal> = ({ show, handleClose }) => {
             setValue('zipcode', data.zipcode)
             setValue('state', data.state)
         }
-    }, [data])
+    }, [data?._id])
 
     return (
         <Modal

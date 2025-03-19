@@ -1,8 +1,10 @@
-import { useState } from 'react'
-import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../components/component'
-import { useFetchData } from '../../hooks/hook'
+import { useState, useEffect } from 'react'
+import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
+import { useFetchData, DataService } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import Category_Modal from './Category_Modal'
+
+interface Category_Details { _id: string, name: string }
 
 const Category = () => {
     const [showmodal, setmodal] = useState(false)
@@ -16,11 +18,6 @@ const Category = () => {
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
         { name: "Name", selector: (row: any) => row.name, sortable: true },
-        { name: "Email", selector: (row: any) => row.email, sortable: true },
-        { name: "Phone", selector: (row: any) => row.phone, sortable: true },
-        { name: "City", selector: (row: any) => row.city, sortable: true },
-        { name: "Country", selector: (row: any) => row.country, sortable: true },
-        { name: "Address", selector: (row: any) => row.address, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
@@ -35,6 +32,20 @@ const Category = () => {
     const handleTableRow = async (id: string) => { fetchCategoryDetail(`/category/${id}`), setmodal(!showmodal) }
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
+    const fetch = async () => {
+        try {
+            setloading(true)
+            const res = await DataService.get('/all/categories')
+            const response = res.map((category: Category_Details, i: number) => ({
+                id: i + 1, _id: category._id, name: category.name,
+            }))
+            setdata(response), setloading(false)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    useEffect(() => { fetch() }, [refreshTable])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/category/${Id}`}

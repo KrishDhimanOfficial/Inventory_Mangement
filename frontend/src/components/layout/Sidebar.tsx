@@ -44,7 +44,7 @@ const Sidebar = () => {
                         <Image path={logo1} className="img-circle object-fit-cover h-100" />
                     </div>
                     <div className="info">
-                        <Link to="#" className="d-block fs-3">Stockify</Link>
+                        <Link to="#" className="d-block fs-3 link-underline-dark">Stockify</Link>
                     </div>
                 </div>
 

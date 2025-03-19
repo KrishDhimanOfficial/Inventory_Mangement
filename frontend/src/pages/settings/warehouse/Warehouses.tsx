@@ -7,15 +7,7 @@ import { useFetchData } from '../../../hooks/hook'
 import { useDispatch } from 'react-redux';
 import { setSingleData } from '../../../controller/singleData'
 
-interface Warehouse {
-  _id: string;
-  name: string;
-  address: string;
-  city: string;
-  country: string;
-  zipcode: string;
-}
-
+interface Warehouse { _id: string; name: string; address: string; city: string; country: string; zipcode: string; }
 
 const Warehouses = () => {
   const dispatch = useDispatch()
@@ -45,7 +37,7 @@ const Warehouses = () => {
       )
     },
   ]
-  const handleTableRow = async (id: string) => { fetchSingleWarehouse(`/warehouse/${id}`), setmodal(!showmodal) }
+  const handleTableRow = (id: string) => { fetchSingleWarehouse(`/warehouse/${id}`), setmodal(!showmodal) }
   const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
   const fetch = async () => {
@@ -75,11 +67,13 @@ const Warehouses = () => {
         }} />
       <Warehouse_Modal
         show={showmodal}
-        handleClose={() => {
-          setmodal(!showmodal)
-          dispatch(setSingleData({}))
+        refreshTable={() => {
           setrefreshTable(!refreshTable)
           setloading(!loading)
+        }}
+        handleClose={() => {
+          setmodal(!showmodal)
+          // dispatch(setSingleData({}))
         }} />
       <Sec_Heading page='Warehouse Management' subtitle='settings' />
       <Section>

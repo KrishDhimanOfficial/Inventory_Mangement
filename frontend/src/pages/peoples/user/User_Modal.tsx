@@ -51,7 +51,8 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
             const res = await DataService.post('/user', formdata, {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
-            Notify(res), reset(), handleClose(), refreshTable()
+            Notify(res), reset(), handleClose()
+            if (res.success) refreshTable()
         } catch (error) {
             console.error(error)
         }
@@ -172,7 +173,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                         <div className="col-md-6">
                             <div className="d-flex justify-content-between">
                                 <div>
-                                    <label>Access Warehouse </label>
+                                    <label>Access Warehouse</label>
                                     <span className='importantField'>*</span>
                                 </div>
                                 <div>

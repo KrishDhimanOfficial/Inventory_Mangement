@@ -33,9 +33,9 @@ const Customer_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
             const res = data._id
                 ? await DataService.put(`/customer/${data._id}`, formdata)
                 : await DataService.post('/customer', formdata)
-            if (!data._id) reset()
             Notify(res) // Show API Response
-            refreshTable()
+            if (!data._id) reset()
+            if (res.success) refreshTable()
         } catch (error) {
             console.error(error)
         }
@@ -156,7 +156,7 @@ const Customer_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                                 <label>Country. </label>
                                 <span className='importantField'>*</span>
                             </div>
-                            <div className={`inputForm ${errors.address?.message ? 'inputError' : ''}`}>
+                            <div className={`inputForm ${errors.country?.message ? 'inputError' : ''}`}>
                                 <Controller
                                     name="country"
                                     control={control}

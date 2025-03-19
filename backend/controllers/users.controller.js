@@ -8,7 +8,8 @@ import bcrypt from 'bcrypt'
 import config from "../config/config.js";
 import { getUser, setUser } from '../services/auth.js'
 
-/** @type {Object.<string, import('express').RequestHandler>} */
+// /** @type {Object.<string, (req: import('express').Request, res: import('express').Response) => Promise<any>>} */
+
 const users_controllers = {
     checkUserIsLoggin: async (req, res) => {
         try {
@@ -18,7 +19,7 @@ const users_controllers = {
             if (!response) return res.json({ error: 'Not Found!' })
             return res.json(response)
         } catch (error) {
-            if(error.message === 'jwt malformed') return res.json({ error: 'Not Found!' })
+            if (error.message === 'jwt malformed') return res.json({ error: 'Not Found!' })
 
             console.log('checkUserIsLoggin : ' + error.message)
         }
@@ -107,7 +108,7 @@ const users_controllers = {
                 { $replaceRoot: { newRoot: '$sub_accounts' } },
                 { $project: { _id: 1, name: 1, email: 1, phone: 1 } }
             ])
-            return res.json(response)
+            setTimeout(() => res.json(response), 1000)
         } catch (error) {
             console.log('getAllUsersDetails : ' + error.message)
         }
