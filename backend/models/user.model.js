@@ -36,33 +36,33 @@ const userSchema = new mongoose.Schema({
     },
     permissions: {
         product: {
+            view: { type: mongoose.Schema.Types.Boolean, default: true },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
             edit: { type: mongoose.Schema.Types.Boolean, default: true },
-            view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         },
         purchase: {
+            view: { type: mongoose.Schema.Types.Boolean, default: true },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
             edit: { type: mongoose.Schema.Types.Boolean, default: true },
-            view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         },
         sales: {
+            view: { type: mongoose.Schema.Types.Boolean, default: true },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
             edit: { type: mongoose.Schema.Types.Boolean, default: true },
-            view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         },
         supplier: {
+            view: { type: mongoose.Schema.Types.Boolean, default: true },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
             edit: { type: mongoose.Schema.Types.Boolean, default: true },
-            view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         },
         customer: {
+            view: { type: mongoose.Schema.Types.Boolean, default: true },
             create: { type: mongoose.Schema.Types.Boolean, default: true },
             edit: { type: mongoose.Schema.Types.Boolean, default: true },
-            view: { type: mongoose.Schema.Types.Boolean, default: true },
             delete: { type: mongoose.Schema.Types.Boolean, default: true }
         }
     }

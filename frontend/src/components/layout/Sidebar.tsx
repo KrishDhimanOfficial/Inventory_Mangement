@@ -3,14 +3,14 @@ import { Image } from '../component'
 import { Link } from 'react-router';
 import DataService from '../../hooks/DataService';
 import config from '../../config/config';
-import logo from '../../assets/Images/logo.png'
 import logo1 from '../../assets/Images/close.webp'
 
 interface UserPermission {
     role: string,
     permissions: {
         customer: { view: boolean | null },
-        supplier: { view: boolean | null }
+        supplier: { view: boolean | null },
+        product: { view: boolean | null },
     }
 }
 
@@ -19,7 +19,8 @@ const Sidebar = () => {
     const [user, setuser] = useState<UserPermission>({
         role: '', permissions: {
             customer: { view: null },
-            supplier: { view: null }
+            supplier: { view: null },
+            product: { view: null },
         }
     })
 
@@ -51,23 +52,39 @@ const Sidebar = () => {
                 {/* <!-- Sidebar Menu --> */}
                 <nav className="mt-2">
                     <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li className="nav-item">
-                            <Link to="#" className="nav-link">
-                                <i className="fa-solid fa-bars me-2"></i>
-                                <p>
-                                    Product
-                                    <i className="right fas fa-angle-left"></i>
-                                </p>
-                            </Link>
-                            <ul className="nav nav-treeview">
+                        {
+                            user.permissions?.product.view && (
                                 <li className="nav-item">
-                                    <Link to="/dashboard/product/category" className="nav-link">
-                                        <i className="fa-solid fa-layer-group nav-icon"></i>
-                                        <p className="text">Category</p>
+                                    <Link to="#" className="nav-link">
+                                        <i className="fa-solid fa-bars me-2"></i>
+                                        <p>
+                                            Product
+                                            <i className="right fas fa-angle-left"></i>
+                                        </p>
                                     </Link>
+                                    <ul className="nav nav-treeview">
+                                    <li className="nav-item">
+                                            <Link to="/dashboard/products" className="nav-link">
+                                            <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                                <p className="text">Create Product</p>
+                                            </Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link to="/dashboard/product/category" className="nav-link">
+                                                <i className="fa-solid fa-layer-group nav-icon"></i>
+                                                <p className="text">Category</p>
+                                            </Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link to='/dashboard/product/brand' className="nav-link">
+                                                <i className="fa-solid fa-ring nav-icon"></i>
+                                                <p className="text">Brands</p>
+                                            </Link>
+                                        </li>
+                                    </ul>
                                 </li>
-                            </ul>
-                        </li>
+                            )
+                        }
                         <li className="nav-item">
                             <Link to="#" className="nav-link">
                                 <i className="fa-solid fa-users me-2"></i>

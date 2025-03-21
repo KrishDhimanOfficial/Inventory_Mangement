@@ -11,11 +11,9 @@ interface Modal { show: boolean; handleClose: () => void, refreshTable: () => vo
 interface Data { _id: string, name: string, }
 
 const defaultValues = { name: '' }
-const validationSchema = yup.object().shape({
-    name: yup.string().required('Name is required').trim()
-})
+const validationSchema = yup.object().shape({ name: yup.string().required('Name is required').trim() })
 
-const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
+const Brand_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     const { data }: { data: Data } = useSelector((state: any) => state.singleData)
 
     const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
@@ -26,8 +24,8 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
     const registeration = async (formdata: object) => {
         try {
             const res = data?._id
-                ? await DataService.put(`/category/${data._id}`, formdata)
-                : await DataService.post('/category', formdata)
+                ? await DataService.put(`/brand/${data._id}`, formdata)
+                : await DataService.post('/brand', formdata)
             Notify(res) // Show API Response
             if (!data._id) reset()
             if (res.success) refreshTable()
@@ -49,7 +47,7 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
             keyboard={false}
         >
             <Modal.Header closeButton>
-                <h1>{data?._id ? 'Edit Category' : 'Add Category'}</h1>
+                <h1>{data?._id ? 'Edit Brand' : 'Add Brand'}</h1>
             </Modal.Header>
             <Modal.Body>
                 <form onSubmit={handleSubmit(registeration)} className="form p-0">
@@ -67,7 +65,7 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                                         <Input
                                             type="text"
                                             className="input"
-                                            placeholder="Enter Category"
+                                            placeholder="Enter Brand Name"
                                             {...field}
                                         />
                                     )}
@@ -94,4 +92,4 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
     )
 }
 
-export default Category_Modal
+export default Brand_Modal

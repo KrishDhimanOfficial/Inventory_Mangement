@@ -25,7 +25,7 @@ const validationSchema = yup.object().shape({
     customer: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
     supplier: yup.array().of(yup.object().shape({ permission: yup.string(), value: yup.boolean() })),
 })
-const permissions = [{ permission: 'Access', value: false }, { permission: 'View', value: false }, { permission: 'Create', value: false }, { permission: 'Edit', value: false }, { permission: 'Delete', value: false }]
+const permissions = [{ permission: 'View', value: false }, { permission: 'Create', value: false }, { permission: 'Edit', value: false }, { permission: 'Delete', value: false }]
 
 const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     const purchaseRef = useRef(false)
@@ -97,7 +97,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                         <Input
                                             type="text"
                                             className="input"
-                                            placeholder="Enter your Name"
+                                            placeholder="Enter Name"
                                             {...field}
                                         />
                                     )}

@@ -80,7 +80,7 @@ const Supplier_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                                         <Input
                                             type="text"
                                             className="input"
-                                            placeholder="Enter your Name"
+                                            placeholder="Enter Name"
                                             {...field}
                                         />
                                     )}

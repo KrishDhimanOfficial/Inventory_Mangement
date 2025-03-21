@@ -7,6 +7,7 @@ import Suppliers from "./pages/peoples/suppliers/Suppliers"
 import Customers from "./pages/peoples/customers/Customers"
 import Category from "./pages/product/category/Category"
 import Home from "./pages/dashboard/Home"
+import Brand from "./pages/product/brand/Brand"
 
 const routes = [
   {
@@ -40,6 +41,10 @@ const routes = [
       {
         path: '/dashboard/product/category',
         element: <Category />
+      },
+      {
+        path: '/dashboard/product/brand',
+        element: <Brand />
       }
     ]
   }
