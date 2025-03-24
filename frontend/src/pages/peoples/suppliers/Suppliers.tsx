@@ -3,10 +3,12 @@ import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../com
 import { DataService, useFetchData } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import Supplier_Modal from './Supplier_Modal'
+import { useNavigate } from 'react-router'
 
 interface Supplier_Details { id: number, _id: string, name: string, address: string, email: string, city: string, country: string, phone: string }
 
 const Suppliers = () => {
+    const navigate = useNavigate()
     const [showmodal, setmodal] = useState(false)
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
@@ -54,6 +56,11 @@ const Suppliers = () => {
         }
     }
 
+    const generatepdf = () => {
+        console.log(data)
+        navigate('/')
+    }
+
     useEffect(() => { fetch() }, [refreshTable])
     return (
         <>
@@ -78,10 +85,15 @@ const Suppliers = () => {
                     <div className="card">
                         <div className="card-body pt-1">
                             <div className="row mt-2">
-                                <div className="col-sm-6 offset-md-6">
+                                <div className="col-sm-6 offset-md-6 d-flex gap-3 justify-content-end">
+                                    <Button
+                                        text='Generate PDF'
+                                        className='btn btn-danger'
+                                        onclick={() => generatepdf()}
+                                    />
                                     <Button
                                         text='Create'
-                                        className='btn btn-primary float-end'
+                                        className='btn btn-primary'
                                         onclick={() => setmodal(!showmodal)}
                                     />
                                 </div>

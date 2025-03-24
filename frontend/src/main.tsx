@@ -5,6 +5,7 @@ import App from './App.tsx'
 import './assets/css/style.css'
 import store from './store/store.ts'
 
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
