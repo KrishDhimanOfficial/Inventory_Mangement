@@ -32,10 +32,6 @@ const productSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         match: [/[0-9a-z]/, 'Invalid ObjectID!']
     },
-    subcategoryId: {
-        type: mongoose.Schema.Types.ObjectId,
-        match: [/[0-9a-z]/, 'Invalid ObjectID!']
-    },
     brandId: {
         type: mongoose.Schema.Types.ObjectId,
         match: [/[0-9a-z]/, 'Invalid ObjectID!']
