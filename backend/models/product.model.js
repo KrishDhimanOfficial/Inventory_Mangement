@@ -28,6 +28,10 @@ const productSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Number,
         match: [/^[0-9]$/, 'Invalid Poduct Price!']
     },
+    tax: {
+        type: mongoose.Schema.Types.Number,
+        match: [/^[0-9]$/, 'Invalid Tax Input!']
+    },
     categoryId: {
         type: mongoose.Schema.Types.ObjectId,
         match: [/[0-9a-z]/, 'Invalid ObjectID!']

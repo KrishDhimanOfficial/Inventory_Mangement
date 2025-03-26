@@ -1,5 +1,6 @@
 import Button from './micro_components/Button'
 import Input from './micro_components/Input'
+import TextArea from './micro_components/TextArea'
 import Navbar from './layout/Navbar'
 import Sidebar from './layout/Sidebar'
 import Footer from './layout/Footer'
@@ -21,5 +22,6 @@ export {
     Section,
     Loader,
     Static_Modal,
-    PDF_Page
+    PDF_Page,
+    TextArea
 }

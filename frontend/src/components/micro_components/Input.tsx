@@ -6,9 +6,11 @@ interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
     className?: string,
     id?: string,
     checked?: boolean,
+    min?: number,
+    max?: number
 }
 
-const Input: React.FC<InputProps> = ({ type = 'text', placeholder, onChange, className, checked, id, ...props }) => {
+const Input: React.FC<InputProps> = ({ type = 'text', placeholder, onChange, className, checked, id, min, max, ...props }) => {
     return (
         <input
             type={type}
@@ -17,6 +19,8 @@ const Input: React.FC<InputProps> = ({ type = 'text', placeholder, onChange, cla
             className={className}
             id={id}
             checked={checked}
+            min={min}
+            max={max}
             {...props}
         />
     )
