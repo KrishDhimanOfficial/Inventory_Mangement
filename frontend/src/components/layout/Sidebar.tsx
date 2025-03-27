@@ -52,6 +52,12 @@ const Sidebar = () => {
                 {/* <!-- Sidebar Menu --> */}
                 <nav className="mt-2">
                     <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li className="nav-item">
+                            <Link to="/dashboard" className="nav-link">
+                                <i className="fa-solid fa-gauge me-2"></i>
+                                <p>Dashboard</p>
+                            </Link>
+                        </li>
                         {
                             user.permissions?.product.view && (
                                 <li className="nav-item">
@@ -63,9 +69,9 @@ const Sidebar = () => {
                                         </p>
                                     </Link>
                                     <ul className="nav nav-treeview">
-                                    <li className="nav-item">
+                                        <li className="nav-item">
                                             <Link to="/dashboard/products" className="nav-link">
-                                            <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                                <i className="fa-solid fa-bag-shopping nav-icon"></i>
                                                 <p className="text">Create Product</p>
                                             </Link>
                                         </li>
@@ -79,6 +85,12 @@ const Sidebar = () => {
                                             <Link to='/dashboard/product/brand' className="nav-link">
                                                 <i className="fa-solid fa-ring nav-icon"></i>
                                                 <p className="text">Brands</p>
+                                            </Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link to='/dashboard/product/unit' className="nav-link">
+                                                <i className="fa-brands fa-unity nav-icon"></i>
+                                                <p className="text">Units</p>
                                             </Link>
                                         </li>
                                     </ul>

@@ -1,7 +1,7 @@
 import React from "react"
 
 interface btnProps {
-    text: string,
+    text?: string,
     type?: 'button' | 'submit' | 'reset',
     icon?: React.ReactNode,
     className?: string

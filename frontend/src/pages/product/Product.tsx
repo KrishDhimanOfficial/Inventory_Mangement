@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import JsBarcode from "jsbarcode"
 import Select from 'react-select'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -7,38 +7,49 @@ import { useForm, Controller, } from 'react-hook-form'
 import { DataService, Notify } from '../../hooks/hook'
 import { Input, Button, Section, Sec_Heading, TextArea } from '../../components/component'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router'
 
-interface Data { _id: string, name: string, address: string, country: string, city: string, phone: string, email: string, }
+interface Data { _id: string }
+const defaultValues = { title: '', image: '', price: 0, desc: '', sku: '', tax: 0, cost: 0, categoryId: '', brandId: '', unitId: '' }
 
-const defaultValues = { title: '' }
 const validationSchema = yup.object().shape({
-    title: yup.string().required('required!'),
-    image: yup.string().required('img required!'),
+    title: yup.string().required('required!').trim(),
+    image: yup.mixed().required('upload Image!'),
+    cost: yup.number().required('required!'),
     price: yup.number().required('required!'),
     tax: yup.number().required('required!'),
-    desc: yup.string().required('required!'),
-    categoryId: yup.string().required('required!'),
-    brandId: yup.string().required('required!'),
+    desc: yup.string().trim(),
+    categoryId: yup.object().required('required!'),
+    brandId: yup.object().required('required!'),
+    unitId: yup.object().required('required!'),
+    sku: yup.string().required('required!').trim()
 })
 
 
 const Product_Modal = () => {
+    const navigate = useNavigate()
     const [categories, setcategories] = useState([])
     const [brands, setbrands] = useState([])
+    const [sku, setsku] = useState('')
+    const [units, setunits] = useState([])
     const { data }: { data: Data } = useSelector((state: any) => state.singleData)
 
     const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
         resolver: yupResolver(validationSchema)
     })
+    console.log(errors);
+
 
     const registeration = async (formdata: object) => {
         try {
-            const res = data._id
-                ? await DataService.put(`/product/${data._id}`, formdata)
-                : await DataService.post('/product', formdata)
-            Notify(res) // Show API Response
-            if (!data._id) reset()
+            console.log(formdata)
+            formdata.image = formdata.image
+            // const res = data._id
+            //     ? await DataService.put(`/product/${data._id}`, formdata)
+            //     : await DataService.post('/product', formdata)
+            // if (res.success) navigate('/dashboard/products')
+            // Notify(res) // Show API Response
         } catch (error) {
             console.error(error)
         }
@@ -50,13 +61,28 @@ const Product_Modal = () => {
         setcategories(category)
     }
 
-    const fetchBrands = async () => {
-        const res = await DataService.get('/all/brands')
+    const fetchBrands = async (option: { value: string }) => {
+        const res = await DataService.get(`/all/brands/${option.value}`)
         const brands = res.map((item: any) => ({ value: item._id, label: item.name }))
         setbrands(brands)
     }
 
-    useEffect(() => { fetchCategories(), fetchBrands() }, [])
+    const setUnits = async () => {
+        const res = await DataService.get('/all/units')
+        const units = res.map((item: any) => ({ value: item._id, label: item.name }))
+        setunits(units)
+    }
+
+    const BarcodeGenerator = () => {
+        let sku = '';
+        for (let i = 0; i < 8; ++i) sku += Math.round(Math.random() * 9)
+        setValue('sku', sku)
+        setsku(sku)
+        // Add a setTimeout to generate final barcode
+        // JsBarcode(barcodeRef.current, '1237454', { format: "CODE39" });
+    }
+
+    useEffect(() => { fetchCategories(), setUnits() }, [])
     return (
         <>
             <Sec_Heading page="Add Product" subtitle="Products" />
@@ -64,7 +90,7 @@ const Product_Modal = () => {
                 <div className="col-8">
                     <form onSubmit={handleSubmit(registeration)} className="form p-0 bg-transparent">
                         <div className="card">
-                            <div className="card-body">
+                            <div className="card-body p-4">
                                 <div className="row mb-2">
                                     <div className="col-md-6">
                                         <div className="flex-column">
@@ -91,7 +117,7 @@ const Product_Modal = () => {
                                             <label>Product Image </label>
                                             <span className='importantField'>*</span>
                                         </div>
-                                        <div className={`inputForm `}>
+                                        <div className={`inputForm ${errors.image?.message ? 'inputError' : ''}`}>
                                             <Controller
                                                 name="image"
                                                 control={control}
@@ -112,53 +138,63 @@ const Product_Modal = () => {
                                             <label>Category </label>
                                             <span className='importantField'>*</span>
                                         </div>
-                                        <div className={``}>
-                                            <Controller
-                                                name="categoryId"
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Select
-                                                        {...field}
-                                                        isClearable
-                                                        isSearchable
-                                                        className='select'
-                                                        isRtl={false}
-                                                        placeholder='Select Category Name'
-                                                        isMulti={true}
-                                                        options={categories}
-                                                        onChange={(selectedoption) => field.onChange(selectedoption)}
-                                                    />
-                                                )}
-                                            />
-                                        </div>
+                                        <Controller
+                                            name="categoryId"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Select
+                                                    {...field}
+                                                    isClearable
+                                                    isSearchable
+                                                    className='select'
+                                                    isRtl={false}
+                                                    placeholder='Select Category Name'
+                                                    options={categories}
+                                                    onChange={(selectedoption: any) => {
+                                                        field.onChange(selectedoption)
+                                                        fetchBrands(selectedoption)
+                                                    }}
+                                                    styles={{
+                                                        control: (style) => ({
+                                                            ...style,
+                                                            border: errors.categoryId?.message ? '1px solid red' : ''
+                                                        })
+                                                    }}
+                                                />
+                                            )}
+                                        />
                                     </div>
                                     <div className="col-md-6">
                                         <div className="flex-column">
                                             <label>Brand </label>
                                             <span className='importantField'>*</span>
                                         </div>
-                                        <div className={``}>
-                                            <Controller
-                                                name="brandId"
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Select
-                                                        {...field}
-                                                        isClearable
-                                                        isSearchable
-                                                        className='select'
-                                                        isRtl={false}
-                                                        placeholder='Select Brand Name'
-                                                        isMulti={true}
-                                                        options={brands}
-                                                        onChange={(selectedoption) => field.onChange(selectedoption)}
-                                                    />
-                                                )}
-                                            />
-                                        </div>
+                                        <Controller
+                                            name="brandId"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Select
+                                                    {...field}
+                                                    isClearable
+                                                    isSearchable
+                                                    className='select'
+                                                    isRtl={false}
+                                                    placeholder='Select Brand Name'
+                                                    options={brands}
+                                                    onChange={(selectedoption) => field.onChange(selectedoption)}
+                                                    styles={{
+                                                        control: (style) => ({
+                                                            ...style,
+                                                            border: errors.brandId?.message ? '1px solid red' : ''
+                                                        })
+                                                    }}
+                                                />
+                                            )}
+                                        />
                                     </div>
                                 </div>
                                 <div className="row mb-2">
+                                    {/* Tax */}
                                     <div className="col-md-6">
                                         <div className="flex-column">
                                             <label>Tax (%) </label>
@@ -181,13 +217,43 @@ const Product_Modal = () => {
                                             />
                                         </div>
                                     </div>
+                                    {/* Product code (sku) */}
+                                    <div className="col-md-6">
+                                        <div className="flex-column">
+                                            <label>SKU Code </label>
+                                            <span className='importantField'>*</span>
+                                        </div>
+                                        <div className={`inputForm ${errors.sku?.message ? 'inputError' : ''}`}>
+                                            <Controller
+                                                name="sku"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        type="text"
+                                                        className="input"
+                                                        placeholder="Enter SKU Code"
+                                                        min={0}
+                                                        max={100}
+                                                        value={sku}
+                                                    />
+                                                )}
+                                            />
+                                            <Button
+                                                className='btn h-100'
+                                                icon={<i className="fa-solid fa-barcode"></i>}
+                                                onclick={() => BarcodeGenerator()}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="row">
+                                {/* Desc */}
+                                <div className="row mb-2">
                                     <div className="col-12">
                                         <div className="flex-column">
                                             <label>Description </label>
                                         </div>
-                                        <div className='inputForm h-auto ps-0'>
+                                        <div className={`inputForm h-auto ps-0`}>
                                             <Controller
                                                 name="desc"
                                                 control={control}
@@ -202,6 +268,82 @@ const Product_Modal = () => {
                                                 )}
                                             />
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="card">
+                            <div className="card-body p-4">
+                                <div className="row mb-2">
+                                    <div className="col-md-6">
+                                        <div className="flex-column">
+                                            <label>Product Cost </label>
+                                            <span className='importantField'>*</span>
+                                        </div>
+                                        <div className={`inputForm ${errors.cost?.message ? 'inputError' : ''}`}>
+                                            <Controller
+                                                name="cost"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        type="number"
+                                                        className="input"
+                                                        placeholder="Enter Product cost"
+                                                        {...field}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <div className="flex-column">
+                                            <label>Product Price </label>
+                                            <span className='importantField'>*</span>
+                                        </div>
+                                        <div className={`inputForm ${errors.price?.message ? 'inputError' : ''}`}>
+                                            <Controller
+                                                name="price"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        type="number"
+                                                        className="input"
+                                                        placeholder="Enter Product price"
+                                                        {...field}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row mb-2">
+                                    <div className="col-md-6">
+                                        <div className="flex-column">
+                                            <label>Product Unit</label>
+                                            <span className='importantField'>*</span>
+                                        </div>
+                                        <Controller
+                                            name="unitId"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Select
+                                                    {...field}
+                                                    isClearable
+                                                    isSearchable
+                                                    className='select'
+                                                    isRtl={false}
+                                                    placeholder='Select unit Name'
+                                                    options={units}
+                                                    onChange={(selectedoption) => field.onChange(selectedoption)}
+                                                    styles={{
+                                                        control: (style) => ({
+                                                            ...style,
+                                                            border: errors.unitId?.message ? '1px solid red' : ''
+                                                        })
+                                                    }}
+                                                />
+                                            )}
+                                        />
                                     </div>
                                 </div>
                             </div>

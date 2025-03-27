@@ -7,7 +7,7 @@ interface ImgProps {
     style?: object
 }
 
-const Image: React.FC<ImgProps> = ({ path, alt = 'image', className, style }) => {
+const Image: React.FC<ImgProps> = ({  path, alt = 'image', className, style }) => {
     return (
         <img
             src={path}

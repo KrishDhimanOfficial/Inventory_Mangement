@@ -13,7 +13,7 @@ const Category = () => {
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
-    const { fetchData: fetchCategoryDetail } = useFetchData()
+    const { fetchData: fetchCategoryDetail } = useFetchData({ showmodal })
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
@@ -84,6 +84,16 @@ const Category = () => {
                                 progressPending={loading}
                                 progressComponent={<Loader />}
                                 pagination
+                                subHeader
+                                subHeaderComponent={
+                                    <div className="d-flex gap-3 justify-content-end">
+                                        <Button
+                                            text='Create'
+                                            className='btn btn-primary'
+                                            onclick={() => setmodal(!showmodal)}
+                                        />
+                                    </div>
+                                }
                             />
                         </div>
                     </div>

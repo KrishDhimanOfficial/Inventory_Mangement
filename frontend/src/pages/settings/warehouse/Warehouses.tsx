@@ -3,21 +3,18 @@ import { Button, Sec_Heading, Section, Loader, Static_Modal } from '../../../com
 import DataTable from "react-data-table-component"
 import Warehouse_Modal from './WareHouse_Modal';
 import DataService from '../../../hooks/DataService';
-import { useFetchData } from '../../../hooks/hook'
-import { useDispatch } from 'react-redux';
-import { setSingleData } from '../../../controller/singleData'
+import { useFetchData, downloadCSV } from '../../../hooks/hook'
 
 interface Warehouse { _id: string; name: string; address: string; city: string; country: string; zipcode: string; }
 
 const Warehouses = () => {
-  const dispatch = useDispatch()
   const [showmodal, setmodal] = useState(false)
   const [warnModal, setwarnmodal] = useState(false)
   const [loading, setloading] = useState(false)
   const [data, setdata] = useState([])
   const [refreshTable, setrefreshTable] = useState(false)
   const [Id, setId] = useState('')
-  const { fetchData: fetchSingleWarehouse } = useFetchData()
+  const { fetchData: fetchSingleWarehouse } = useFetchData({ showmodal })
 
 
   const columns = [
@@ -80,15 +77,6 @@ const Warehouses = () => {
         <div className="col-12">
           <div className="card">
             <div className="card-body pt-1">
-              <div className="row mt-2 mb-2">
-                <div className="col-sm-6 offset-md-6">
-                  <Button
-                    text='Create'
-                    className='btn btn-primary float-end'
-                    onclick={() => setmodal(!showmodal)}
-                  />
-                </div>
-              </div>
               <DataTable
                 title="Warehouses"
                 columns={columns}
@@ -96,6 +84,26 @@ const Warehouses = () => {
                 progressPending={loading}
                 progressComponent={<Loader />}
                 pagination
+                subHeader
+                subHeaderComponent={
+                  <div className="d-flex gap-3 justify-content-end">
+                    <Button
+                      text='Generate PDF'
+                      className='btn btn-danger'
+                    // onclick={() => generatepdf()}
+                    />
+                    <Button
+                      text='CSV'
+                      className='btn btn-success'
+                      onclick={() => downloadCSV('warehouses', data)}
+                    />
+                    <Button
+                      text='Create'
+                      className='btn btn-primary'
+                      onclick={() => setmodal(!showmodal)}
+                    />
+                  </div>
+                }
               />
             </div>
           </div>

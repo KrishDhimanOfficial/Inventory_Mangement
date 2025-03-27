@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
-import { DataService, useFetchData } from '../../../hooks/hook'
+import { DataService, useFetchData, downloadCSV } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import Supplier_Modal from './Supplier_Modal'
 import { useNavigate } from 'react-router'
 
 interface Supplier_Details { id: number, _id: string, name: string, address: string, email: string, city: string, country: string, phone: string }
+const Supplier_Modal = lazy(() => import('./Supplier_Modal'))
 
 const Suppliers = () => {
     const navigate = useNavigate()
@@ -15,7 +15,7 @@ const Suppliers = () => {
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
-    const { fetchData: fetchSupplierDetail } = useFetchData()
+    const { fetchData: fetchSupplierDetail } = useFetchData({ showmodal })
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
@@ -38,7 +38,6 @@ const Suppliers = () => {
 
     const handleTableRow = async (id: string) => { fetchSupplierDetail(`/supplier/${id}`), setmodal(!showmodal) }
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
-
 
     const fetch = async () => {
         try {
@@ -84,20 +83,6 @@ const Suppliers = () => {
                 <div className="col-12">
                     <div className="card">
                         <div className="card-body pt-1">
-                            <div className="row mt-2">
-                                <div className="col-sm-6 offset-md-6 d-flex gap-3 justify-content-end">
-                                    <Button
-                                        text='Generate PDF'
-                                        className='btn btn-danger'
-                                        onclick={() => generatepdf()}
-                                    />
-                                    <Button
-                                        text='Create'
-                                        className='btn btn-primary'
-                                        onclick={() => setmodal(!showmodal)}
-                                    />
-                                </div>
-                            </div>
                             <DataTable
                                 title="Suppliers Details"
                                 columns={columns}
@@ -105,6 +90,26 @@ const Suppliers = () => {
                                 progressPending={loading}
                                 progressComponent={<Loader />}
                                 pagination
+                                subHeader
+                                subHeaderComponent={
+                                    <div className="d-flex gap-3 justify-content-end">
+                                        <Button
+                                            text='Generate PDF'
+                                            className='btn btn-danger'
+                                            onclick={() => generatepdf()}
+                                        />
+                                        <Button
+                                            text='CSV'
+                                            className='btn btn-success'
+                                            onclick={() => downloadCSV('suppliers', data)}
+                                        />
+                                        <Button
+                                            text='Create'
+                                            className='btn btn-primary'
+                                            onclick={() => setmodal(!showmodal)}
+                                        />
+                                    </div>
+                                }
                             />
                         </div>
                     </div>

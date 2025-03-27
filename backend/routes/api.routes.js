@@ -3,6 +3,8 @@ const router = express.Router()
 import users_controllers from '../controllers/users.controller.js'
 import warehouse_controllers from '../controllers/warehouse.controller.js'
 import pro_controllers from '../controllers/product.controller.js'
+import handlemulterError from '../middleware/handleMulterError.js'
+import { product } from '../middleware/multer.middleware.js'
 
 router.post('/user/login', users_controllers.handleUserLogin)
 router.get('/all/users', users_controllers.getAllUsersDetails)
@@ -42,11 +44,23 @@ router.route('/category/:id?')
     .put(pro_controllers.update_Category)
     .delete(pro_controllers.delete_Category)
 
-router.get('/all/brands', pro_controllers.getAll_brands)
+router.get('/all/brands/:id?', pro_controllers.getAll_brands)
 router.route('/brand/:id?')
     .post(pro_controllers.createBrand)
     .get(pro_controllers.getBrand_Detail)
     .put(pro_controllers.updateBrand)
     .delete(pro_controllers.deleteBrand)
+
+router.get('/all/units', pro_controllers.getProduct_units)
+router.route('/unit/:id?')
+    .post(pro_controllers.createUnit)
+    .get(pro_controllers.getUnit_Details)
+    .put(pro_controllers.updateUnit_Details)
+    .delete(pro_controllers.deleteUnit_Details)
+
+router.route('/product/:id?')
+    .all(handlemulterError)
+    .post(product.single('image'), pro_controllers.createProductDetails)
+    .delete(pro_controllers.deleteProduct)
 
 export default router

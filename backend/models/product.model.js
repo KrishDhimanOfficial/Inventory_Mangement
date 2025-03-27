@@ -48,7 +48,7 @@ const productSchema = new mongoose.Schema({
             {
                 warehouse: {
                     type: mongoose.Schema.Types.ObjectId,
-                    match: [/[0-9a-z]/, 'Invalid ObjectID!']
+                    match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!']
                 },
                 stock: {
                     type: mongoose.Schema.Types.Number,
@@ -59,3 +59,5 @@ const productSchema = new mongoose.Schema({
         default: []
     }
 }, { timestamps: true })
+
+export default mongoose.model('product',productSchema)

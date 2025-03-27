@@ -4,7 +4,7 @@ import { useFetchData, DataService } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import Brand_Modal from './Brand_Modal'
 
-interface Category_Details { _id: string, name: string }
+interface Brand_Details { _id: string, name: string, category: { name: string } }
 
 const Brand = () => {
     const [showmodal, setmodal] = useState(false)
@@ -13,11 +13,12 @@ const Brand = () => {
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
-    const { fetchData: fetchCategoryDetail } = useFetchData()
+    const { fetchData: fetchBrandDetail } = useFetchData({ showmodal })
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
         { name: "Name", selector: (row: any) => row.name, sortable: true },
+        { name: "Category", selector: (row: any) => row.category, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
@@ -29,15 +30,15 @@ const Brand = () => {
         },
     ]
 
-    const handleTableRow = async (id: string) => { fetchCategoryDetail(`/brand/${id}`), setmodal(!showmodal) }
+    const handleTableRow = async (id: string) => { fetchBrandDetail(`/brand/${id}`), setmodal(!showmodal) }
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
     const fetch = async () => {
         try {
             setloading(true)
             const res = await DataService.get('/all/brands')
-            const response = res.map((category: Category_Details, i: number) => ({
-                id: i + 1, _id: category._id, name: category.name,
+            const response = res.map((brand: Brand_Details, i: number) => ({
+                id: i + 1, _id: brand._id, name: brand.name, category: brand.category.name
             }))
             setdata(response), setloading(false)
         } catch (error) {
@@ -62,28 +63,29 @@ const Brand = () => {
                     setloading(!loading)
                 }}
             />
-            <title>Dashboard | Product Category</title>
-            <Sec_Heading page='Category' subtitle='Product Category' />
+            <title>Dashboard | Product Brands</title>
+            <Sec_Heading page='Brands' subtitle='Product Brands' />
             <Section>
                 <div className="col-12">
                     <div className="card">
                         <div className="card-body pt-1">
-                            <div className="row mt-2 mb-2">
-                                <div className="col-sm-6 offset-md-6">
-                                    <Button
-                                        text='Create'
-                                        className='btn btn-primary float-end'
-                                        onclick={() => setmodal(!showmodal)}
-                                    />
-                                </div>
-                            </div>
                             <DataTable
-                                title="Category"
+                                title="Brands"
                                 columns={columns}
                                 data={data}
                                 progressPending={loading}
                                 progressComponent={<Loader />}
                                 pagination
+                                subHeader
+                                subHeaderComponent={
+                                    <div className="d-flex gap-3 justify-content-end">
+                                        <Button
+                                            text='Create'
+                                            className='btn btn-primary'
+                                            onclick={() => setmodal(!showmodal)}
+                                        />
+                                    </div>
+                                }
                             />
                         </div>
                     </div>

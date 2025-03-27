@@ -3,7 +3,7 @@ import { Button, Sec_Heading, Section, Loader, Static_Modal } from '../../../com
 import DataTable from "react-data-table-component"
 import User_Modal from './User_Modal';
 import Update_User from './Update_User';
-import { useFetchData, DataService } from '../../../hooks/hook'
+import { useFetchData, DataService, downloadCSV } from '../../../hooks/hook'
 
 interface User_Details { id: number, _id: string, name: string, email: string, phone: string }
 
@@ -15,7 +15,7 @@ const Users = () => {
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
-    const { fetchData: fetchUserDetail } = useFetchData()
+    const { fetchData: fetchUserDetail } = useFetchData({ showmodal })
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
@@ -79,15 +79,6 @@ const Users = () => {
                 <div className="col-12">
                     <div className="card">
                         <div className="card-body pt-1">
-                            <div className="row mt-2">
-                                <div className="col-sm-6 offset-md-6">
-                                    <Button
-                                        text='Create'
-                                        className='btn btn-primary float-end'
-                                        onclick={() => setmodal(!showmodal)}
-                                    />
-                                </div>
-                            </div>
                             <DataTable
                                 title="Users"
                                 columns={columns}
@@ -95,6 +86,26 @@ const Users = () => {
                                 progressPending={loading}
                                 progressComponent={<Loader />}
                                 pagination
+                                subHeader
+                                subHeaderComponent={
+                                    <div className="d-flex gap-3 justify-content-end">
+                                        <Button
+                                            text='Generate PDF'
+                                            className='btn btn-danger'
+                                        // onclick={() => generatepdf()}
+                                        />
+                                        <Button
+                                            text='CSV'
+                                            className='btn btn-success'
+                                            onclick={() => downloadCSV('users', data)}
+                                        />
+                                        <Button
+                                            text='Create'
+                                            className='btn btn-primary'
+                                            onclick={() => setmodal(!showmodal)}
+                                        />
+                                    </div>
+                                }
                             />
                         </div>
                     </div>

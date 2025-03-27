@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DataService from './DataService';
 import { useDispatch } from 'react-redux';
 import { setSingleData } from '../controller/singleData'
 import Notify from './Notify';
 
-const useFetchData = () => {
+const useFetchData = ({ showmodal }: { showmodal?: boolean }) => {
     const dispatch = useDispatch()
     const [apiData, setData] = useState<[] | {} | null>(null)
     const [isloading, setIsLoading] = useState(false)
@@ -23,7 +23,10 @@ const useFetchData = () => {
         }
     }
 
+    useEffect(() => {
+        dispatch(setSingleData({})) // Reset While adding new
+    }, [!showmodal])
     return { apiData, isloading, error, fetchData }
 }
 
-export default useFetchData
+export default useFetchData // That's Fetch Single Record From DB
