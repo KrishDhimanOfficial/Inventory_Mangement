@@ -58,6 +58,7 @@ router.route('/unit/:id?')
     .put(pro_controllers.updateUnit_Details)
     .delete(pro_controllers.deleteUnit_Details)
 
+router.get('/all/products', pro_controllers.getAllproducts_Details)
 router.route('/product/:id?')
     .all(handlemulterError)
     .post(product.single('image'), pro_controllers.createProductDetails)

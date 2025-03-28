@@ -16,9 +16,9 @@ const productSchema = new mongoose.Schema({
         match: [/[0-9a-z]/, 'Invalid SKU Code!'],
         max: 6
     },
-    unit: {
-        type: mongoose.Schema.Types.String,
-        match: [/[a-z]/, 'Only Charaters Allowed!'],
+    unitId: {
+        type: mongoose.Schema.Types.ObjectId,
+        match: [/^[a-z0-9]{1,24}$/, 'Only Charaters Allowed!'],
     },
     cost: {
         type: mongoose.Schema.Types.Number,

@@ -4,6 +4,8 @@ import brandModel from '../models/brand.model.js'
 import unitModel from '../models/unit.model.js';
 import validate from '../services/validateData.js'
 import mongoose from "mongoose";
+import config from '../config/config.js';
+import deleteImage from '../services/deleteImg.js';
 const ObjectId = mongoose.Types.ObjectId;
 
 const pro_controllers = {
@@ -198,20 +200,119 @@ const pro_controllers = {
             console.log('deleteUnit_Details : ' + error.message)
         }
     },
+    getAllproducts_Details: async (req, res) => {
+        try {
+            const response = await productModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'units',
+                        localField: 'unitId',
+                        foreignField: '_id',
+                        as: 'unit'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$unit',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'categoryId',
+                        foreignField: '_id',
+                        as: 'category'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$category',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'brands',
+                        localField: 'brandId',
+                        foreignField: '_id',
+                        as: 'brand'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$brand',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        image: {
+                            $concat: [`${config.productImgPath}`, '$image']
+                        },
+                        year: {
+                            $dateToString: {
+                                date: "$updatedAt",
+                                format: "%Y",
+                            }
+                        },
+                        month: {
+                            $dateToString: {
+                                date: "$updatedAt",
+                                format: "%m",
+                            }
+                        },
+                        day: {
+                            $dateToString: {
+                                date: "$updatedAt",
+                                format: "%d",
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        createdAt: 0,
+                        brandId: 0,
+                        warehouses: 0,
+                        desc: 0,
+                        categoryId: 0,
+                        unitId: 0,
+                        'unit._id': 0,
+                        'unit.name': 0,
+                        'category._id': 0,
+                        'brand._id': 0,
+                        'brand.categoryId': 0,
+                    }
+                }
+            ])
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('getAllproducts_Details : ' + error.message)
+        }
+    },
     createProductDetails: async (req, res) => {
         try {
             const { title, price, desc, sku, tax, cost, categoryId, brandId, unitId } = req.body;
-            // const response = await productModel.create({})
+            const response = await productModel.create({
+                title, price, desc, sku, tax, cost,
+                categoryId: new ObjectId(categoryId),
+                brandId: new ObjectId(brandId),
+                unitId: new ObjectId(unitId),
+                image: req.file.filename
+            })
             if (!response) return res.json({ error: 'unable to response!' })
             return res.status(200).json({ success: 'Created Successfully!' })
         } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('createProductDetails : ' + error.message)
         }
     },
     deleteProduct: async (req, res) => {
         try {
-            const response = await productModel.findByIdAndDelete({ _id: req.params.id })
+            const response = await productModel.findByIdAndDelete({ _id: req.params.id }, { new: true })
             if (!response) return res.json({ error: 'Not Found!' })
+            await deleteImage(`productImages/${response.image}`)
             return res.json({ success: 'Deleted!' })
         } catch (error) {
             console.log('deleteProduct : ' + error.message)

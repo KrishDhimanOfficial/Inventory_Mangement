@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
 import { useFetchData, DataService } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import Unit_Modal from './unit_Modal'
+import Unit_Modal from './Unit_Modal'
 
 interface Unit_Details { _id: string, name: string, shortName: string }
 
@@ -50,8 +50,8 @@ const Units = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/unit/${Id}`}
-                handleClose={() => {
-                    setwarnmodal(!warnModal)
+                handleClose={() => { setwarnmodal(!warnModal) }}
+                refreshTable={() => {
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
                 }} />

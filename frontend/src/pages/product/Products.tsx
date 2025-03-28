@@ -1,48 +1,94 @@
-import { useState } from 'react'
-import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../components/component'
+import { useEffect, useState } from 'react'
+import { Sec_Heading, Section, Button, Loader, Static_Modal, Image } from '../../components/component'
 import { DataService, useFetchData, downloadCSV } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Link, useNavigate } from 'react-router';
+import { date } from 'yup';
+
+interface ProductSchema {
+    _id: string
+    title: string,
+    image: string,
+    sku: string,
+    cost: number,
+    price: number,
+    tax: number,
+    desc: string,
+    year: string,
+    month: string,
+    day: string,
+    category: { name: string },
+    brand: { name: string },
+    unit: { shortName: string }
+}
+
+const months = [
+    'January', 'February', 'March', 'April',
+    'May', 'June', 'July', 'August',
+    'September', 'October', 'November', 'December'
+]
 
 const Products = () => {
     const navigate = useNavigate()
-    const [showmodal, setmodal] = useState(false)
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
 
+
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
+        { name: "Product", selector: (row: any) => row.product, sortable: true },
         { name: "Name", selector: (row: any) => row.name, sortable: true },
-        { name: "Email", selector: (row: any) => row.email, sortable: true },
-        { name: "Phone", selector: (row: any) => row.phone, sortable: true },
-        { name: "City", selector: (row: any) => row.city, sortable: true },
-        { name: "Country", selector: (row: any) => row.country, sortable: true },
-        { name: "Address", selector: (row: any) => row.address, sortable: true },
+        { name: "Brand", selector: (row: any) => row.brand, sortable: true },
+        { name: "Code", selector: (row: any) => row.code, sortable: true },
+        { name: "Category", selector: (row: any) => row.category, sortable: true },
+        { name: "Cost", selector: (row: any) => row.cost, sortable: true },
+        { name: "Price", selector: (row: any) => row.price, sortable: true },
+        { name: "Unit", selector: (row: any) => row.unit, sortable: true },
+        { name: "Last update", selector: (row: any) => row.update, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
                 <div className="d-flex justify-content-between">
+                    <Link to={`/dashboard/product/${row._id}`} className='btn btn-success me-2'>
+                        <i className="fa-solid fa-pen-to-square"></i>
+                    </Link>
                     <Button text=''
-                        // onclick={() => handleTableRow(row._id)} 
-                        className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
-                    <Button text=''
-                        // onclick={() => deleteTableRow(row._id)}
+                        onclick={() => deleteTableRow(row._id)}
                         className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
                 </div>
             )
         },
     ]
+    const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
+    const fetch = async () => {
+        try {
+            setloading(true)
+            const res = await DataService.get('/all/products')
+            console.log(res);
+
+            const response = res.map((pro: ProductSchema, i: number) => ({
+                id: i + 1, _id: pro._id, product: <Image path={pro.image} className='w-100 h-100' />,
+                name: pro.title, brand: pro.brand?.name ?? 'N/A', code: pro.sku, category: pro.category?.name ?? 'N/A',
+                cost: pro.cost, price: pro.price, unit: pro.unit?.shortName ?? 'N/A', update: `${pro.day} ${months[parseInt(pro.month)]},${pro.year}`,
+            }))
+            setdata(response), setloading(false)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+    useEffect(() => { fetch() }, [])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/product/${Id}`}
-                handleClose={() => {
-                    setwarnmodal(!warnModal)
+                handleClose={() => { setwarnmodal(!warnModal) }}
+                refreshTable={() => {
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
-                }} />
+                }}
+            />
             <Sec_Heading page="Product Management" subtitle="Products" />
             <Section>
                 <div className="col-12">

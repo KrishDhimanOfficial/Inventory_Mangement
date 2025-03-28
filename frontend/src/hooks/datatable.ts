@@ -1,5 +1,4 @@
 // Download CSV
-
 const convertArrayOfObjectsToCSV = (array: any[]) => {
     let result: any;
 
@@ -7,12 +6,12 @@ const convertArrayOfObjectsToCSV = (array: any[]) => {
     const lineDelimiter = '\n';
     
     // Check if array is empty
-    if (array.length === 0) return '';
+    if (array.length === 0) return ''
     
     const keys = Object.keys(array[0])
 
     result = '';
-    result += keys.join(columnDelimiter);
+    result += keys.join(columnDelimiter)
     result += lineDelimiter;
 
     array.forEach(item => {
@@ -20,14 +19,14 @@ const convertArrayOfObjectsToCSV = (array: any[]) => {
         keys.forEach(key => {
             if (ctr > 0) result += columnDelimiter;
 
-            result += item[key];
+            result += item[key]
 
             ctr++;
-        });
+        })
         result += lineDelimiter;
     });
 
-    return result;
+    return result
 }
 
 

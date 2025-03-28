@@ -3,10 +3,16 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useDeleteData } from '../../hooks/hook'
 
-interface Modal { endApi: string, show: boolean; handleClose: () => void }
+interface Modal {
+    endApi: string,
+    show: boolean;
+    handleClose: () => void,
+    refreshTable: () => void
+}
 
-const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose }) => {
-    const { isloading, deleteData } = useDeleteData()
+const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable }) => {
+    const { isloading, apiResponse: res, deleteData } = useDeleteData()
+    if (res?.success) refreshTable()
 
     return (
         <>

@@ -3,7 +3,7 @@ import { DataService, Notify } from '../hooks/hook'
 
 const useDeleteData = () => {
     const [isloading, setIsLoading] = useState(false)
-    const [apiResponse, setapiResponse] = useState(null)
+    const [apiResponse, setapiResponse] = useState<any>(null)
 
     const deleteData = async (api: string, headers?: HeadersInit) => {
         try {

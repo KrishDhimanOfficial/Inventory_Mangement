@@ -8,6 +8,7 @@ import { DataService, Notify } from '../../hooks/hook'
 import { Input, Button, Section, Sec_Heading, TextArea } from '../../components/component'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
+import config from '../../config/config'
 
 interface Data { _id: string }
 const defaultValues = { title: '', image: '', price: 0, desc: '', sku: '', tax: 0, cost: 0, categoryId: '', brandId: '', unitId: '' }
@@ -25,8 +26,7 @@ const validationSchema = yup.object().shape({
     sku: yup.string().required('required!').trim()
 })
 
-
-const Product_Modal = () => {
+const Product = () => {
     const navigate = useNavigate()
     const [categories, setcategories] = useState([])
     const [brands, setbrands] = useState([])
@@ -34,22 +34,31 @@ const Product_Modal = () => {
     const [units, setunits] = useState([])
     const { data }: { data: Data } = useSelector((state: any) => state.singleData)
 
-    const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+    const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
         resolver: yupResolver(validationSchema)
     })
-    console.log(errors);
 
-
-    const registeration = async (formdata: object) => {
+    const registeration = async (formdata: any) => {
         try {
-            console.log(formdata)
-            formdata.image = formdata.image
-            // const res = data._id
-            //     ? await DataService.put(`/product/${data._id}`, formdata)
-            //     : await DataService.post('/product', formdata)
-            // if (res.success) navigate('/dashboard/products')
-            // Notify(res) // Show API Response
+            const formDataObj = new FormData()
+            if (formdata.image && formdata.image.length > 0) {
+                formDataObj.append('image', formdata.image[0])
+            }
+            formDataObj.append('title', formdata.title)
+            formDataObj.append('price', formdata.price)
+            formDataObj.append('desc', formdata.desc || '')
+            formDataObj.append('sku', formdata.sku)
+            formDataObj.append('tax', formdata.tax)
+            formDataObj.append('cost', formdata.cost)
+            formDataObj.append('categoryId', formdata.categoryId.value)
+            formDataObj.append('brandId', formdata.brandId.value)
+            formDataObj.append('unitId', formdata.unitId.value)
+
+            const apiResponse = await fetch(`${config.serverURL}/product`, { method: 'POST', body: formDataObj })
+            const res = await apiResponse.json()
+            if (res.success) navigate('/dashboard/products')
+            Notify(res); // Show API Response
         } catch (error) {
             console.error(error)
         }
@@ -125,7 +134,11 @@ const Product_Modal = () => {
                                                     <Input
                                                         type="file"
                                                         className="input align-content-center"
-                                                        {...field}
+                                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                            if (e.target.files) {
+                                                                field.onChange(e.target.files)
+                                                            }
+                                                        }}
                                                     />
                                                 )}
                                             />
@@ -368,4 +381,4 @@ const Product_Modal = () => {
     )
 }
 
-export default Product_Modal
+export default Product

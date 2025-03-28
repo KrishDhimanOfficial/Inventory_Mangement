@@ -54,18 +54,16 @@ const Users = () => {
         <>
             <title>Dashboard | Users Management</title>
             <Static_Modal show={warnModal} endApi={`/user/${Id}`}
-                handleClose={() => {
-                    setwarnmodal(!warnModal)
+                handleClose={() => { setwarnmodal(!warnModal) }}
+                refreshTable={() => {
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
                 }} />
             <Update_User show={shoeditwmodal}
+                handleClose={() => { seteditmodal(!shoeditwmodal) }}
                 refreshTable={() => {
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
-                }}
-                handleClose={() => {
-                    seteditmodal(!shoeditwmodal)
                 }} />
             <User_Modal
                 show={showmodal}

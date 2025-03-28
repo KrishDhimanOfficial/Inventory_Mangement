@@ -37,6 +37,7 @@ const users_controllers = {
     handleUserLogin: async (req, res) => {
         try {
             const { email, password } = req.body;
+            
             const response = await userModel.findOne({ email })
             if (!response) return res.json({ error: 'Unauthorized!' })
 

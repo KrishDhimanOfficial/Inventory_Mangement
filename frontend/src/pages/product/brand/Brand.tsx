@@ -50,11 +50,11 @@ const Brand = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/brand/${Id}`}
-                handleClose={() => {
-                    setwarnmodal(!warnModal)
-                    setrefreshTable(!refreshTable)
-                    setloading(!loading)
-                }} />
+                 handleClose={() => { setwarnmodal(!warnModal) }}
+                 refreshTable={() => {
+                     setrefreshTable(!refreshTable)
+                     setloading(!loading)
+                 }} />
             <Brand_Modal
                 show={showmodal}
                 handleClose={() => setmodal(!showmodal)}

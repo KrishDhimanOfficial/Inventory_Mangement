@@ -11,7 +11,7 @@ import Home from "./pages/dashboard/Home"
 import Brand from "./pages/product/brand/Brand"
 import Products from "./pages/product/Products"
 import Product from './pages/product/Product'
-import Units from "./pages/product/units/units"
+import Units from "./pages/product/units/Units"
 import { PDF_Page } from './components/component'
 
 
@@ -58,6 +58,10 @@ const App = () => {
           element: <Brand />
         },
         {
+          path: '/dashboard/product/unit',
+          element: <Units />
+        },
+        {
           path: '/dashboard/products',
           element: <Products />
         },
@@ -66,8 +70,8 @@ const App = () => {
           element: <Product />
         },
         {
-          path: '/dashboard/product/unit',
-          element: <Units />
+          path: '/dashboard/product/:id',
+          element: <Product />
         }
       ],
     }
