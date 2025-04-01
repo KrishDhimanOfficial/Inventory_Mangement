@@ -1,17 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import JsBarcode from "jsbarcode"
 import Select from 'react-select'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useForm, Controller, } from 'react-hook-form'
-import { DataService, Notify } from '../../hooks/hook'
+import { DataService, Notify, useFetchData } from '../../hooks/hook'
 import { Input, Button, Section, Sec_Heading, TextArea } from '../../components/component'
-import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import config from '../../config/config'
 
-interface Data { _id: string }
 const defaultValues = { title: '', image: '', price: 0, desc: '', sku: '', tax: 0, cost: 0, categoryId: '', brandId: '', unitId: '' }
+interface Option { value: string, label: string }
 
 const validationSchema = yup.object().shape({
     title: yup.string().required('required!').trim(),
@@ -27,12 +26,20 @@ const validationSchema = yup.object().shape({
 })
 
 const Product = () => {
+    const { id } = useParams()
     const navigate = useNavigate()
     const [categories, setcategories] = useState([])
     const [brands, setbrands] = useState([])
     const [sku, setsku] = useState('')
     const [units, setunits] = useState([])
-    const { data }: { data: Data } = useSelector((state: any) => state.singleData)
+    const [selectedOption, setSelectedOption] = useState<Option | null>(null)
+    const [brandOption, setBrandOption] = useState<Option | null>(null)
+    const [unitOption, setUnitOption] = useState<Option | null>(null)
+
+    const { apiData: productData, fetchData: fetchProduct }: {
+        apiData: any,
+        fetchData: (api: string) => Promise<void>
+    } = useFetchData({})
 
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
@@ -55,10 +62,12 @@ const Product = () => {
             formDataObj.append('brandId', formdata.brandId.value)
             formDataObj.append('unitId', formdata.unitId.value)
 
-            const apiResponse = await fetch(`${config.serverURL}/product`, { method: 'POST', body: formDataObj })
+            const apiResponse = id // Use For PUT & POST Operation
+                ? await fetch(`${config.serverURL}/product/${id}`, { method: 'PUT', body: formDataObj })
+                : await fetch(`${config.serverURL}/product`, { method: 'POST', body: formDataObj })
             const res = await apiResponse.json()
             if (res.success) navigate('/dashboard/products')
-            Notify(res); // Show API Response
+            Notify(res) // Show API Response
         } catch (error) {
             console.error(error)
         }
@@ -87,14 +96,44 @@ const Product = () => {
         for (let i = 0; i < 8; ++i) sku += Math.round(Math.random() * 9)
         setValue('sku', sku)
         setsku(sku)
+
         // Add a setTimeout to generate final barcode
-        // JsBarcode(barcodeRef.current, '1237454', { format: "CODE39" });
+        // JsBarcode(barcodeRef.current, '1237454', { format: "CODE39" })
     }
 
     useEffect(() => { fetchCategories(), setUnits() }, [])
+    useEffect(() => { if (id) fetchProduct(`/product/${id}`) }, [])
+    useEffect(() => {
+        if (productData && id) {
+            setValue('title', productData.title)
+            setValue('tax', productData.tax)
+            setValue('desc', productData.desc)
+            setValue('price', productData.price)
+            setValue('cost', productData.cost)
+            setValue('sku', productData.sku)
+
+            const categoryOption = id
+                ? { value: productData.category._id, label: productData.category.name } : null
+            const brandOption = id
+                ? { value: productData.brand._id, label: productData.brand.name } : null
+            const unitOption = id
+                ? { value: productData.unit._id, label: productData.unit.name } : null
+
+            setValue('categoryId', categoryOption || {})
+            setValue('brandId', brandOption || {})
+            setValue('unitId', unitOption || {})
+
+            // Update local state for controlled component
+            setsku(productData.sku), setSelectedOption(categoryOption),
+                setBrandOption(brandOption), setUnitOption(unitOption)
+        } else {
+            setsku(''), setSelectedOption(null), setBrandOption(null), setUnitOption(null)
+        }
+    }, [productData])
+
     return (
         <>
-            <Sec_Heading page="Add Product" subtitle="Products" />
+            <Sec_Heading page={id ? "Edit Product Details" : "Add Product"} subtitle="Product" />
             <Section>
                 <div className="col-8">
                     <form onSubmit={handleSubmit(registeration)} className="form p-0 bg-transparent">
@@ -157,6 +196,7 @@ const Product = () => {
                                             render={({ field }) => (
                                                 <Select
                                                     {...field}
+                                                    value={field.value || selectedOption}
                                                     isClearable
                                                     isSearchable
                                                     className='select'
@@ -188,6 +228,7 @@ const Product = () => {
                                             render={({ field }) => (
                                                 <Select
                                                     {...field}
+                                                    value={field.value || brandOption}
                                                     isClearable
                                                     isSearchable
                                                     className='select'
@@ -341,6 +382,7 @@ const Product = () => {
                                             render={({ field }) => (
                                                 <Select
                                                     {...field}
+                                                    value={field.value || unitOption}
                                                     isClearable
                                                     isSearchable
                                                     className='select'
@@ -362,7 +404,7 @@ const Product = () => {
                             </div>
                         </div>
                         {
-                            data._id
+                            id
                                 ? (<Button
                                     type='submit'
                                     className='button-submit'

@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
-import { DataService, useFetchData, downloadCSV } from '../../../hooks/hook'
+import { DataService, useFetchData, downloadCSV, generatePDF } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { useNavigate } from 'react-router'
 
@@ -36,6 +36,17 @@ const Suppliers = () => {
         },
     ]
 
+    const pdfColumns = ["S.No", "Name", "Email", "Phone no", "Address", "City", "Country",]
+    const tableBody = data.map((supplier: Supplier_Details) => [
+        supplier.id,
+        supplier.name,
+        supplier.email,
+        supplier.phone,
+        supplier.address,
+        supplier.city,
+        supplier.country
+    ])
+
     const handleTableRow = async (id: string) => { fetchSupplierDetail(`/supplier/${id}`), setmodal(!showmodal) }
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
@@ -55,10 +66,6 @@ const Suppliers = () => {
         }
     }
 
-    const generatepdf = () => {
-        console.log(data)
-        navigate('/')
-    }
 
     useEffect(() => { fetch() }, [refreshTable])
     return (
@@ -94,7 +101,7 @@ const Suppliers = () => {
                                         <Button
                                             text='Generate PDF'
                                             className='btn btn-danger'
-                                            onclick={() => generatepdf()}
+                                            onclick={() => generatePDF('suppilers', pdfColumns, tableBody)}
                                         />
                                         <Button
                                             text='CSV'

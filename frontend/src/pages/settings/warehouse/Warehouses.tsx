@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { lazy, useEffect, useState } from 'react';
 import { Button, Sec_Heading, Section, Loader, Static_Modal } from '../../../components/component';
 import DataTable from "react-data-table-component"
-import Warehouse_Modal from './WareHouse_Modal';
 import DataService from '../../../hooks/DataService';
-import { useFetchData, downloadCSV } from '../../../hooks/hook'
+import { useFetchData, downloadCSV, generatePDF } from '../../../hooks/hook'
+const Warehouse_Modal = lazy(() => import('./WareHouse_Modal'))
 
-interface Warehouse { _id: string; name: string; address: string; city: string; country: string; zipcode: string; }
+interface Warehouse { id: string, _id: string; name: string; address: string; city: string; country: string; zipcode: string; }
 
 const Warehouses = () => {
   const [showmodal, setmodal] = useState(false)
@@ -34,6 +34,10 @@ const Warehouses = () => {
       )
     },
   ]
+
+  const pdfColumns = ["S.No", "Name", "Address", "City", "Country", "Zipcode"]
+  const tableBody = data.map((warehouse: Warehouse) => [
+    warehouse.id, warehouse.name, warehouse.address, warehouse.city, warehouse.country, warehouse.zipcode])
   const handleTableRow = (id: string) => { fetchSingleWarehouse(`/warehouse/${id}`), setmodal(!showmodal) }
   const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
@@ -57,21 +61,18 @@ const Warehouses = () => {
     <>
       <title>Dashboard | Warehouse Management</title>
       <Static_Modal show={warnModal} endApi={`/warehouse/${Id}`}
-        handleClose={() => {
-          setwarnmodal(!warnModal)
+        handleClose={() => { setwarnmodal(!warnModal) }}
+        refreshTable={() => {
           setrefreshTable(!refreshTable)
           setloading(!loading)
         }} />
-      <Warehouse_Modal
-        show={showmodal}
+      <Warehouse_Modal show={showmodal}
+        handleClose={() => { setmodal(!showmodal) }}
         refreshTable={() => {
           setrefreshTable(!refreshTable)
           setloading(!loading)
         }}
-        handleClose={() => {
-          setmodal(!showmodal)
-          // dispatch(setSingleData({}))
-        }} />
+      />
       <Sec_Heading page='Warehouse Management' subtitle='settings' />
       <Section>
         <div className="col-12">
@@ -90,7 +91,7 @@ const Warehouses = () => {
                     <Button
                       text='Generate PDF'
                       className='btn btn-danger'
-                    // onclick={() => generatepdf()}
+                      onclick={() => generatePDF('warehouses', pdfColumns, tableBody)}
                     />
                     <Button
                       text='CSV'

@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
-import { useFetchData, DataService } from '../../../hooks/hook'
+import { useFetchData, DataService, downloadCSV, generatePDF } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import Unit_Modal from './Unit_Modal'
-
-interface Unit_Details { _id: string, name: string, shortName: string }
+const Unit_Modal = lazy(() => import('./Unit_Modal'))
+interface Unit_Details { id: string, _id: string, name: string, shortName: string, symbol: string }
 
 const Units = () => {
     const [showmodal, setmodal] = useState(false)
@@ -30,6 +29,8 @@ const Units = () => {
         },
     ]
 
+    const pdfColumns = ["S.No", "Name", "Symbol"]
+    const tableBody = data.map((unit: Unit_Details) => [unit.id, unit.name, unit.symbol])
     const handleTableRow = async (id: string) => { fetchCategoryDetail(`/unit/${id}`), setmodal(!showmodal) }
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
@@ -69,15 +70,6 @@ const Units = () => {
                 <div className="col-12">
                     <div className="card">
                         <div className="card-body pt-1">
-                            <div className="row mt-2 mb-2">
-                                <div className="col-sm-6 offset-md-6">
-                                    <Button
-                                        text='Create'
-                                        className='btn btn-primary float-end'
-                                        onclick={() => setmodal(!showmodal)}
-                                    />
-                                </div>
-                            </div>
                             <DataTable
                                 title="Units"
                                 columns={columns}
@@ -88,6 +80,16 @@ const Units = () => {
                                 subHeader
                                 subHeaderComponent={
                                     <div className="d-flex gap-3 justify-content-end">
+                                        <Button
+                                            text='Generate PDF'
+                                            className='btn btn-danger'
+                                            onclick={() => generatePDF('units', pdfColumns, tableBody)}
+                                        />
+                                        <Button
+                                            text='CSV'
+                                            className='btn btn-success'
+                                            onclick={() => downloadCSV('units', data)}
+                                        />
                                         <Button
                                             text='Create'
                                             className='btn btn-primary'

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useDeleteData } from '../../hooks/hook'
@@ -12,8 +12,8 @@ interface Modal {
 
 const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable }) => {
     const { isloading, apiResponse: res, deleteData } = useDeleteData()
-    if (res?.success) refreshTable()
 
+    useEffect(() => { refreshTable() }, [res?.success])
     return (
         <>
             <Modal

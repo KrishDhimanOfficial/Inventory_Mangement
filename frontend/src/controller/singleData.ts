@@ -5,7 +5,7 @@ const initialState = {
 }
 
 const getsingleDataSlice = createSlice({
-    name: 'seller',
+    name: 'singleRecord',
     initialState,
     reducers: {
         setSingleData: (state, action) => {

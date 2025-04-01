@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal, Image } from '../../components/component'
-import { DataService, useFetchData, downloadCSV } from '../../hooks/hook'
+import { DataService, downloadCSV, generatePDF } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import { Link, useNavigate } from 'react-router';
-import { date } from 'yup';
-
+import { Link } from 'react-router'
 interface ProductSchema {
+    id: number,
+    name: string,
+    update: string,
     _id: string
     title: string,
     image: string,
@@ -29,13 +30,11 @@ const months = [
 ]
 
 const Products = () => {
-    const navigate = useNavigate()
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
-
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
@@ -62,17 +61,37 @@ const Products = () => {
             )
         },
     ]
+    const tableBody = data.map((product: ProductSchema) => [
+        product.id,
+        product.name,
+        product.sku,
+        product.cost,
+        product.price,
+        `${product.tax} %`,
+        product.category,
+        product.brand,
+        product.unit,
+        product.update,
+    ])
+    const pdfColumns = ["S.No", "Title", "SKU", "Cost", "Price", "Tax", "Category", "Brand", "Unit", "Date"]
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
     const fetch = async () => {
         try {
             setloading(true)
             const res = await DataService.get('/all/products')
-            console.log(res);
-
             const response = res.map((pro: ProductSchema, i: number) => ({
-                id: i + 1, _id: pro._id, product: <Image path={pro.image} className='w-100 h-100' />,
-                name: pro.title, brand: pro.brand?.name ?? 'N/A', code: pro.sku, category: pro.category?.name ?? 'N/A',
-                cost: pro.cost, price: pro.price, unit: pro.unit?.shortName ?? 'N/A', update: `${pro.day} ${months[parseInt(pro.month)]},${pro.year}`,
+                id: i + 1, _id: pro._id,
+                product: <Image path={pro.image} className='w-100 h-100' />,
+                sku: pro.sku,
+                tax: pro.tax,
+                name: pro.title,
+                brand: pro.brand?.name,
+                code: pro.sku,
+                category: pro.category?.name,
+                cost: pro.cost,
+                price: pro.price,
+                unit: pro.unit?.shortName,
+                update: `${pro.day} ${months[parseInt(pro.month)]},${pro.year}`,
             }))
             setdata(response), setloading(false)
         } catch (error) {
@@ -107,7 +126,7 @@ const Products = () => {
                                         <Button
                                             text='Generate PDF'
                                             className='btn btn-danger'
-                                        // onclick={() => generatepdf()}
+                                            onclick={() => generatePDF('product.pdf', pdfColumns, tableBody)}
                                         />
                                         <Button
                                             text='CSV'

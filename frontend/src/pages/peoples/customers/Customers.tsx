@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
-import { DataService, useFetchData, downloadCSV } from '../../../hooks/hook'
+import { DataService, useFetchData, downloadCSV, generatePDF } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import Customer_Modal from './Customer_Modal'
-
+const Customer_Modal = lazy(()=> import('./Customer_Modal'))
 interface Customer_Details { id: number, _id: string, name: string, address: string, email: string, city: string, country: string, phone: string }
 
 const Customers = () => {
@@ -34,6 +33,17 @@ const Customers = () => {
         },
     ]
 
+    const pdfColumns = ["S.No", "Name", "Email", "Phone no", "Address", "City", "Country",]
+    const tableBody = data.map((customer: Customer_Details) => [
+        customer.id,
+        customer.name,
+        customer.email,
+        customer.phone,
+        customer.address,
+        customer.city,
+        customer.country
+    ])
+
     const handleTableRow = async (id: string) => { fetchCustomerDetail(`/customer/${id}`), setmodal(!showmodal) }
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
@@ -43,7 +53,9 @@ const Customers = () => {
             setloading(true)
             const res = await DataService.get('/all/customers-details')
             const response = res.map((supplier: Customer_Details, i: number) => ({
-                id: i + 1, _id: supplier._id, name: supplier.name,
+                id: i + 1,
+                _id: supplier._id,
+                name: supplier.name,
                 email: supplier.email,
                 address: supplier.address, city: supplier.city,
                 country: supplier.country, phone: supplier.phone
@@ -89,7 +101,7 @@ const Customers = () => {
                                         <Button
                                             text='Generate PDF'
                                             className='btn btn-danger'
-                                        // onclick={() => generatepdf()}
+                                            onclick={() => generatePDF('customers', pdfColumns, tableBody)}
                                         />
                                         <Button
                                             text='CSV'

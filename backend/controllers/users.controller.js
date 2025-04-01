@@ -20,7 +20,6 @@ const users_controllers = {
             return res.json(response)
         } catch (error) {
             if (error.message === 'jwt malformed') return res.json({ error: 'Not Found!' })
-
             console.log('checkUserIsLoggin : ' + error.message)
         }
     },
@@ -31,13 +30,14 @@ const users_controllers = {
             if (!response) return res.json({ error: 'Not Found!' })
             return res.json(response)
         } catch (error) {
+            if (error.message === 'jwt malformed') return res.json({ error: 'Not Found!' })
             console.log('getUserPermission : ' + error.message)
         }
     },
     handleUserLogin: async (req, res) => {
         try {
             const { email, password } = req.body;
-            
+
             const response = await userModel.findOne({ email })
             if (!response) return res.json({ error: 'Unauthorized!' })
 

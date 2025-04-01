@@ -4,10 +4,10 @@ const convertArrayOfObjectsToCSV = (array: any[]) => {
 
     const columnDelimiter = ',';
     const lineDelimiter = '\n';
-    
+
     // Check if array is empty
     if (array.length === 0) return ''
-    
+
     const keys = Object.keys(array[0])
 
     result = '';
@@ -47,4 +47,19 @@ const downloadCSV = (file: string, array: any[]) => {
 }
 // Download CSV
 
-export { downloadCSV }
+//  Download PDF
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+
+const generatePDF = (pdfname: string, columns: any, tablebodyarry: any) => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'in' })
+    // Attach autoTable plugin
+    autoTable(doc, {
+        head: [columns],
+        body: tablebodyarry as (string | number | null)[][],
+    })
+    doc.save(pdfname)
+}
+//  Download PDF
+
+export { downloadCSV, generatePDF }

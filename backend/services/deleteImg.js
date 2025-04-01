@@ -7,7 +7,7 @@ const deleteImage = async (image) => {
         const __dirname = path.dirname(`${config.server_url}`)
         const imagePath = path.join(__dirname, '../uploads', image)
 
-        if (fs.existsSync(imagePath)) return await fs.promises.rm(imagePath)
+        if (fs.existsSync(imagePath)) await fs.promises.rm(imagePath)
     } catch (error) {
         console.log('deleteImage : ' + error.message)
     }

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
-import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
-import { useFetchData, DataService } from '../../../hooks/hook'
+import { useState, useEffect, lazy } from 'react'
+import { Sec_Heading, Section, Button, Loader, } from '../../../components/component'
+import { useFetchData, DataService, downloadCSV, generatePDF } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import Brand_Modal from './Brand_Modal'
+const Static_Modal = lazy(() => import('../../../components/modal/Static_Modal'))
+const Brand_Modal = lazy(() => import('./Brand_Modal'))
 
-interface Brand_Details { _id: string, name: string, category: { name: string } }
+interface Brand_Details { id: string, _id: string, name: string, category: { name: string } }
 
 const Brand = () => {
     const [showmodal, setmodal] = useState(false)
@@ -29,7 +30,8 @@ const Brand = () => {
             )
         },
     ]
-
+    const pdfColumns = ["S.No", "Name", "Category"]
+    const tableBody = data.map((brand: Brand_Details) => [brand.id, brand.name, brand.category])
     const handleTableRow = async (id: string) => { fetchBrandDetail(`/brand/${id}`), setmodal(!showmodal) }
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
@@ -50,11 +52,11 @@ const Brand = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/brand/${Id}`}
-                 handleClose={() => { setwarnmodal(!warnModal) }}
-                 refreshTable={() => {
-                     setrefreshTable(!refreshTable)
-                     setloading(!loading)
-                 }} />
+                handleClose={() => { setwarnmodal(!warnModal) }}
+                refreshTable={() => {
+                    setrefreshTable(!refreshTable)
+                    setloading(!loading)
+                }} />
             <Brand_Modal
                 show={showmodal}
                 handleClose={() => setmodal(!showmodal)}
@@ -79,6 +81,16 @@ const Brand = () => {
                                 subHeader
                                 subHeaderComponent={
                                     <div className="d-flex gap-3 justify-content-end">
+                                        <Button
+                                            text='Generate PDF'
+                                            className='btn btn-danger'
+                                            onclick={() => generatePDF('brands', pdfColumns, tableBody)}
+                                        />
+                                        <Button
+                                            text='CSV'
+                                            className='btn btn-success'
+                                            onclick={() => downloadCSV('brands', data)}
+                                        />
                                         <Button
                                             text='Create'
                                             className='btn btn-primary'

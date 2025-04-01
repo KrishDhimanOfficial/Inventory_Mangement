@@ -247,9 +247,10 @@ const pro_controllers = {
                 },
                 {
                     $addFields: {
-                        image: {
-                            $concat: [`${config.productImgPath}`, '$image']
-                        },
+                        unit: { $ifNull: ['$unit', { shortName: 'N/A' }] },
+                        brand: { $ifNull: ['$brand', { name: 'N/A' }] },
+                        category: { $ifNull: ['$category', { name: 'N/A' }] },
+                        image: { $concat: [`${config.productImgPath}`, '$image'] },
                         year: {
                             $dateToString: {
                                 date: "$updatedAt",
@@ -304,8 +305,130 @@ const pro_controllers = {
             if (!response) return res.json({ error: 'unable to response!' })
             return res.status(200).json({ success: 'Created Successfully!' })
         } catch (error) {
+            if (req.file.filename) await deleteImage(`productImages/${req.file.filename}`)
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('createProductDetails : ' + error.message)
+        }
+    },
+    getProduct_detail: async (req, res) => {
+        try {
+            const response = await productModel.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(req.params.id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'units',
+                        localField: 'unitId',
+                        foreignField: '_id',
+                        as: 'unit'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$unit',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'categoryId',
+                        foreignField: '_id',
+                        as: 'category'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$category',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'brands',
+                        localField: 'brandId',
+                        foreignField: '_id',
+                        as: 'brand'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$brand',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        unit: { $ifNull: ['$unit', { name: 'N/A' }] },
+                        brand: { $ifNull: ['$brand', { name: 'N/A' }] },
+                        category: { $ifNull: ['$category', { name: 'N/A' }] },
+                        image: { $concat: [`${config.productImgPath}`, '$image'] },
+                        year: {
+                            $dateToString: {
+                                date: "$updatedAt",
+                                format: "%Y",
+                            }
+                        },
+                        month: {
+                            $dateToString: {
+                                date: "$updatedAt",
+                                format: "%m",
+                            }
+                        },
+                        day: {
+                            $dateToString: {
+                                date: "$updatedAt",
+                                format: "%d",
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        createdAt: 0,
+                        brandId: 0,
+                        warehouses: 0,
+                        desc: 0,
+                        categoryId: 0,
+                        unitId: 0,
+                        'brand.categoryId': 0,
+                    }
+                }
+            ])
+            if (response.length == 0) return res.json({ error: 'Not Found!' })
+            return res.status(200).json(response[0])
+        } catch (error) {
+            console.log('getProduct_detail : ' + error.message)
+        }
+    },
+    updateProduct_Details: async (req, res) => {
+        try {
+            const { title, price, desc, sku, tax, cost, categoryId, brandId, unitId } = req.body;
+            const docToBeUpdate = {
+                title, price, desc, sku, tax, cost,
+                categoryId: new ObjectId(categoryId),
+                brandId: new ObjectId(brandId),
+                unitId: new ObjectId(unitId),
+            }
+
+            if (req.file?.filename) docToBeUpdate.image = req.file?.filename;
+
+            const response = await productModel.findByIdAndUpdate(
+                { _id: req.params.id },
+                docToBeUpdate,
+                { runValidators: true }
+            )
+
+            if (req.file?.filename) deleteImage(`productImages/${response.image}`)
+            if (!response) return res.json({ error: 'Unable to update!' })
+            return res.status(200).json({ success: 'updated successfully!' })
+        } catch (error) {
+            if (req.file?.filename) deleteImage(`productImages/${req.file?.filename}`)
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('updateProduct_Details : ' + error.message)
         }
     },
     deleteProduct: async (req, res) => {

@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import DataService from '../../hooks/DataService';
 import config from '../../config/config';
 import logo1 from '../../assets/Images/close.webp'
+import Accordion from 'react-bootstrap/Accordion'
 
 interface UserPermission {
     role: string,
@@ -151,7 +152,7 @@ const Sidebar = () => {
                                 <li className="nav-item">
                                     <Link to="/dashboard/setting/warehouse" className="nav-link">
                                         <i className="fa-solid fa-warehouse nav-icon"></i>
-                                        <p className="text">Warehouse</p>
+                                        <p className="text ms-2">Warehouse</p>
                                     </Link>
                                 </li>
                             </ul>

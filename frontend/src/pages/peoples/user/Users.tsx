@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy } from 'react';
 import { Button, Sec_Heading, Section, Loader, Static_Modal } from '../../../components/component';
 import DataTable from "react-data-table-component"
-import User_Modal from './User_Modal';
-import Update_User from './Update_User';
-import { useFetchData, DataService, downloadCSV } from '../../../hooks/hook'
+import { useFetchData, DataService, downloadCSV, generatePDF } from '../../../hooks/hook'
 
+const  Update_User = lazy(()=> import('./Update_User'))
+const User_Modal = lazy(()=> import('./User_Modal'))
 interface User_Details { id: number, _id: string, name: string, email: string, phone: string }
 
 const Users = () => {
@@ -32,6 +32,13 @@ const Users = () => {
             )
         },
     ]
+    const pdfColumns = ["S.No", "Name", "Email", "Phone no", "Address", "City", "Country",]
+    const tableBody = data.map((user: User_Details) => [
+        user.id,
+        user.name,
+        user.email,
+        user.phone,
+    ])
     const handleTableRow = async (id: string) => { fetchUserDetail(`/user/${id}`), seteditmodal(!shoeditwmodal) }
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
@@ -41,7 +48,7 @@ const Users = () => {
             const res = await DataService.get('/all/users')
             const response = res.map((user: User_Details, i: number) => ({
                 id: i + 1, _id: user._id, name: user.name,
-                email: user.email, phone: user.phone
+                email: user.email, phone: user.phone,
             }))
             setloading(false), setdata(response)
         } catch (error) {
@@ -90,7 +97,7 @@ const Users = () => {
                                         <Button
                                             text='Generate PDF'
                                             className='btn btn-danger'
-                                        // onclick={() => generatepdf()}
+                                            onclick={() => generatePDF('users', pdfColumns, tableBody)}
                                         />
                                         <Button
                                             text='CSV'

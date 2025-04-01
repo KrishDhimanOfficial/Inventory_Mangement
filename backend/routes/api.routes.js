@@ -60,8 +60,9 @@ router.route('/unit/:id?')
 
 router.get('/all/products', pro_controllers.getAllproducts_Details)
 router.route('/product/:id?')
-    .all(handlemulterError)
-    .post(product.single('image'), pro_controllers.createProductDetails)
+    .post(product.single('image'), handlemulterError, pro_controllers.createProductDetails)
+    .get(pro_controllers.getProduct_detail)
+    .put(product.single('image'), handlemulterError, pro_controllers.updateProduct_Details)
     .delete(pro_controllers.deleteProduct)
 
 export default router
