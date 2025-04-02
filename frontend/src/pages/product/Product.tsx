@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
 import JsBarcode from "jsbarcode"
 import Select from 'react-select'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { useForm, Controller, } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { DataService, Notify, useFetchData } from '../../hooks/hook'
 import { Input, Button, Section, Sec_Heading, TextArea } from '../../components/component'
 import { useNavigate, useParams } from 'react-router'
@@ -11,6 +12,8 @@ import config from '../../config/config'
 
 const defaultValues = { title: '', image: '', price: 0, desc: '', sku: '', tax: 0, cost: 0, categoryId: '', brandId: '', unitId: '' }
 interface Option { value: string, label: string }
+const animation = { opacity: [0, 1], x: [20, 0], transition: { duration: 1 } }
+const fadeOut = { opacity: [0, 1], transition: { duration: 0.8 } }
 
 const validationSchema = yup.object().shape({
     title: yup.string().required('required!').trim(),
@@ -35,6 +38,7 @@ const Product = () => {
     const [selectedOption, setSelectedOption] = useState<Option | null>(null)
     const [brandOption, setBrandOption] = useState<Option | null>(null)
     const [unitOption, setUnitOption] = useState<Option | null>(null)
+
 
     const { apiData: productData, fetchData: fetchProduct }: {
         apiData: any,
@@ -79,8 +83,8 @@ const Product = () => {
         setcategories(category)
     }
 
-    const fetchBrands = async (option: { value: string }) => {
-        const res = await DataService.get(`/all/brands/${option.value}`)
+    const fetchBrands = async () => {
+        const res = await DataService.get(`/all/brands`)
         const brands = res.map((item: any) => ({ value: item._id, label: item.name }))
         setbrands(brands)
     }
@@ -101,7 +105,7 @@ const Product = () => {
         // JsBarcode(barcodeRef.current, '1237454', { format: "CODE39" })
     }
 
-    useEffect(() => { fetchCategories(), setUnits() }, [])
+    useEffect(() => { fetchCategories(), setUnits(), fetchBrands() }, [])
     useEffect(() => { if (id) fetchProduct(`/product/${id}`) }, [])
     useEffect(() => {
         if (productData && id) {
@@ -137,9 +141,9 @@ const Product = () => {
             <Section>
                 <div className="col-8">
                     <form onSubmit={handleSubmit(registeration)} className="form p-0 bg-transparent">
-                        <div className="card">
+                        <motion.div animate={fadeOut} className="card">
                             <div className="card-body p-4">
-                                <div className="row mb-2">
+                                <motion.div animate={animation} className="row mb-2">
                                     <div className="col-md-6">
                                         <div className="flex-column">
                                             <label>Name </label>
@@ -183,71 +187,62 @@ const Product = () => {
                                             />
                                         </div>
                                     </div>
-                                </div>
-                                <div className="row mb-2">
+                                </motion.div>
+                                <motion.div animate={animation} className="row mb-2">
                                     <div className="col-md-6">
                                         <div className="flex-column">
                                             <label>Category </label>
                                             <span className='importantField'>*</span>
                                         </div>
-                                        <Controller
-                                            name="categoryId"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    value={field.value || selectedOption}
-                                                    isClearable
-                                                    isSearchable
-                                                    className='select'
-                                                    isRtl={false}
-                                                    placeholder='Select Category Name'
-                                                    options={categories}
-                                                    onChange={(selectedoption: any) => {
-                                                        field.onChange(selectedoption)
-                                                        fetchBrands(selectedoption)
-                                                    }}
-                                                    styles={{
-                                                        control: (style) => ({
-                                                            ...style,
-                                                            border: errors.categoryId?.message ? '1px solid red' : ''
-                                                        })
-                                                    }}
-                                                />
-                                            )}
-                                        />
+                                        <div className={`inputForm ${errors.categoryId?.message ? 'inputError' : ''}`}>
+                                            <Controller
+                                                name="categoryId"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Select
+                                                        {...field}
+                                                        value={field.value || selectedOption}
+                                                        isClearable
+                                                        isSearchable
+                                                        className='select'
+                                                        isRtl={false}
+                                                        placeholder='Select Category Name'
+                                                        options={categories}
+                                                        onChange={(selectedoption: any) => { field.onChange(selectedoption) }}
+                                                        styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
                                     </div>
                                     <div className="col-md-6">
                                         <div className="flex-column">
                                             <label>Brand </label>
                                             <span className='importantField'>*</span>
                                         </div>
-                                        <Controller
-                                            name="brandId"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    value={field.value || brandOption}
-                                                    isClearable
-                                                    isSearchable
-                                                    className='select'
-                                                    isRtl={false}
-                                                    placeholder='Select Brand Name'
-                                                    options={brands}
-                                                    onChange={(selectedoption) => field.onChange(selectedoption)}
-                                                    styles={{
-                                                        control: (style) => ({
-                                                            ...style,
-                                                            border: errors.brandId?.message ? '1px solid red' : ''
-                                                        })
-                                                    }}
-                                                />
-                                            )}
-                                        />
+                                        <div className={`inputForm ${errors.brandId?.message ? 'inputError' : ''}`}>
+                                            <Controller
+                                                name="brandId"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Select
+                                                        {...field}
+                                                        value={field.value || brandOption}
+                                                        isClearable
+                                                        isSearchable
+                                                        className='select'
+                                                        isRtl={false}
+                                                        placeholder='Select Brand Name'
+                                                        options={brands}
+                                                        onChange={(selectedoption) => field.onChange(selectedoption)}
+                                                        styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="row mb-2">
+                                </motion.div>
+                                <motion.div animate={animation} className="row mb-2">
                                     {/* Tax */}
                                     <div className="col-md-6">
                                         <div className="flex-column">
@@ -300,9 +295,9 @@ const Product = () => {
                                             />
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                                 {/* Desc */}
-                                <div className="row mb-2">
+                                <motion.div animate={animation} className="row mb-2">
                                     <div className="col-12">
                                         <div className="flex-column">
                                             <label>Description </label>
@@ -323,12 +318,12 @@ const Product = () => {
                                             />
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
-                        </div>
-                        <div className="card">
+                        </motion.div>
+                        <motion.div animate={fadeOut} className="card">
                             <div className="card-body p-4">
-                                <div className="row mb-2">
+                                <motion.div animate={animation} className="row mb-2">
                                     <div className="col-md-6">
                                         <div className="flex-column">
                                             <label>Product Cost </label>
@@ -369,40 +364,37 @@ const Product = () => {
                                             />
                                         </div>
                                     </div>
-                                </div>
-                                <div className="row mb-2">
+                                </motion.div>
+                                <motion.div animate={animation} className="row mb-2">
                                     <div className="col-md-6">
                                         <div className="flex-column">
                                             <label>Product Unit</label>
                                             <span className='importantField'>*</span>
                                         </div>
-                                        <Controller
-                                            name="unitId"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    value={field.value || unitOption}
-                                                    isClearable
-                                                    isSearchable
-                                                    className='select'
-                                                    isRtl={false}
-                                                    placeholder='Select unit Name'
-                                                    options={units}
-                                                    onChange={(selectedoption) => field.onChange(selectedoption)}
-                                                    styles={{
-                                                        control: (style) => ({
-                                                            ...style,
-                                                            border: errors.unitId?.message ? '1px solid red' : ''
-                                                        })
-                                                    }}
-                                                />
-                                            )}
-                                        />
+                                        <div className={`inputForm ${errors.unitId?.message ? 'inputError' : ''}`}>
+                                            <Controller
+                                                name="unitId"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Select
+                                                        {...field}
+                                                        value={field.value || unitOption}
+                                                        isClearable
+                                                        isSearchable
+                                                        className='select'
+                                                        isRtl={false}
+                                                        placeholder='Select unit Name'
+                                                        options={units}
+                                                        onChange={(selectedoption) => field.onChange(selectedoption)}
+                                                        styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
-                        </div>
+                        </motion.div>
                         {
                             id
                                 ? (<Button

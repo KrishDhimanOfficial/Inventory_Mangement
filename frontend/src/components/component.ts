@@ -9,7 +9,6 @@ import Sec_Heading from './layout/Sec_Heading'
 import Section from './layout/Section'
 import Loader from './micro_components/Loader'
 import Static_Modal from './modal/Static_Modal'
-import PDF_Page from './pdf/PDF_Page'
 
 export {
     Button,
@@ -22,6 +21,5 @@ export {
     Section,
     Loader,
     Static_Modal,
-    PDF_Page,
     TextArea
 }

@@ -196,24 +196,27 @@ const Update_User: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                     </div>
                                 </div>
                             </div>
-                            <Controller
-                                name="warehousesId"
-                                control={control}
-                                render={({ field }) => (
-                                    <Select
-                                        {...field}
-                                        isClearable
-                                        isSearchable
-                                        className='select'
-                                        isRtl={false}
-                                        isDisabled={warehouseAccess}
-                                        placeholder='Select Warehouses'
-                                        isMulti={true}
-                                        options={warehouses}
-                                        onChange={(selectedoption) => field.onChange(selectedoption)}
-                                    />
-                                )}
-                            />
+                            <div className={`inputForm ${errors.warehousesId?.message ? 'inputError' : ''}`}>
+                                <Controller
+                                    name="warehousesId"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            {...field}
+                                            isClearable
+                                            isSearchable
+                                            className='select'
+                                            isRtl={false}
+                                            isDisabled={warehouseAccess}
+                                            placeholder='Select Warehouses'
+                                            isMulti={true}
+                                            options={warehouses}
+                                            onChange={(selectedoption) => field.onChange(selectedoption)}
+                                            styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
+                                        />
+                                    )}
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="row">

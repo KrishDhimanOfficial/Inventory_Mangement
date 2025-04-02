@@ -4,7 +4,8 @@ import { Link } from 'react-router';
 import DataService from '../../hooks/DataService';
 import config from '../../config/config';
 import logo1 from '../../assets/Images/close.webp'
-import Accordion from 'react-bootstrap/Accordion'
+import { useDispatch } from 'react-redux';
+import { setUserPermission } from '../../controller/userPermission';
 
 interface UserPermission {
     role: string,
@@ -16,6 +17,7 @@ interface UserPermission {
 }
 
 const Sidebar = () => {
+    const dispatch = useDispatch()
     console.log('Re-render Sidebar')
     const [user, setuser] = useState<UserPermission>({
         role: '', permissions: {
@@ -30,7 +32,7 @@ const Sidebar = () => {
             const res = await DataService.get('/get/user-permission', {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`,
             })
-            setuser(res)
+            dispatch(setUserPermission(res.permissions)), setuser(res)
         } catch (error) {
             console.error(error)
         }
@@ -98,6 +100,58 @@ const Sidebar = () => {
                                 </li>
                             )
                         }
+                        <li className="nav-item">
+                            <Link to="#" className="nav-link">
+                                <i className="fa-solid fa-credit-card me-2"></i>
+                                <p>
+                                    Purchase
+                                    <i className="right fas fa-angle-left"></i>
+                                </p>
+                            </Link>
+                            <ul className="nav nav-treeview">
+                                <li className="nav-item">
+                                    <Link to="/dashboard/purchases" className="nav-link">
+                                        <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                        <p className="text">All Purchase</p>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to="/dashboard/create/purchase" className="nav-link">
+                                        <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                        <p className="text">Create Purchase</p>
+                                    </Link>
+                                </li>
+                            </ul>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="#" className="nav-link">
+                                <i className="fa-solid fa-chart-area me-2"></i>
+                                <p>
+                                    Sales
+                                    <i className="right fas fa-angle-left"></i>
+                                </p>
+                            </Link>
+                            <ul className="nav nav-treeview">
+                                <li className="nav-item">
+                                    <Link to="/dashboard/sales" className="nav-link">
+                                        <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                        <p className="text">All Sales</p>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to="/dashboard/create/sales" className="nav-link">
+                                        <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                        <p className="text">Create Sales</p>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to="/dashboard/sales/pos" className="nav-link">
+                                        <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                        <p className="text">POS</p>
+                                    </Link>
+                                </li>
+                            </ul>
+                        </li>
                         <li className="nav-item">
                             <Link to="#" className="nav-link">
                                 <i className="fa-solid fa-users me-2"></i>

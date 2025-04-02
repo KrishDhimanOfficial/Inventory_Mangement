@@ -2,6 +2,22 @@
     background: #F5F7FF;
 }
 
+.css-b62m3t-container {
+    width: 100% !important;
+}
+
+.css-hlgwow {
+    padding: 0 !important;
+}
+
+.css-13cymwt-control {
+    border-style: none !important;
+}
+
+.cusror-pointer {
+    cursor: pointer;
+}
+
 /* .main-sidebar .nav-pills.nav-sidebar li.nav-item:not(.nav-treeview li) {
     border-bottom: 1px solid #fff;
     margin-bottom: 5px;
@@ -22,6 +38,7 @@
 .elevation-4 {
     box-shadow: none;
 }
+
 .card {
     border: none;
     /* box-shadow: none; */
@@ -265,4 +282,5 @@
     width: 100%;
     position: relative;
 }
+
 /* TextArea */

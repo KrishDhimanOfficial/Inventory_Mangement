@@ -152,7 +152,7 @@ const pro_controllers = {
     getProduct_units: async (req, res) => {
         try {
             const response = await unitModel.find({})
-            return res.json(response)
+            return setTimeout(() => res.json(response), 1000)
         } catch (error) {
             console.log('getProduct_units : ' + error.message)
         }
@@ -285,7 +285,8 @@ const pro_controllers = {
                         'brand._id': 0,
                         'brand.categoryId': 0,
                     }
-                }
+                },
+                { $sort: { _id: -1 } }
             ])
             return res.status(200).json(response)
         } catch (error) {
@@ -439,6 +440,30 @@ const pro_controllers = {
             return res.json({ success: 'Deleted!' })
         } catch (error) {
             console.log('deleteProduct : ' + error.message)
+        }
+    },
+    searchProduct: async (req, res) => {
+        try {
+            const { searchTerm } = req.params;
+            const response = await productModel.aggregate([
+                {
+                    $match: {
+                        $or: [
+                            { title: { $regex: searchTerm, $options: "i" } },
+                            { sku: { $regex: searchTerm, } }
+                        ]
+                    }
+                },
+                {
+                    $project: {
+                        createdAt: 0, updatedAt: 0, image: 0, categoryId: 0, brandId: 0, unitId: 0
+                    }
+                }
+            ])
+            // if (response.length == 0) return res.json({ warning: 'No Results Found!' })
+            return res.json(response)
+        } catch (error) {
+            console.log('searchProduct : ' + error.message)
         }
     },
 }

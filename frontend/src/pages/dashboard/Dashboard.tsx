@@ -30,9 +30,13 @@ const Dashboard = () => {
             <div className='wrapper'>
                 <Navbar />
                 <Sidebar />
-                <div className='content-wrapper'>
-                    <Outlet />
-                </div>
+                {
+                    auth && (
+                        <div className='content-wrapper'>
+                            <Outlet />
+                        </div>
+                    )
+                }
             </div>
         </>
     )

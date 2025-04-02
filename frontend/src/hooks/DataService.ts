@@ -19,7 +19,7 @@ class DataSerice {
         return await res.json()
     }
 
-    async get(endURL: string, headers?: object): Promise<any> {
+    async get(endURL: string, headers?: object, signal?: AbortSignal): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
             ...(headers || {})
@@ -27,6 +27,7 @@ class DataSerice {
         const res: Response = await fetch(`${this.ClientAPI}${endURL}`, {
             method: 'GET',
             headers: finalHeaders,
+            signal: signal
         })
         if (!res.ok) throw new Error('Internal Server Error!')
         return await res.json()

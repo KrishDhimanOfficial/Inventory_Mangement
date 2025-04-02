@@ -12,7 +12,9 @@ import Brand from "./pages/product/brand/Brand"
 import Products from "./pages/product/Products"
 import Product from './pages/product/Product'
 import Units from "./pages/product/units/Units"
-import { PDF_Page } from './components/component'
+import Sales from "./pages/sales/Sales"
+import Purchases from "./pages/purchase/Purchases"
+import Purchase from "./pages/purchase/Purchase"
 
 
 const App = () => {
@@ -20,10 +22,6 @@ const App = () => {
     {
       path: '/login',
       element: <Login />,
-    },
-    {
-      path: '/',
-      element: <PDF_Page />
     },
     {
       path: '/dashboard',
@@ -72,6 +70,18 @@ const App = () => {
         {
           path: '/dashboard/product/:id',
           element: <Product />
+        },
+        {
+          path: '/dashboard/sales',
+          element: <Sales />
+        },
+        {
+          path: '/dashboard/purchases',
+          element: <Purchases />
+        },
+        {
+          path: '/dashboard/create/purchase',
+          element: <Purchase />
         }
       ],
     }

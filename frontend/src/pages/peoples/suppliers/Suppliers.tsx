@@ -2,13 +2,12 @@ import { useState, useEffect, lazy } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
 import { DataService, useFetchData, downloadCSV, generatePDF } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import { useNavigate } from 'react-router'
+import { useSelector } from 'react-redux'
 
 interface Supplier_Details { id: number, _id: string, name: string, address: string, email: string, city: string, country: string, phone: string }
 const Supplier_Modal = lazy(() => import('./Supplier_Modal'))
 
 const Suppliers = () => {
-    const navigate = useNavigate()
     const [showmodal, setmodal] = useState(false)
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
@@ -16,6 +15,7 @@ const Suppliers = () => {
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
     const { fetchData: fetchSupplierDetail } = useFetchData({ showmodal })
+    const { permission } = useSelector((state: any) => state.permission)
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
@@ -29,8 +29,16 @@ const Suppliers = () => {
             name: "Actions",
             cell: (row: any) => (
                 <div className="d-flex justify-content-between">
-                    <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
-                    <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                    {
+                        permission.supplier?.edit && (
+                            <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
+                        )
+                    }
+                    {
+                        permission.supplier?.delete && (
+                            <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                        )
+                    }
                 </div>
             )
         },
@@ -108,11 +116,15 @@ const Suppliers = () => {
                                             className='btn btn-success'
                                             onclick={() => downloadCSV('suppliers', data)}
                                         />
-                                        <Button
-                                            text='Create'
-                                            className='btn btn-primary'
-                                            onclick={() => setmodal(!showmodal)}
-                                        />
+                                        {
+                                            permission.supplier?.create && (
+                                                <Button
+                                                    text='Create'
+                                                    className='btn btn-primary'
+                                                    onclick={() => setmodal(!showmodal)}
+                                                />
+                                            )
+                                        }
                                     </div>
                                 }
                             />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -111,7 +111,7 @@ const Brand_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                 <label>Category </label>
                                 <span className='importantField'>*</span>
                             </div>
-                            <div className='w-100'>
+                            <div className={`inputForm ${errors.categoryId?.message ? 'inputError' : ''}`}>
                                 <Controller
                                     name="categoryId"
                                     control={control}
@@ -127,12 +127,7 @@ const Brand_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                                 field.onChange(option)
                                                 setSelectedOption(option as Option)
                                             }}
-                                            styles={{
-                                                control: (style) => ({
-                                                    ...style,
-                                                    border: errors.categoryId?.message ? '1px solid red' : ''
-                                                })
-                                            }}
+                                            styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
                                         />
                                     )}
                                 />

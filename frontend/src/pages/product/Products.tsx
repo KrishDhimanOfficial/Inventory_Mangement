@@ -3,6 +3,7 @@ import { Sec_Heading, Section, Button, Loader, Static_Modal, Image } from '../..
 import { DataService, downloadCSV, generatePDF } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Link } from 'react-router'
+import { useSelector } from 'react-redux'
 interface ProductSchema {
     id: number,
     name: string,
@@ -35,6 +36,7 @@ const Products = () => {
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
+    const { permission } = useSelector((state: any) => state.permission)
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
@@ -51,12 +53,21 @@ const Products = () => {
             name: "Actions",
             cell: (row: any) => (
                 <div className="d-flex justify-content-between">
-                    <Link to={`/dashboard/product/${row._id}`} className='btn btn-success me-2'>
-                        <i className="fa-solid fa-pen-to-square"></i>
-                    </Link>
-                    <Button text=''
-                        onclick={() => deleteTableRow(row._id)}
-                        className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                    {
+                        permission.product?.edit && (
+                            <Link to={`/dashboard/product/${row._id}`} className='btn btn-success me-2'>
+                                <i className="fa-solid fa-pen-to-square"></i>
+                            </Link>
+                        )
+                    }
+                    {
+                        permission.product?.delete && (
+                            <Button text=''
+                                onclick={() => deleteTableRow(row._id)}
+                                className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>}
+                            />
+                        )
+                    }
                 </div>
             )
         },
@@ -81,7 +92,7 @@ const Products = () => {
             const res = await DataService.get('/all/products')
             const response = res.map((pro: ProductSchema, i: number) => ({
                 id: i + 1, _id: pro._id,
-                product: <Image path={pro.image} className='w-100 h-100' />,
+                product: <Image path={pro.image} className='w-100 h-100 my-1 object-fit-container' />,
                 sku: pro.sku,
                 tax: pro.tax,
                 name: pro.title,
@@ -91,7 +102,7 @@ const Products = () => {
                 cost: pro.cost,
                 price: pro.price,
                 unit: pro.unit?.shortName,
-                update: `${pro.day} ${months[parseInt(pro.month)]},${pro.year}`,
+                update: `${pro.day} ${months[parseInt(pro.month) - 1]},${pro.year}`,
             }))
             setdata(response), setloading(false)
         } catch (error) {
@@ -120,6 +131,7 @@ const Products = () => {
                                 progressPending={loading}
                                 progressComponent={<Loader />}
                                 pagination
+                                selectableRows
                                 subHeader
                                 subHeaderComponent={
                                     <div className="d-flex gap-3 justify-content-end">
@@ -133,9 +145,13 @@ const Products = () => {
                                             className='btn btn-success'
                                             onclick={() => downloadCSV('products', data)}
                                         />
-                                        <Link className='btn btn-primary' to='/dashboard/add/product'>
-                                            Create
-                                        </Link>
+                                        {
+                                            permission.product?.create && (
+                                                <Link className='btn btn-primary' to='/dashboard/add/product'>
+                                                    Create
+                                                </Link>
+                                            )
+                                        }
                                     </div>
                                 }
                             />

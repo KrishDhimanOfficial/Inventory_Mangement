@@ -2,7 +2,8 @@ import { useState, useEffect, lazy } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
 import { DataService, useFetchData, downloadCSV, generatePDF } from '../../../hooks/hook'
 import DataTable from 'react-data-table-component'
-const Customer_Modal = lazy(()=> import('./Customer_Modal'))
+import { useSelector } from 'react-redux'
+const Customer_Modal = lazy(() => import('./Customer_Modal'))
 interface Customer_Details { id: number, _id: string, name: string, address: string, email: string, city: string, country: string, phone: string }
 
 const Customers = () => {
@@ -13,6 +14,7 @@ const Customers = () => {
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
     const { fetchData: fetchCustomerDetail } = useFetchData({ showmodal })
+    const { permission } = useSelector((state: any) => state.permission)
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
@@ -26,8 +28,16 @@ const Customers = () => {
             name: "Actions",
             cell: (row: any) => (
                 <div className="d-flex justify-content-between">
-                    <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
-                    <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                    {
+                        permission.customer?.edit && (
+                            <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
+                        )
+                    }
+                    {
+                        permission.customer?.delete && (
+                            <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                        )
+                    }
                 </div>
             )
         },
@@ -108,11 +118,15 @@ const Customers = () => {
                                             className='btn btn-success'
                                             onclick={() => downloadCSV('customers', data)}
                                         />
-                                        <Button
-                                            text='Create'
-                                            className='btn btn-primary'
-                                            onclick={() => setmodal(!showmodal)}
-                                        />
+                                        {
+                                            permission.customer?.create && (
+                                                <Button
+                                                    text='Create'
+                                                    className='btn btn-primary'
+                                                    onclick={() => setmodal(!showmodal)}
+                                                />
+                                            )
+                                        }
                                     </div>
                                 }
                             />

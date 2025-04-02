@@ -65,4 +65,5 @@ router.route('/product/:id?')
     .put(product.single('image'), handlemulterError, pro_controllers.updateProduct_Details)
     .delete(pro_controllers.deleteProduct)
 
+router.get('/get-search-results/:searchTerm', pro_controllers.searchProduct)
 export default router
