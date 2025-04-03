@@ -13,6 +13,8 @@ interface UserPermission {
         customer: { view: boolean | null },
         supplier: { view: boolean | null },
         product: { view: boolean | null },
+        purchase: { view: boolean | null },
+        sales: { view: boolean | null }
     }
 }
 
@@ -24,6 +26,8 @@ const Sidebar = () => {
             customer: { view: null },
             supplier: { view: null },
             product: { view: null },
+            purchase: { view: null },
+            sales: { view: null }
         }
     })
 
@@ -100,58 +104,66 @@ const Sidebar = () => {
                                 </li>
                             )
                         }
-                        <li className="nav-item">
-                            <Link to="#" className="nav-link">
-                                <i className="fa-solid fa-credit-card me-2"></i>
-                                <p>
-                                    Purchase
-                                    <i className="right fas fa-angle-left"></i>
-                                </p>
-                            </Link>
-                            <ul className="nav nav-treeview">
+                        {
+                            user.permissions?.purchase.view && (
                                 <li className="nav-item">
-                                    <Link to="/dashboard/purchases" className="nav-link">
-                                        <i className="fa-solid fa-bag-shopping nav-icon"></i>
-                                        <p className="text">All Purchase</p>
+                                    <Link to="#" className="nav-link">
+                                        <i className="fa-solid fa-credit-card me-2"></i>
+                                        <p>
+                                            Purchase
+                                            <i className="right fas fa-angle-left"></i>
+                                        </p>
                                     </Link>
+                                    <ul className="nav nav-treeview">
+                                        <li className="nav-item">
+                                            <Link to="/dashboard/purchases" className="nav-link">
+                                                <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                                <p className="text">All Purchase</p>
+                                            </Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link to="/dashboard/create/purchase" className="nav-link">
+                                                <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                                <p className="text">Create Purchase</p>
+                                            </Link>
+                                        </li>
+                                    </ul>
                                 </li>
+                            )
+                        }
+                        {
+                            user.permissions?.sales.view && (
                                 <li className="nav-item">
-                                    <Link to="/dashboard/create/purchase" className="nav-link">
-                                        <i className="fa-solid fa-bag-shopping nav-icon"></i>
-                                        <p className="text">Create Purchase</p>
+                                    <Link to="#" className="nav-link">
+                                        <i className="fa-solid fa-chart-area me-2"></i>
+                                        <p>
+                                            Sales
+                                            <i className="right fas fa-angle-left"></i>
+                                        </p>
                                     </Link>
+                                    <ul className="nav nav-treeview">
+                                        <li className="nav-item">
+                                            <Link to="/dashboard/sales" className="nav-link">
+                                                <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                <p className="text">All Sales</p>
+                                            </Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link to="/dashboard/create/sales" className="nav-link">
+                                                <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                <p className="text">Create Sales</p>
+                                            </Link>
+                                        </li>
+                                        <li className="nav-item">
+                                            <Link to="/dashboard/sales/pos" className="nav-link">
+                                                <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                <p className="text">POS</p>
+                                            </Link>
+                                        </li>
+                                    </ul>
                                 </li>
-                            </ul>
-                        </li>
-                        <li className="nav-item">
-                            <Link to="#" className="nav-link">
-                                <i className="fa-solid fa-chart-area me-2"></i>
-                                <p>
-                                    Sales
-                                    <i className="right fas fa-angle-left"></i>
-                                </p>
-                            </Link>
-                            <ul className="nav nav-treeview">
-                                <li className="nav-item">
-                                    <Link to="/dashboard/sales" className="nav-link">
-                                        <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                        <p className="text">All Sales</p>
-                                    </Link>
-                                </li>
-                                <li className="nav-item">
-                                    <Link to="/dashboard/create/sales" className="nav-link">
-                                        <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                        <p className="text">Create Sales</p>
-                                    </Link>
-                                </li>
-                                <li className="nav-item">
-                                    <Link to="/dashboard/sales/pos" className="nav-link">
-                                        <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                        <p className="text">POS</p>
-                                    </Link>
-                                </li>
-                            </ul>
-                        </li>
+                            )
+                        }
                         <li className="nav-item">
                             <Link to="#" className="nav-link">
                                 <i className="fa-solid fa-users me-2"></i>

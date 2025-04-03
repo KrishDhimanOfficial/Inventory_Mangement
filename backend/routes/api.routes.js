@@ -58,6 +58,7 @@ router.route('/unit/:id?')
     .put(pro_controllers.updateUnit_Details)
     .delete(pro_controllers.deleteUnit_Details)
 
+router.get('/get-search-results/:searchTerm', pro_controllers.searchProduct)
 router.get('/all/products', pro_controllers.getAllproducts_Details)
 router.route('/product/:id?')
     .post(product.single('image'), handlemulterError, pro_controllers.createProductDetails)
@@ -65,5 +66,9 @@ router.route('/product/:id?')
     .put(product.single('image'), handlemulterError, pro_controllers.updateProduct_Details)
     .delete(pro_controllers.deleteProduct)
 
-router.get('/get-search-results/:searchTerm', pro_controllers.searchProduct)
+router.route('/puchase/:id?')
+    .post(pro_controllers.createProductPruchase)
+    .get()
+    .put(pro_controllers.updateProductPurchase)
+    .delete()
 export default router

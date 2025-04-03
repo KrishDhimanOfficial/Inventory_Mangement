@@ -7,11 +7,13 @@ const purchaseSchema = new mongoose.Schema({
     },
     warehouseId: {
         type: mongoose.Schema.Types.ObjectId,
+        required: [true, 'Please Select Warehouse!'],
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
         ref: 'Warehouse'
     },
     supplierId: {
         type: mongoose.Schema.Types.ObjectId,
+        required: [true, 'Please Select Supplier!'],
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
         ref: 'Supplier'
     },
@@ -23,6 +25,9 @@ const purchaseSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Number,
         match: [/^[0-9]+$/, 'Invalid Grand Total!']
     },
+    orderTax: {
+        type: mongoose.Schema.Types.Number,
+    },
     orderItems: {
         type: [
             {
@@ -33,7 +38,8 @@ const purchaseSchema = new mongoose.Schema({
     },
     status: {
         type: mongoose.Schema.Types.String,
-        enum: ['pending', 'recevied', 'ordered']
+        enum: ['pending', 'recevied', 'ordered'],
+        default: 'ordered'
     },
     payment_paid: {
         type: mongoose.Schema.Types.Number,
@@ -45,7 +51,8 @@ const purchaseSchema = new mongoose.Schema({
     },
     payment_status: {
         type: mongoose.Schema.Types.String,
-        enum: ['paid', 'unpaid', 'parital']
+        enum: ['paid', 'unpaid', 'parital'],
+        default: 'unpaid'
     },
     note: {
         type: mongoose.Schema.Types.String,

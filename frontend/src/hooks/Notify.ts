@@ -13,7 +13,7 @@ const Notify = (data: message) => {
     // if (data.middlewareError) navigate('/login')
     if (data.info) toast.info(data.info)
     if (data.error) toast.error(data.error)
-    if (data.errors) data.errors.forEach(error => toast.error(error))
+    if (data.errors) data.errors.forEach(error => toast.warning(error))
 }
 
 export default Notify

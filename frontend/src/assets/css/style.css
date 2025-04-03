@@ -284,3 +284,32 @@
 }
 
 /* TextArea */
+
+.counter {
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.counter button {
+    background-color: #8e44ad;
+    color: white;
+    border: none;
+    width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.counter .count {
+    background-color: #f8f9fa;
+    color: #333;
+    width: 100px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}

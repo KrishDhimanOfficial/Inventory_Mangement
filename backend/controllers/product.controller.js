@@ -466,6 +466,24 @@ const pro_controllers = {
             console.log('searchProduct : ' + error.message)
         }
     },
+    createProductPruchase: async (req, res) => {
+        try {
+            if (!response) return res.json({ error: 'Unable to process your request!' })
+            return res.json({ success: 'Created Successfully!' })
+        } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('createProductPruchase : ' + error.message)
+        }
+    },
+    updateProductPurchase: async (req, res) => {
+        try {
+            if (!response) return res.json({ error: 'Unable to process your request!!' })
+            return res.json({ success: 'updated successfully!' })
+        } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('updateProductPurchase : ' + error.message)
+        }
+    },
 }
 
 export default pro_controllers
