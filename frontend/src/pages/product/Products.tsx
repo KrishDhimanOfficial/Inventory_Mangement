@@ -40,15 +40,14 @@ const Products = () => {
 
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
-        { name: "Product", selector: (row: any) => row.product, sortable: true },
-        { name: "Name", selector: (row: any) => row.name, sortable: true },
-        { name: "Brand", selector: (row: any) => row.brand, sortable: true },
         { name: "Code", selector: (row: any) => row.code, sortable: true },
+        { name: "Name", selector: (row: any) => row.name, sortable: true },
         { name: "Category", selector: (row: any) => row.category, sortable: true },
-        { name: "Cost", selector: (row: any) => row.cost, sortable: true },
-        { name: "Price", selector: (row: any) => row.price, sortable: true },
-        { name: "Unit", selector: (row: any) => row.unit, sortable: true },
-        { name: "Last update", selector: (row: any) => row.update, sortable: true },
+        { name: "Brand", selector: (row: any) => row.brand, sortable: true },
+        // { name: "Cost", selector: (row: any) => row.cost, sortable: true },
+        // { name: "Price", selector: (row: any) => row.price, sortable: true },
+        // { name: "Unit", selector: (row: any) => row.unit, sortable: true },
+        // { name: "Last update", selector: (row: any) => row.update, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
@@ -74,17 +73,18 @@ const Products = () => {
     ]
     const tableBody = data.map((product: ProductSchema) => [
         product.id,
-        product.name,
         product.sku,
-        product.cost,
-        product.price,
-        `${product.tax} %`,
+        product.name,
+        // product.cost,
+        // product.price,
+        // `${product.tax} %`,
         product.category,
         product.brand,
-        product.unit,
-        product.update,
+        // product.unit,
+        // product.update,
     ])
-    const pdfColumns = ["S.No", "Title", "SKU", "Cost", "Price", "Tax", "Category", "Brand", "Unit", "Date"]
+    // const pdfColumns = ["S.No", "Title", "SKU", "Cost", "Price", "Tax", "Category", "Brand", "Unit", "Date"]
+    const pdfColumns = ["S.No", "SKU", "Title", "Category", "Brand"]
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
     const fetch = async () => {
         try {
@@ -92,17 +92,17 @@ const Products = () => {
             const res = await DataService.get('/all/products')
             const response = res.map((pro: ProductSchema, i: number) => ({
                 id: i + 1, _id: pro._id,
-                product: <Image path={pro.image} className='w-100 h-100 my-1 object-fit-container' />,
-                sku: pro.sku,
-                tax: pro.tax,
+                // product: <Image path={pro.image} className='w-100 h-100 my-1 object-fit-container' />,
+                code: pro.sku,
+                // tax: pro.tax,
                 name: pro.title,
                 brand: pro.brand?.name,
-                code: pro.sku,
+                // code: pro.sku,
                 category: pro.category?.name,
-                cost: pro.cost,
-                price: pro.price,
-                unit: pro.unit?.shortName,
-                update: `${pro.day} ${months[parseInt(pro.month) - 1]},${pro.year}`,
+                // cost: pro.cost,
+                // price: pro.price,
+                // unit: pro.unit?.shortName,
+                // update: `${pro.day} ${months[parseInt(pro.month) - 1]},${pro.year}`,
             }))
             setdata(response), setloading(false)
         } catch (error) {

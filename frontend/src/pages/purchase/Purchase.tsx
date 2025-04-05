@@ -11,13 +11,12 @@ import DataTable from 'react-data-table-component'
 import { Row, Col, Table, ListGroup } from 'react-bootstrap'
 
 interface Searches { _id: string, sku: string, name: string, }
-const purchaseStatus: any = [{ value: 'pending', label: 'Pending' }, { value: 'recevied', label: 'Recevied' }, { value: 'ordered', label: 'Ordered' }]
-const defaultValues = { supplierId: '', warehouseId: '', status: '', shipping: 0, orderTax: 0, discount: 0, note: '' }
+const defaultValues = { supplierId: '', warehouseId: '', status: '', shipping: 0, orderTax: 0, discount: 0, note: '', pruchaseDate: new Date() }
 const validationSchema = yup.object().shape({
+    pruchaseDate: yup.date().required('required!'),
     supplierId: yup.object().required('required!'),
     warehouseId: yup.object().required('required!'),
     shipping: yup.number().required('required!'),
-    status: yup.object().required('required!'),
     note: yup.string(),
     orderTax: yup.number().required('required!'),
     discount: yup.number().required('required!'),
@@ -28,14 +27,10 @@ const handleqtytonotbeNegitive = (product: any) => {
 } // this will check qty should not be less than Zero
 
 const getDiscount = (discount = 0, total: number) => parseFloat((total * discount / 100).toFixed(2))
+const getTaxonProduct = (productCost: number, tax: number, qty: number) => parseFloat(Big(productCost * tax / 100).plus(productCost).mul(qty).toFixed(2)) // this will add a tax on product
+const getorderTax = (tax = 0, total: number) => parseFloat(Big(total * tax / 100).toFixed(2))
 
 const Purchase = () => {
-    const getTaxonProduct = (productCost: number, tax: number, qty: number) => {
-        const taxonproduct = Big(productCost * tax / 100).plus(productCost).mul(qty)
-        return Math.round(taxonproduct.mul(100).toNumber()) / 100
-        // ((productCost + (productCost * tax / 100)) * qty)
-    } // this will add a tax on product
-    const getorderTax = (tax = 0, total: number) => Big(total * tax / 100).toNumber().toFixed(2)
 
     const { id } = useParams()
     const navigate = useNavigate()
@@ -45,6 +40,7 @@ const Purchase = () => {
     const [shippment, setshippment] = useState<number | null>(null)
     const [discount, setdiscount] = useState<number | null>(null)
     const [ordertax, setordertax] = useState<number | null>(null)
+    const [prevValues, setPrevValues] = useState<number[]>([])
     const [total, settotal] = useState<number | any>(0)
     const [count, setcount] = useState<number>(0)
     const [abortController, setAbortController] = useState<AbortController | null>(null)
@@ -75,7 +71,6 @@ const Purchase = () => {
 
             const timeout = setTimeout(async () => {
                 const res = await DataService.get(`/get-search-results/${searchVal}`, {}, controller.signal)
-                sessionStorage.setItem('searchProduct', JSON.stringify(res))
                 const results = res.map((item: any) => ({ _id: item._id, sku: item.sku, name: item.title }))
                 setsearchResults(results) // Calling Api & set Results
             }, 800)
@@ -89,29 +84,27 @@ const Purchase = () => {
     }
 
     const fetchProduct = async (id: string) => {
-        const res = JSON.parse(sessionStorage.getItem('searchProduct')!)
-        const product = res.filter((pro: any) => pro._id == id)
+        const product: any = await DataService.get(`/product/${id}`)
 
         setsearchedProducts((prev_pro: any) => {
             const isDuplicate = prev_pro.some((pro: any) => pro._id === id) // Checking duplicate Products
             if (isDuplicate) return prev_pro // If duplicate, return unchanged array
             return [...prev_pro, { // Otherwise, add new user
-                _id: product[0]._id,
-                product: product[0].title,
+                _id: product._id,
+                product: product.title,
                 current_stock: 0,
                 qty: 1,
-                tax: product[0].tax,
-                cost: product[0].cost,
-                subtotal: getTaxonProduct(product[0].cost, product[0].tax, 1), // 1 for inital quantity
+                tax: product.tax,
+                cost: product.cost,
+                subtotal: getTaxonProduct(product.cost, product.tax, 1), // 1 for inital quantity
             }]
         })
-        settotal((prev: number) => {
-            console.log(getTaxonProduct(product[0].cost, product[0].tax, 1))
 
-            // return prev += new Big(getTaxonProduct(product[0].cost, product[0].tax, 1))
-            //    return parseFloat((Number(prev.toFixed(2)) + getTaxonProduct(product[0].cost, product[0].tax, 1)))
+        settotal((prev: number) => {
+            return prev += getTaxonProduct(product.cost, product.tax, 1)
         })
         // set inital grand total
+        setsearchResults([])
     }
 
     const handleQuantityPlus = useCallback((id: string) => {
@@ -182,8 +175,8 @@ const Purchase = () => {
                         icon={<i className="fa-solid fa-trash"></i>}
                         onclick={() => {
                             setsearchedProducts(searchedProducts.filter((item: any) => item._id != row._id))
-                            settotal((prev: number) => prev - parseInt(row.subtotal))
-                            setordertax(0), setdiscount(0), settotal(0)
+                            settotal((prev: number) => parseFloat(Big(prev).minus(row.subtotal).toFixed(2)))
+                            // setordertax(0), setdiscount(0), settotal(0)
                         }}
                     />
                 </div>
@@ -208,8 +201,12 @@ const Purchase = () => {
     useEffect(() => { fetchSuppliers(), fetchWarehouses() }, [])
     useEffect(() => {
         handleTotal()
-        console.table(searchedProducts)
     }, [count]) // Set Grand Total
+    useEffect(() => {
+        console.log(total);
+        setPrevValues((prev) => [total, ...prev].slice(0, 2)); // Store last 2 values
+        console.log(prevValues);
+    }, [total])
     return (
         <>
             <Sec_Heading page={"Create Purchase"} subtitle="Purchase" />
@@ -220,7 +217,25 @@ const Purchase = () => {
                             <form onSubmit={handleSubmit(registeration)} className='form'>
                                 <Row className="mb-4">
                                     <Col md='4'>
-                                        <h2 className='align-content-center h-100'>Purchase Details</h2>
+                                        <div className="w-100">
+                                            <div className="flex-column">
+                                                <label>Supplier </label>
+                                            </div>
+                                            <div className={`inputForm ${errors.supplierId?.message ? 'inputError' : ''} `}>
+                                                <Controller
+                                                    name="pruchaseDate"
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Input
+                                                            {...field}
+                                                            type="date"
+                                                            className="input"
+                                                            placeholder="0"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
                                     </Col>
                                     <Col md='4' className="col-md-4">
                                         <div className="w-100">
@@ -285,7 +300,7 @@ const Purchase = () => {
                                     </Col>
                                 </Row>
                                 {/* Row 1 End  supplier,warehouse */}
-                                <Row className="mb-4">
+                                <Row className="mb-4 flex-column">
                                     <Col>
                                         <div className={`inputForm`}>
                                             <i className="fa-solid fa-magnifying-glass cusror-pointer"></i>
@@ -297,11 +312,11 @@ const Purchase = () => {
                                             />
                                         </div>
                                     </Col>
-                                    <Col className="col-12">
-                                        <ListGroup>
+                                    <Col className='position-relative'>
+                                        <ListGroup className='position-absolute px-3 z-3 start-0 w-100' style={{ height: '100px' }}>
                                             {
                                                 searchResults?.map(results => (
-                                                    <ListGroup.Item key={results._id} className='cusror-pointer' onClick={() => {
+                                                    <ListGroup.Item key={results._id} className='cusror-pointer w-100' onClick={() => {
                                                         fetchProduct(results._id)
                                                     }}>
                                                         <b className='me-3'>{results.sku}</b> {results.name}
@@ -350,7 +365,7 @@ const Purchase = () => {
                                 </Row>
                                 {/* Row 4 Grand Total */}
                                 <Row className="mb-4">
-                                    <Col md='3'>
+                                    <Col md='4'>
                                         <div className="flex-column">
                                             <label>Order Tax (%)</label>
                                         </div>
@@ -369,16 +384,13 @@ const Purchase = () => {
                                                         value={Number(ordertax) ? ordertax : ""}
                                                         onChange={(e: any) => {
                                                             setordertax((ordertaxprev: any) => {
-                                                                console.clear()
-                                                                console.log('total ' + total)
-                                                                console.log('tax ' + getorderTax(e.target.value, total));
-                                                                console.log(total + getorderTax(e.target.value, total))
                                                                 e.target.value > ordertaxprev
                                                                     ? settotal(() => {
-                                                                        const c = Big(total).plus(getorderTax(e.target.value, total)).toNumber()
-                                                                        return c
+                                                                        return parseFloat((total + getorderTax(e.target.value, total)).toFixed(2))
                                                                     })
-                                                                    : settotal(() => Big(total).minus(getorderTax(ordertaxprev, total)).toNumber())
+                                                                    : settotal(() => {
+                                                                        return parseFloat((prevValues[0] - getorderTax(ordertaxprev, prevValues[1])).toFixed(2))
+                                                                    })
                                                                 return e.target.value
                                                             })
                                                         }}
@@ -387,7 +399,7 @@ const Purchase = () => {
                                             />
                                         </div>
                                     </Col>
-                                    <Col md='3'>
+                                    <Col md='4'>
                                         <div className="flex-column">
                                             <label>Discount (%)</label>
                                         </div>
@@ -405,7 +417,7 @@ const Purchase = () => {
                                                         onChange={(e: any) => setdiscount((discountprev: any) => {
                                                             e.target.value > discountprev
                                                                 ? settotal(() => parseFloat((total - getDiscount(e.target.value, total)).toFixed(2)))
-                                                                : settotal(() => parseFloat((total + getDiscount(discountprev, total)).toFixed(2)))
+                                                                : settotal(() => parseFloat((prevValues[0] + getDiscount(discountprev, prevValues[1])).toFixed(2)))
                                                             return e.target.value
                                                         })}
                                                     />
@@ -413,36 +425,9 @@ const Purchase = () => {
                                             />
                                         </div>
                                     </Col>
-                                    <Col md='3'>
-                                        <div className="w-100">
-                                            <div className="flex-column">
-                                                <label>Status</label>
-                                            </div>
-                                            <div className={`inputForm ${errors.status?.message ? 'inputError' : ''} `}>
-                                                <Controller
-                                                    name="status"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Select
-                                                            {...field}
-                                                            // value={field.value || unitOption}
-                                                            isClearable
-                                                            isSearchable
-                                                            className='select'
-                                                            isRtl={false}
-                                                            options={purchaseStatus}
-                                                            placeholder='status'
-                                                            onChange={(selectedoption) => field.onChange(selectedoption)}
-                                                            styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
-                                                        />
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
-                                    </Col>
-                                    <Col md='3'>
+                                    <Col md='4'>
                                         <div className="flex-column">
-                                            <label>Shipping </label>
+                                            <label>Shipping cost </label>
                                         </div>
                                         <div className={`inputForm ${errors.shipping?.message ? 'inputError' : ''} `}>
                                             <Controller
@@ -457,8 +442,8 @@ const Purchase = () => {
                                                         value={Number(shippment) ? shippment : ''}
                                                         onChange={(e: any) => setshippment((shippingprev: any) => {
                                                             e.target.value > shippingprev
-                                                                ? settotal(() => parseFloat((total + e.target.value).toFixed(2)))
-                                                                : settotal(() => total - shippingprev)
+                                                                ? settotal(() => total)
+                                                                : settotal(() => total)
                                                             return e.target.value
                                                         })}
                                                     />

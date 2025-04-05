@@ -10,7 +10,7 @@ import { Input, Button, Section, Sec_Heading, TextArea } from '../../components/
 import { useNavigate, useParams } from 'react-router'
 import config from '../../config/config'
 
-const defaultValues = { title: '', image: '', price: 0, desc: '', sku: '', tax: 0, cost: 0, categoryId: '', brandId: '', unitId: '' }
+const defaultValues = { title: '', image: '', price: 0, desc: '', sku: '', tax: 0, cost: 0, categoryId: '', brandId: '', unitId: '', supplierId: '' }
 interface Option { value: string, label: string }
 const animation = { opacity: [0, 1], x: [20, 0], transition: { duration: 1 } }
 const fadeOut = { opacity: [0, 1], transition: { duration: 0.8 } }
@@ -20,10 +20,11 @@ const validationSchema = yup.object().shape({
     image: yup.mixed().required('upload Image!'),
     cost: yup.number().required('required!'),
     price: yup.number().required('required!'),
-    tax: yup.number().required('required!'),
+    tax: yup.number(),
     desc: yup.string().trim(),
     categoryId: yup.object().required('required!'),
     brandId: yup.object().required('required!'),
+    supplierId: yup.object().required('required!'),
     unitId: yup.object().required('required!'),
     sku: yup.string().required('required!').trim()
 })
@@ -35,9 +36,11 @@ const Product = () => {
     const [brands, setbrands] = useState([])
     const [sku, setsku] = useState('')
     const [units, setunits] = useState([])
+    const [suppliers, setsuppliers] = useState([])
     const [selectedOption, setSelectedOption] = useState<Option | null>(null)
     const [brandOption, setBrandOption] = useState<Option | null>(null)
     const [unitOption, setUnitOption] = useState<Option | null>(null)
+    const [supplierOption, setSupplierOption] = useState<Option | null>(null)
 
 
     const { apiData: productData, fetchData: fetchProduct }: {
@@ -65,6 +68,7 @@ const Product = () => {
             formDataObj.append('categoryId', formdata.categoryId.value)
             formDataObj.append('brandId', formdata.brandId.value)
             formDataObj.append('unitId', formdata.unitId.value)
+            formDataObj.append('supplierId', formdata.supplierId.value)
 
             const apiResponse = id // Use For PUT & POST Operation
                 ? await fetch(`${config.serverURL}/product/${id}`, { method: 'PUT', body: formDataObj })
@@ -83,10 +87,15 @@ const Product = () => {
         setcategories(category)
     }
 
-    const fetchBrands = async () => {
-        const res = await DataService.get(`/all/brands`)
+    const fetchBrands = async (id: string) => {
+        const res = await DataService.get(`/all/brands/${id}`)
         const brands = res.map((item: any) => ({ value: item._id, label: item.name }))
         setbrands(brands)
+    }
+    const fetchSuppliers = async () => {
+        const res = await DataService.get('/all/supplier-details')
+        const suppliers = res.map((item: any) => ({ value: item._id, label: item.name }))
+        setsuppliers(suppliers)
     }
 
     const setUnits = async () => {
@@ -105,7 +114,7 @@ const Product = () => {
         // JsBarcode(barcodeRef.current, '1237454', { format: "CODE39" })
     }
 
-    useEffect(() => { fetchCategories(), setUnits(), fetchBrands() }, [])
+    useEffect(() => { fetchCategories(), setUnits(), fetchSuppliers() }, [])
     useEffect(() => { if (id) fetchProduct(`/product/${id}`) }, [])
     useEffect(() => {
         if (productData && id) {
@@ -122,10 +131,13 @@ const Product = () => {
                 ? { value: productData.brand._id, label: productData.brand.name } : null
             const unitOption = id
                 ? { value: productData.unit._id, label: productData.unit.name } : null
+            const supplierOption = id
+                ? { value: productData.supplier._id, label: productData.supplier.name } : null
 
             setValue('categoryId', categoryOption || {})
             setValue('brandId', brandOption || {})
             setValue('unitId', unitOption || {})
+            setValue('supplierId', supplierOption || {})
 
             // Update local state for controlled component
             setsku(productData.sku), setSelectedOption(categoryOption),
@@ -208,7 +220,10 @@ const Product = () => {
                                                         isRtl={false}
                                                         placeholder='Select Category Name'
                                                         options={categories}
-                                                        onChange={(selectedoption: any) => { field.onChange(selectedoption) }}
+                                                        onChange={(selectedoption: any) => {
+                                                            field.onChange(selectedoption)
+                                                            fetchBrands(selectedoption.value)
+                                                        }}
                                                         styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
                                                     />
                                                 )}
@@ -246,8 +261,8 @@ const Product = () => {
                                     {/* Tax */}
                                     <div className="col-md-6">
                                         <div className="flex-column">
-                                            <label>Tax (%) </label>
-                                            <span className='importantField'>*</span>
+                                            <label>Tax (%) optional</label>
+                                            {/* <span className='importantField'>*</span> */}
                                         </div>
                                         <div className={`inputForm ${errors.tax?.message ? 'inputError' : ''}`}>
                                             <Controller
@@ -346,7 +361,7 @@ const Product = () => {
                                     </div>
                                     <div className="col-md-6">
                                         <div className="flex-column">
-                                            <label>Product Price </label>
+                                            <label>Selling Price</label>
                                             <span className='importantField'>*</span>
                                         </div>
                                         <div className={`inputForm ${errors.price?.message ? 'inputError' : ''}`}>
@@ -385,6 +400,32 @@ const Product = () => {
                                                         isRtl={false}
                                                         placeholder='Select unit Name'
                                                         options={units}
+                                                        onChange={(selectedoption) => field.onChange(selectedoption)}
+                                                        styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <div className="flex-column">
+                                            <label>Supplier</label>
+                                            <span className='importantField'>*</span>
+                                        </div>
+                                        <div className={`inputForm ${errors.supplierId?.message ? 'inputError' : ''}`}>
+                                            <Controller
+                                                name="supplierId"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Select
+                                                        {...field}
+                                                        value={field.value || supplierOption}
+                                                        isClearable
+                                                        isSearchable
+                                                        className='select'
+                                                        isRtl={false}
+                                                        placeholder='Select Your Supplier'
+                                                        options={suppliers}
                                                         onChange={(selectedoption) => field.onChange(selectedoption)}
                                                         styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
                                                     />

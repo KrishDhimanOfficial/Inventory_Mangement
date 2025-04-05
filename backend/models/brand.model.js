@@ -8,7 +8,7 @@ const brandSchema = new mongoose.Schema({
         match: [/^[A-Za-z\s]{1,25}$/, 'Name must be 1-25 characters long.']
     },
     categoryId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: [mongoose.Schema.Types.ObjectId],
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!']
     }
 })

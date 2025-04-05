@@ -9,18 +9,18 @@ import { useSelector } from 'react-redux'
 import Select from 'react-select'
 
 interface Modal { show: boolean; handleClose: () => void, refreshTable: () => void }
-interface Data { _id: string, name: string, category: { _id: string, name: string } }
+interface Data { _id: string, name: string, category: [{ _id: string, name: string }] }
 interface Option { value: string, label: string }
 
-const defaultValues = { name: '', categoryId: '' }
+const defaultValues = { name: '', categoryId: [] }
 const validationSchema = yup.object().shape({
     name: yup.string().required('Name is required').trim(),
-    categoryId: yup.object().required('Category is Required!')
+    categoryId: yup.array().required('Category is Required!')
 })
 
 const Brand_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     const [categories, setcategories] = useState<Option[]>([])
-    const [selectedOption, setSelectedOption] = useState<Option | null>(null)
+    const [selectedOption, setSelectedOption] = useState<Option[]>([])
     const { data }: { data: Data } = useSelector((state: any) => state.singleData)
     const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
@@ -34,7 +34,7 @@ const Brand_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                 : await DataService.post('/brand', formdata)
             Notify(res) // Show API Response
             if (!data._id) reset()
-            if (res.success) refreshTable()
+            if (res.success) handleClose(), refreshTable()
         } catch (error) {
             console.error(error)
         }
@@ -51,26 +51,26 @@ const Brand_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     // Set form values when editing existing data
     useEffect(() => {
         if (data?._id) {
-            const categoryOption = data.category?._id
-                ? { value: data.category._id, label: data.category.name }
+            const categoryOptions = data.category
+                ? data.category.map((category: any) => ({ value: category._id, label: category.name }))
                 : null
 
             setValue('name', data.name || '')
-            setValue('categoryId', categoryOption || {})
+            setValue('categoryId', categoryOptions || [])
 
             // Update local state for controlled component
-            setSelectedOption(categoryOption)
+            setSelectedOption([])
         } else {
             // Reset when adding new
             reset(defaultValues)
-            setSelectedOption(null)
+            setSelectedOption([])
         }
     }, [data, setValue, reset])
 
     // Reset on modal close
     const handleModalClose = () => {
         handleClose()
-        if (!data?._id) reset(defaultValues), setSelectedOption(null)
+        if (!data?._id) reset(defaultValues), setSelectedOption([])
     }
 
     return (
@@ -121,11 +121,12 @@ const Brand_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                             value={field.value || selectedOption}
                                             isClearable
                                             isSearchable
+                                            isMulti
                                             options={categories}
                                             placeholder="Select Brand Category"
-                                            onChange={(option) => {
+                                            onChange={(option: any) => {
                                                 field.onChange(option)
-                                                setSelectedOption(option as Option)
+                                                setSelectedOption(option)
                                             }}
                                             styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
                                         />

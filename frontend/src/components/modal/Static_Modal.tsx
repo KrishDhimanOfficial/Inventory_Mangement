@@ -6,14 +6,16 @@ import { useDeleteData } from '../../hooks/hook'
 interface Modal {
     endApi: string,
     show: boolean;
-    handleClose: () => void,
+    handleClose?: () => void,
     refreshTable: () => void
 }
 
 const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable }) => {
     const { isloading, apiResponse: res, deleteData } = useDeleteData()
 
-    useEffect(() => { refreshTable() }, [res?.success])
+    useEffect(() => {
+        if (res?.success) refreshTable()
+    }, [res])
     return (
         <>
             <Modal

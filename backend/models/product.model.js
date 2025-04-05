@@ -30,13 +30,18 @@ const productSchema = new mongoose.Schema({
     },
     tax: {
         type: mongoose.Schema.Types.Number,
-        match: [/^[0-9]$/, 'Invalid Tax Input!']
+        match: [/^[0-9]$/, 'Invalid Tax Input!'],
+        default: 0
     },
     categoryId: {
         type: mongoose.Schema.Types.ObjectId,
         match: [/[0-9a-z]/, 'Invalid ObjectID!']
     },
     brandId: {
+        type: mongoose.Schema.Types.ObjectId,
+        match: [/[0-9a-z]/, 'Invalid ObjectID!']
+    },
+    supplierId: {
         type: mongoose.Schema.Types.ObjectId,
         match: [/[0-9a-z]/, 'Invalid ObjectID!']
     },
@@ -60,4 +65,4 @@ const productSchema = new mongoose.Schema({
     }
 }, { timestamps: true })
 
-export default mongoose.model('product',productSchema)
+export default mongoose.model('product', productSchema)

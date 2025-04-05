@@ -12,8 +12,8 @@ interface UserPermission {
     permissions: {
         customer: { view: boolean | null },
         supplier: { view: boolean | null },
-        product: { view: boolean | null },
-        purchase: { view: boolean | null },
+        product: { view: boolean | null, create: boolean | null },
+        purchase: { view: boolean | null, create: boolean | null },
         sales: { view: boolean | null }
     }
 }
@@ -25,8 +25,8 @@ const Sidebar = () => {
         role: '', permissions: {
             customer: { view: null },
             supplier: { view: null },
-            product: { view: null },
-            purchase: { view: null },
+            product: { view: null, create: null },
+            purchase: { view: null, create: null },
             sales: { view: null }
         }
     })
@@ -79,9 +79,19 @@ const Sidebar = () => {
                                         <li className="nav-item">
                                             <Link to="/dashboard/products" className="nav-link">
                                                 <i className="fa-solid fa-bag-shopping nav-icon"></i>
-                                                <p className="text">Create Product</p>
+                                                <p className="text">All Products</p>
                                             </Link>
                                         </li>
+                                        {
+                                            user.permissions?.product.create && (
+                                                <li className="nav-item">
+                                                    <Link to="/dashboard/add/product" className="nav-link">
+                                                        <i className="fa-solid fa-plus nav-icon"></i>
+                                                        <p className="text">Create Product</p>
+                                                    </Link>
+                                                </li>
+                                            )
+                                        }
                                         <li className="nav-item">
                                             <Link to="/dashboard/product/category" className="nav-link">
                                                 <i className="fa-solid fa-layer-group nav-icon"></i>
@@ -121,12 +131,16 @@ const Sidebar = () => {
                                                 <p className="text">All Purchase</p>
                                             </Link>
                                         </li>
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/create/purchase" className="nav-link">
-                                                <i className="fa-solid fa-bag-shopping nav-icon"></i>
-                                                <p className="text">Create Purchase</p>
-                                            </Link>
-                                        </li>
+                                        {
+                                            user.permissions?.purchase.create && (
+                                                <li className="nav-item">
+                                                    <Link to="/dashboard/create/purchase" className="nav-link">
+                                                        <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                                        <p className="text">Create Purchase</p>
+                                                    </Link>
+                                                </li>
+                                            )
+                                        }
                                     </ul>
                                 </li>
                             )

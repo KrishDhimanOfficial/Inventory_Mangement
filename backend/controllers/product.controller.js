@@ -84,9 +84,7 @@ const pro_controllers = {
                             as: 'category'
                         }
                     },
-                    { $unwind: '$category' }
                 ])
-            // console.log(response);
             return res.json(response)
         } catch (error) {
             console.log('getAll_brands : ' + error.message)
@@ -98,7 +96,10 @@ const pro_controllers = {
             const existence = await brandModel.find({ name })
             if (existence[0]) return res.json({ warning: 'Brand Name Already Exists!' })
 
-            const response = await brandModel.create({ name, categoryId: new ObjectId(categoryId.value) })
+            const response = await brandModel.create({
+                name,
+                categoryId: categoryId.map(id => new ObjectId(id.value))
+            })
             if (!response) return res.json({ error: 'Not Found!' })
             return res.json({ success: 'Created Successfully!' })
         } catch (error) {
@@ -118,7 +119,7 @@ const pro_controllers = {
                         as: 'category'
                     }
                 },
-                { $unwind: '$category' }
+                // { $unwind: '$category' }
             ])
             if (response.length == 0) return res.json({ error: 'Not Found!' })
             return res.json(response[0])
@@ -131,7 +132,7 @@ const pro_controllers = {
             const { name, categoryId } = req.body;
             const response = await brandModel.findByIdAndUpdate(
                 { _id: req.params.id },
-                { name, categoryId: new ObjectId(categoryId.value) },
+                { name, categoryId: categoryId.map(id => new ObjectId(id.value)) },
                 { new: true, runValidators: true })
             if (!response) return res.json({ error: 'Not Found!' })
             return res.json({ success: 'Updated Successfully!' })
@@ -295,12 +296,13 @@ const pro_controllers = {
     },
     createProductDetails: async (req, res) => {
         try {
-            const { title, price, desc, sku, tax, cost, categoryId, brandId, unitId } = req.body;
+            const { title, price, desc, sku, tax, cost, supplierId, categoryId, brandId, unitId } = req.body;
             const response = await productModel.create({
                 title, price, desc, sku, tax, cost,
                 categoryId: new ObjectId(categoryId),
                 brandId: new ObjectId(brandId),
                 unitId: new ObjectId(unitId),
+                supplierId: new ObjectId(supplierId),
                 image: req.file.filename
             })
             if (!response) return res.json({ error: 'unable to response!' })
@@ -362,10 +364,25 @@ const pro_controllers = {
                     }
                 },
                 {
+                    $lookup: {
+                        from: 'suppliers',
+                        localField: 'supplierId',
+                        foreignField: '_id',
+                        as: 'supplier'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$supplier',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
                     $addFields: {
                         unit: { $ifNull: ['$unit', { name: 'N/A' }] },
                         brand: { $ifNull: ['$brand', { name: 'N/A' }] },
                         category: { $ifNull: ['$category', { name: 'N/A' }] },
+                        supplier: { $ifNull: ['$supplier', { name: 'N/A' }] },
                         image: { $concat: [`${config.productImgPath}`, '$image'] },
                         year: {
                             $dateToString: {
@@ -407,12 +424,13 @@ const pro_controllers = {
     },
     updateProduct_Details: async (req, res) => {
         try {
-            const { title, price, desc, sku, tax, cost, categoryId, brandId, unitId } = req.body;
+            const { title, price, desc, sku, tax, cost, supplierId, categoryId, brandId, unitId } = req.body;
             const docToBeUpdate = {
                 title, price, desc, sku, tax, cost,
                 categoryId: new ObjectId(categoryId),
                 brandId: new ObjectId(brandId),
                 unitId: new ObjectId(unitId),
+                supplierId: new ObjectId(supplierId),
             }
 
             if (req.file?.filename) docToBeUpdate.image = req.file?.filename;
