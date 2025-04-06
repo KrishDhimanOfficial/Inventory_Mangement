@@ -61,8 +61,8 @@ const Warehouses = () => {
     <>
       <title>Dashboard | Warehouse Management</title>
       <Static_Modal show={warnModal} endApi={`/warehouse/${Id}`}
-        handleClose={() => { setwarnmodal(!warnModal) }}
         refreshTable={() => {
+          setwarnmodal(!warnModal)
           setrefreshTable(!refreshTable)
           setloading(!loading)
         }} />

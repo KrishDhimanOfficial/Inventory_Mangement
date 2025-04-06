@@ -10,6 +10,7 @@ import { DataService, Notify } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Row, Col, Table, ListGroup } from 'react-bootstrap'
 
+interface Option { value: string, label: string }
 interface Searches { _id: string, sku: string, name: string, }
 const defaultValues = { supplierId: '', warehouseId: '', status: '', shipping: 0, orderTax: 0, discount: 0, note: '', pruchaseDate: new Date() }
 const validationSchema = yup.object().shape({
@@ -22,16 +23,14 @@ const validationSchema = yup.object().shape({
     discount: yup.number().required('required!'),
 })
 
-const handleqtytonotbeNegitive = (product: any) => {
-    return product.qty <= 0 ? 0 : product.qty - 1
-} // this will check qty should not be less than Zero
-
+/**  Calculators */
+const handleqtytonotbeNegitive = (product: any) => product.qty <= 0 ? 0 : product.qty - 1 // this will check qty should not be less than Zero
 const getDiscount = (discount = 0, total: number) => parseFloat((total * discount / 100).toFixed(2))
 const getTaxonProduct = (productCost: number, tax: number, qty: number) => parseFloat(Big(productCost * tax / 100).plus(productCost).mul(qty).toFixed(2)) // this will add a tax on product
 const getorderTax = (tax = 0, total: number) => parseFloat(Big(total * tax / 100).toFixed(2))
+/**  Calculators */
 
 const Purchase = () => {
-
     const { id } = useParams()
     const navigate = useNavigate()
     const [searchResults, setsearchResults] = useState<Searches[]>([])
@@ -43,6 +42,7 @@ const Purchase = () => {
     const [prevValues, setPrevValues] = useState<number[]>([])
     const [total, settotal] = useState<number | any>(0)
     const [count, setcount] = useState<number>(0)
+    const [supplierOption, setsupplierOption] = useState<Option | null>(null)
     const [abortController, setAbortController] = useState<AbortController | null>(null)
     const [searchtimeout, settimeout] = useState<any>(null)
     const [searchedProducts, setsearchedProducts] = useState<any>([])
@@ -70,7 +70,7 @@ const Purchase = () => {
             const controller = new AbortController()
 
             const timeout = setTimeout(async () => {
-                const res = await DataService.get(`/get-search-results/${searchVal}`, {}, controller.signal)
+                const res = await DataService.get(`/get-search-results/${searchVal}/${supplierOption?.value}`, {}, controller.signal)
                 const results = res.map((item: any) => ({ _id: item._id, sku: item.sku, name: item.title }))
                 setsearchResults(results) // Calling Api & set Results
             }, 800)
@@ -104,7 +104,7 @@ const Purchase = () => {
             return prev += getTaxonProduct(product.cost, product.tax, 1)
         })
         // set inital grand total
-        setsearchResults([])
+        setsearchResults([]) 
     }
 
     const handleQuantityPlus = useCallback((id: string) => {
@@ -219,7 +219,7 @@ const Purchase = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Supplier </label>
+                                                <label>Date </label>
                                             </div>
                                             <div className={`inputForm ${errors.supplierId?.message ? 'inputError' : ''} `}>
                                                 <Controller
@@ -256,7 +256,10 @@ const Purchase = () => {
                                                             isRtl={false}
                                                             placeholder='Select Supplier'
                                                             options={suppliers}
-                                                            onChange={(selectedoption) => field.onChange(selectedoption)}
+                                                            onChange={(selectedoption: any) => {
+                                                                field.onChange(selectedoption)
+                                                                setsupplierOption(selectedoption)
+                                                            }}
                                                             styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none', }) }}
                                                         />
                                                     )}
@@ -308,6 +311,10 @@ const Purchase = () => {
                                                 type="text"
                                                 className="input"
                                                 placeholder="Search Product by Code or Name"
+                                                onFocus={() => {
+                                                    const res: any = { info: 'Select your supplier' }
+                                                    if (!supplierOption) Notify(res)
+                                                }}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => getSearchResults(e.target.value)}
                                             />
                                         </div>
@@ -391,8 +398,12 @@ const Purchase = () => {
                                                                     : settotal(() => {
                                                                         return parseFloat((prevValues[0] - getorderTax(ordertaxprev, prevValues[1])).toFixed(2))
                                                                     })
-                                                                return e.target.value
+                                                                return searchResults.length > 0 ? e.target.value : 0
                                                             })
+                                                        }}
+                                                        onFocus={() => {
+                                                            const res: any = { info: 'Select your products' }
+                                                            if (searchResults.length == 0) Notify(res)
                                                         }}
                                                     />
                                                 )}
@@ -418,8 +429,12 @@ const Purchase = () => {
                                                             e.target.value > discountprev
                                                                 ? settotal(() => parseFloat((total - getDiscount(e.target.value, total)).toFixed(2)))
                                                                 : settotal(() => parseFloat((prevValues[0] + getDiscount(discountprev, prevValues[1])).toFixed(2)))
-                                                            return e.target.value
+                                                            return searchResults.length > 0 ? e.target.value : 0
                                                         })}
+                                                        onFocus={() => {
+                                                            const res: any = { info: 'Select your products' }
+                                                            if (searchResults.length == 0) Notify(res)
+                                                        }}
                                                     />
                                                 )}
                                             />
@@ -444,8 +459,12 @@ const Purchase = () => {
                                                             e.target.value > shippingprev
                                                                 ? settotal(() => total)
                                                                 : settotal(() => total)
-                                                            return e.target.value
+                                                            return searchResults.length > 0 ? e.target.value : 0
                                                         })}
+                                                        onFocus={() => {
+                                                            const res: any = { info: 'Select your products' }
+                                                            if (searchResults.length == 0) Notify(res)
+                                                        }}
                                                     />
                                                 )}
                                             />

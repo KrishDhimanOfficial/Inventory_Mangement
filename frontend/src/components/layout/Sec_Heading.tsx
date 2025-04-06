@@ -1,5 +1,4 @@
 import React from 'react';
-
 interface Props {
     page: string,
     subtitle?: string

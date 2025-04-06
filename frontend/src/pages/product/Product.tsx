@@ -6,7 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { DataService, Notify, useFetchData } from '../../hooks/hook'
-import { Input, Button, Section, Sec_Heading, TextArea } from '../../components/component'
+import { Input, Button, Section, Sec_Heading, TextArea, Image } from '../../components/component'
 import { useNavigate, useParams } from 'react-router'
 import config from '../../config/config'
 
@@ -35,6 +35,7 @@ const Product = () => {
     const [categories, setcategories] = useState([])
     const [brands, setbrands] = useState([])
     const [sku, setsku] = useState('')
+    const [prevImage, setprevImage] = useState('')
     const [units, setunits] = useState([])
     const [suppliers, setsuppliers] = useState([])
     const [selectedOption, setSelectedOption] = useState<Option | null>(null)
@@ -52,6 +53,44 @@ const Product = () => {
         defaultValues,
         resolver: yupResolver(validationSchema)
     })
+
+    const displayFImgs = (e: any) => {
+        const file = e.target.files[0]
+        setprevImage(URL.createObjectURL(file))
+    }
+
+    const fetchCategories = async () => {
+        const res = await DataService.get('/all/categories')
+        const category = res.map((item: any) => ({ value: item._id, label: item.name }))
+        setcategories(category)
+    }
+
+    const fetchBrands = async (id: string) => {
+        const res = await DataService.get(`/all/brands/${id}`)
+        const brands = res.map((item: any) => ({ value: item.brand?._id, label: item.brand?.name }))
+        setbrands(brands)
+    }
+    const fetchSuppliers = async () => {
+        const res = await DataService.get('/all/supplier-details')
+        const suppliers = res.map((item: any) => ({ value: item._id, label: item.name }))
+        setsuppliers(suppliers)
+    }
+
+    const setUnits = async () => {
+        const res = await DataService.get('/all/units')
+        const units = res.map((item: any) => ({ value: item._id, label: item.name }))
+        setunits(units)
+    }
+
+    const BarcodeGenerator = () => {
+        let sku = '';
+        for (let i = 0; i < 8; ++i) sku += Math.round(Math.random() * 9)
+        setValue('sku', sku)
+        setsku(sku)
+
+        // Add a setTimeout to generate final barcode
+        // JsBarcode(barcodeRef.current, '1237454', { format: "CODE39" })
+    }
 
     const registeration = async (formdata: any) => {
         try {
@@ -81,39 +120,6 @@ const Product = () => {
         }
     }
 
-    const fetchCategories = async () => {
-        const res = await DataService.get('/all/categories')
-        const category = res.map((item: any) => ({ value: item._id, label: item.name }))
-        setcategories(category)
-    }
-
-    const fetchBrands = async (id: string) => {
-        const res = await DataService.get(`/all/brands/${id}`)
-        const brands = res.map((item: any) => ({ value: item._id, label: item.name }))
-        setbrands(brands)
-    }
-    const fetchSuppliers = async () => {
-        const res = await DataService.get('/all/supplier-details')
-        const suppliers = res.map((item: any) => ({ value: item._id, label: item.name }))
-        setsuppliers(suppliers)
-    }
-
-    const setUnits = async () => {
-        const res = await DataService.get('/all/units')
-        const units = res.map((item: any) => ({ value: item._id, label: item.name }))
-        setunits(units)
-    }
-
-    const BarcodeGenerator = () => {
-        let sku = '';
-        for (let i = 0; i < 8; ++i) sku += Math.round(Math.random() * 9)
-        setValue('sku', sku)
-        setsku(sku)
-
-        // Add a setTimeout to generate final barcode
-        // JsBarcode(barcodeRef.current, '1237454', { format: "CODE39" })
-    }
-
     useEffect(() => { fetchCategories(), setUnits(), fetchSuppliers() }, [])
     useEffect(() => { if (id) fetchProduct(`/product/${id}`) }, [])
     useEffect(() => {
@@ -124,6 +130,7 @@ const Product = () => {
             setValue('price', productData.price)
             setValue('cost', productData.cost)
             setValue('sku', productData.sku)
+            setprevImage(productData.image)
 
             const categoryOption = id
                 ? { value: productData.category._id, label: productData.category.name } : null
@@ -141,11 +148,12 @@ const Product = () => {
 
             // Update local state for controlled component
             setsku(productData.sku), setSelectedOption(categoryOption),
-                setBrandOption(brandOption), setUnitOption(unitOption)
+                setBrandOption(brandOption), setUnitOption(unitOption),
+                setSupplierOption(supplierOption)
         } else {
             setsku(''), setSelectedOption(null), setBrandOption(null), setUnitOption(null)
         }
-    }, [productData])
+    }, [productData, id])
 
     return (
         <>
@@ -191,6 +199,7 @@ const Product = () => {
                                                         className="input align-content-center"
                                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                                             if (e.target.files) {
+                                                                displayFImgs(e)
                                                                 field.onChange(e.target.files)
                                                             }
                                                         }}
@@ -261,7 +270,7 @@ const Product = () => {
                                     {/* Tax */}
                                     <div className="col-md-6">
                                         <div className="flex-column">
-                                            <label>Tax (%) optional</label>
+                                            <label>Tax (%) Like GST</label>
                                             {/* <span className='importantField'>*</span> */}
                                         </div>
                                         <div className={`inputForm ${errors.tax?.message ? 'inputError' : ''}`}>
@@ -450,6 +459,18 @@ const Product = () => {
                                 />)
                         }
                     </form>
+                </div>
+                <div className="col-4">
+                    <div className="card">
+                        <div className="card-body">
+                            <h3 className='text-center'>Preview Image</h3>
+                            <div className='text-center'>
+                                {
+                                    prevImage && (<Image path={prevImage} className='img-fluid object-fit-cover' />)
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </Section>
         </>

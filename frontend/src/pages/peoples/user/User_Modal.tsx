@@ -52,7 +52,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
             Notify(res), reset(), handleClose()
-            if (res.success) refreshTable()
+            if (res.success) refreshTable(), handleClose()
         } catch (error) {
             console.error(error)
         }

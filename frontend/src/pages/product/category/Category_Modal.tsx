@@ -6,13 +6,15 @@ import { Input, Button } from '../../../components/component'
 import * as yup from 'yup'
 import { DataService, Notify } from '../../../hooks/hook'
 import { useSelector } from 'react-redux';
+import Select from 'react-select';
 
 interface Modal { show: boolean; handleClose: () => void, refreshTable: () => void }
-interface Data { _id: string, name: string, }
+interface Data { _id: string, name: string, unitId: [{ _id: string, name: string }] }
 
-const defaultValues = { name: '' }
+const defaultValues = { name: '', unitId: [] }
 const validationSchema = yup.object().shape({
-    name: yup.string().required('Name is required').trim()
+    name: yup.string().required('Name is required').trim(),
+    unitId: yup.array().required('Required!')
 })
 
 const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
@@ -30,7 +32,7 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                 : await DataService.post('/category', formdata)
             Notify(res) // Show API Response
             if (!data._id) reset()
-            if (res.success) refreshTable()
+            if (res.success) refreshTable(), handleClose()
         } catch (error) {
             console.error(error)
         }
@@ -69,6 +71,34 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                                             className="input"
                                             placeholder="Enter Category"
                                             {...field}
+                                        />
+                                    )}
+                                />
+                            </div>
+                        </div>
+                        <div className="col-md-12">
+                            <div className="flex-column">
+                                <label>Name </label>
+                                <span className='importantField'>*</span>
+                            </div>
+                            <div className={`inputForm ${errors.name?.message ? 'inputError' : ''}`}>
+                                <Controller
+                                    name="unitId"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            {...field}
+                                            // value={field.value || selectedOption}
+                                            isClearable
+                                            isSearchable
+                                            isMulti
+                                            // options={categories}
+                                            placeholder="Select Units"
+                                            onChange={(option: any) => {
+                                                field.onChange(option)
+                                                // setSelectedOption(option)
+                                            }}
+                                            styles={{ control: (style: any) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
                                         />
                                     )}
                                 />

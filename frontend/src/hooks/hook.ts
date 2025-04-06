@@ -2,7 +2,7 @@ import useFetchData from "./useFetchData";
 import useDeleteData from "./useDeleteData";
 import Notify from "./Notify";
 import DataService from "./DataService";
-import { downloadCSV, generatePDF } from "./datatable";
+import { downloadCSV, generatePDF, filterData } from "./datatable";
 
 export {
     useFetchData,
@@ -10,5 +10,6 @@ export {
     Notify,
     DataService,
     downloadCSV,
-    generatePDF
+    generatePDF,
+    filterData
 }

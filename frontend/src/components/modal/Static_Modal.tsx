@@ -12,6 +12,7 @@ interface Modal {
 
 const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable }) => {
     const { isloading, apiResponse: res, deleteData } = useDeleteData()
+    console.log('Static_Modal');
 
     useEffect(() => {
         if (res?.success) refreshTable()
@@ -44,4 +45,4 @@ const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable
     );
 }
 
-export default React.memo(Static_Modal);
+export default React.memo(Static_Modal)

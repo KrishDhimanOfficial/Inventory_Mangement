@@ -79,17 +79,17 @@ const Suppliers = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/supplier/${Id}`}
-                handleClose={() => { setwarnmodal(!warnModal) }}
                 refreshTable={() => {
+                    setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
                 }} />
             <Supplier_Modal show={showmodal}
+                handleClose={() => { setmodal(!showmodal) }}
                 refreshTable={() => {
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
-                }}
-                handleClose={() => { setmodal(!showmodal) }} />
+                }} />
             <title>Dashboard | Supplier Management</title>
             <Sec_Heading page='Supplier Management' subtitle='suppliers' />
             <Section>

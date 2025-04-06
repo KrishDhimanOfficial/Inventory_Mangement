@@ -35,7 +35,7 @@ const Supplier_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                 : await DataService.post('/supplier', formdata)
             Notify(res) // Show API Response
             if (!data._id) reset()
-            if (res.success) refreshTable()
+            if (res.success) refreshTable(), handleClose()
         } catch (error) {
             console.error(error)
         }

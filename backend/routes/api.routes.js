@@ -58,7 +58,7 @@ router.route('/unit/:id?')
     .put(pro_controllers.updateUnit_Details)
     .delete(pro_controllers.deleteUnit_Details)
 
-router.get('/get-search-results/:searchTerm', pro_controllers.searchProduct)
+router.get('/get-search-results/:searchTerm/:supplierId', pro_controllers.searchProduct)
 router.get('/all/products', pro_controllers.getAllproducts_Details)
 router.route('/product/:id?')
     .post(product.single('image'), handlemulterError, pro_controllers.createProductDetails)

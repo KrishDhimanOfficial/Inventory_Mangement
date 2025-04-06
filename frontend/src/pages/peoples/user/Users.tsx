@@ -3,8 +3,8 @@ import { Button, Sec_Heading, Section, Loader, Static_Modal } from '../../../com
 import DataTable from "react-data-table-component"
 import { useFetchData, DataService, downloadCSV, generatePDF } from '../../../hooks/hook'
 
-const  Update_User = lazy(()=> import('./Update_User'))
-const User_Modal = lazy(()=> import('./User_Modal'))
+const Update_User = lazy(() => import('./Update_User'))
+const User_Modal = lazy(() => import('./User_Modal'))
 interface User_Details { id: number, _id: string, name: string, email: string, phone: string }
 
 const Users = () => {
@@ -61,8 +61,8 @@ const Users = () => {
         <>
             <title>Dashboard | Users Management</title>
             <Static_Modal show={warnModal} endApi={`/user/${Id}`}
-                handleClose={() => { setwarnmodal(!warnModal) }}
                 refreshTable={() => {
+                    setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
                 }} />

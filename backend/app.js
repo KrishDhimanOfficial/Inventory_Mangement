@@ -3,8 +3,6 @@ import cookieParser from 'cookie-parser'
 import apiRouter from './routes/api.routes.js'
 import cors from 'cors'
 import './services/cronJob.js'
-
-
 const app = express()
 
 // view engine setup
@@ -26,7 +24,6 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use('/uploads', express.static('uploads'))
 app.use('/public', express.static('public'))
-
 app.use('/api', apiRouter)
 
 // error handler

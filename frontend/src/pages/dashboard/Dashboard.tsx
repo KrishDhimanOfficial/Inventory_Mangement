@@ -11,7 +11,6 @@ const Dashboard = () => {
 
     const verify_Auth = async () => {
         try {
-            if (!localStorage.getItem(config.token_name)) navigate('/login')
             const res = await DataService.get('/user/auth', {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
@@ -22,7 +21,10 @@ const Dashboard = () => {
         }
     }
 
-    useEffect(() => { verify_Auth() }, [])
+    useEffect(() => {
+        if (!localStorage.getItem(config.token_name)) navigate('/login')
+        verify_Auth()
+    }, [])
     return (
         <>
             <title>Dashboard</title>

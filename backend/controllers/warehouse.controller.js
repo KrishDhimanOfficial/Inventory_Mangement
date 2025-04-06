@@ -4,7 +4,7 @@ import validate from '../services/validateData.js'
 import warehouseModel from '../models/warehouse.model.js'
 
 /** @type {Object.<string, import('express').RequestHandler>} */
-
+const delay = 800;
 const warehouse_controllers = {
     createWarehouse: async (req, res) => {
         try {
@@ -19,7 +19,7 @@ const warehouse_controllers = {
     getAllWarehouses: async (req, res) => {
         try {
             const response = await warehouseModel.find({})
-            setTimeout(() => res.json(response), 1500)
+            setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getAllWarehouses : ' + error.message)
         }

@@ -42,7 +42,7 @@ const Warehouse_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =
                 : await DataService.post('/warehouse', formdata)
             if (!data._id) reset()
             Notify(res) // Show API Response
-            refreshTable()
+            if (res.success) refreshTable(), handleClose()
         } catch (error) {
             console.error(error)
         }

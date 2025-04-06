@@ -14,4 +14,4 @@ const Section: React.FC<SectionProps> = ({ children }) => {
     )
 }
 
-export default Section
+export default React.memo(Section)

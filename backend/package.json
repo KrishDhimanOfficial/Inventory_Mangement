@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon ./bin/www",
-    "dev": "nodemon --watch app"
+    "dev": "nodemon --watch app --exec npm run start"
   },
   "dependencies": {
     "@types/mongoose": "^5.11.96",

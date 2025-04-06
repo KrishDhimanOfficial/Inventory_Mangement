@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import config from '../config/config.js';
 import deleteImage from '../services/deleteImg.js';
 const ObjectId = mongoose.Types.ObjectId;
+const delay = 800;
 
 const pro_controllers = {
     getAll_categories: async (req, res) => {
@@ -61,19 +62,24 @@ const pro_controllers = {
     getAll_brands: async (req, res) => {
         try {
             const response = req.params.id
-                ? await brandModel.aggregate([
+                ? await categoryModel.aggregate([
                     {
-                        $match: { categoryId: new ObjectId(req.params.id) }
+                        $match: { _id: new ObjectId(req.params.id) }
                     },
                     {
                         $lookup: {
-                            from: 'categories',
-                            localField: 'categoryId',
-                            foreignField: '_id',
-                            as: 'category'
+                            from: 'brands',
+                            localField: '_id',
+                            foreignField: 'categoryId',
+                            as: 'brand'
                         }
                     },
-                    { $unwind: '$category' }
+                    { $unwind: '$brand' },
+                    {
+                        $project: {
+                            'brand.categoryId': 0
+                        }
+                    }
                 ])
                 : await brandModel.aggregate([
                     {
@@ -119,7 +125,6 @@ const pro_controllers = {
                         as: 'category'
                     }
                 },
-                // { $unwind: '$category' }
             ])
             if (response.length == 0) return res.json({ error: 'Not Found!' })
             return res.json(response[0])
@@ -153,7 +158,7 @@ const pro_controllers = {
     getProduct_units: async (req, res) => {
         try {
             const response = await unitModel.find({})
-            return setTimeout(() => res.json(response), 1000)
+            return setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getProduct_units : ' + error.message)
         }
@@ -379,10 +384,10 @@ const pro_controllers = {
                 },
                 {
                     $addFields: {
-                        unit: { $ifNull: ['$unit', { name: 'N/A' }] },
-                        brand: { $ifNull: ['$brand', { name: 'N/A' }] },
-                        category: { $ifNull: ['$category', { name: 'N/A' }] },
-                        supplier: { $ifNull: ['$supplier', { name: 'N/A' }] },
+                        unit: { $ifNull: ['$unit', { _id: '', name: 'N/A' }] },
+                        brand: { $ifNull: ['$brand', { _id: '', name: 'N/A' }] },
+                        category: { $ifNull: ['$category', { _id: '', name: 'N/A' }] },
+                        supplier: { $ifNull: ['$supplier', { _id: '', name: 'N/A' }] },
                         image: { $concat: [`${config.productImgPath}`, '$image'] },
                         year: {
                             $dateToString: {
@@ -462,14 +467,15 @@ const pro_controllers = {
     },
     searchProduct: async (req, res) => {
         try {
-            const { searchTerm } = req.params;
+            const { searchTerm, supplierId } = req.params;
             const response = await productModel.aggregate([
                 {
                     $match: {
                         $or: [
                             { title: { $regex: searchTerm, $options: "i" } },
                             { sku: { $regex: searchTerm, } }
-                        ]
+                        ],
+                        supplierId: new ObjectId(supplierId)
                     }
                 },
                 {

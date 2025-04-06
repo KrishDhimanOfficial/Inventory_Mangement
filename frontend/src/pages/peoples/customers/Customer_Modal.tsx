@@ -35,7 +35,7 @@ const Customer_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                 : await DataService.post('/customer', formdata)
             Notify(res) // Show API Response
             if (!data._id) reset()
-            if (res.success) refreshTable()
+            if (res.success) handleClose(), refreshTable()
         } catch (error) {
             console.error(error)
         }

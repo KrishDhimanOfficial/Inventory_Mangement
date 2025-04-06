@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Sec_Heading, Section, Button, Loader, Static_Modal, Image } from '../../components/component'
-import { DataService, downloadCSV, generatePDF } from '../../hooks/hook'
+import React, { useEffect, useState } from 'react'
+import { Sec_Heading, Section, Button, Loader, Static_Modal, Input } from '../../components/component'
+import { DataService, downloadCSV, generatePDF, filterData } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Link } from 'react-router'
 import { useSelector } from 'react-redux'
@@ -71,6 +71,7 @@ const Products = () => {
             )
         },
     ]
+
     const tableBody = data.map((product: ProductSchema) => [
         product.id,
         product.sku,
@@ -90,7 +91,7 @@ const Products = () => {
         try {
             setloading(true)
             const res = await DataService.get('/all/products')
-            const response = res.map((pro: ProductSchema, i: number) => ({
+            const response = res?.map((pro: ProductSchema, i: number) => ({
                 id: i + 1, _id: pro._id,
                 // product: <Image path={pro.image} className='w-100 h-100 my-1 object-fit-container' />,
                 code: pro.sku,
@@ -109,12 +110,12 @@ const Products = () => {
             console.error(error)
         }
     }
-    useEffect(() => { fetch() }, [])
+    useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/product/${Id}`}
-                handleClose={() => { setwarnmodal(!warnModal) }}
                 refreshTable={() => {
+                    setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
                 }}
@@ -127,14 +128,31 @@ const Products = () => {
                             <DataTable
                                 title="Products Details"
                                 columns={columns}
-                                data={data || []}
+                                data={data}
                                 progressPending={loading}
                                 progressComponent={<Loader />}
                                 pagination
-                                selectableRows
+                                persistTableHead
                                 subHeader
                                 subHeaderComponent={
                                     <div className="d-flex gap-3 justify-content-end">
+                                        <div>
+                                            <div className="searchbar">
+                                                <div className="searchbar-wrapper">
+                                                    <div className="searchbar-center">
+                                                        <div className="searchbar-input-spacer" />
+                                                        <Input
+                                                            type="text"
+                                                            className="searchbar-input"
+                                                            autoCapitalize="off"
+                                                            onChange={(e: any) => {
+                                                                //  setdata(filterData(data, e.target.value.trim())) 
+                                                            }}
+                                                            title="Search" role="combobox" placeholder="Search by name" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <Button
                                             text='Generate PDF'
                                             className='btn btn-danger'
@@ -163,4 +181,4 @@ const Products = () => {
     )
 }
 
-export default Products
+export default React.memo(Products)

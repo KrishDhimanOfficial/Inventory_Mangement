@@ -82,16 +82,6 @@ const Sidebar = () => {
                                                 <p className="text">All Products</p>
                                             </Link>
                                         </li>
-                                        {
-                                            user.permissions?.product.create && (
-                                                <li className="nav-item">
-                                                    <Link to="/dashboard/add/product" className="nav-link">
-                                                        <i className="fa-solid fa-plus nav-icon"></i>
-                                                        <p className="text">Create Product</p>
-                                                    </Link>
-                                                </li>
-                                            )
-                                        }
                                         <li className="nav-item">
                                             <Link to="/dashboard/product/category" className="nav-link">
                                                 <i className="fa-solid fa-layer-group nav-icon"></i>

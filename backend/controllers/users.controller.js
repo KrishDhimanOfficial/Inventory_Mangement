@@ -5,11 +5,10 @@ import mongoose from "mongoose";
 const ObjectId = mongoose.Types.ObjectId;
 import validate from '../services/validateData.js'
 import bcrypt from 'bcrypt'
-import config from "../config/config.js";
 import { getUser, setUser } from '../services/auth.js'
 
 // /** @type {Object.<string, (req: import('express').Request, res: import('express').Response) => Promise<any>>} */
-
+const delay = 800;
 const users_controllers = {
     checkUserIsLoggin: async (req, res) => {
         try {
@@ -109,7 +108,7 @@ const users_controllers = {
                 { $replaceRoot: { newRoot: '$sub_accounts' } },
                 { $project: { _id: 1, name: 1, email: 1, phone: 1 } }
             ])
-            setTimeout(() => res.json(response), 1000)
+            setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getAllUsersDetails : ' + error.message)
         }
@@ -141,7 +140,6 @@ const users_controllers = {
         try {
             const { name, email, phone, password, purchase,
                 sales, product, supplier, customer, warehousesId } = req.body;
-            console.log(req.body);
 
             const response = await userModel.findByIdAndUpdate({ _id: req.params.id }, {
                 name, email, phone,
@@ -191,7 +189,7 @@ const users_controllers = {
     getAllSuppliersDetails: async (req, res) => {
         try {
             const response = await supplierModel.find({})
-            setTimeout(() => res.json(response), 1200)
+            setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getAllSuppliersDetails : ' + error.message)
         }
@@ -239,7 +237,7 @@ const users_controllers = {
     getAllCustomersDetails: async (req, res) => {
         try {
             const response = await customerModel.find({})
-            setTimeout(() => res.json(response), 1200)
+            setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getAllCustomersDetails  : ' + error.message)
         }

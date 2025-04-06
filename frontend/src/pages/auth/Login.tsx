@@ -34,7 +34,7 @@ const Login = () => {
         timeout = setTimeout(() => {
             localStorage.removeItem(`${config.token_name}`)
             navigate('/login')
-        }, 24 * 60 * 60 * 1000)
+        }, 4 * 60 * 60 * 1000) // Expire TOken after 4 hours
     }
 
     return (
