@@ -79,6 +79,7 @@ const Suppliers = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/supplier/${Id}`}
+              handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)

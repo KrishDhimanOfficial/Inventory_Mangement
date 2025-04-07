@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
-const ObjectId = mongoose.Types.ObjectId;
 import validate from '../services/validateData.js'
 import warehouseModel from '../models/warehouse.model.js'
 
-/** @type {Object.<string, import('express').RequestHandler>} */
+const ObjectId = mongoose.Types.ObjectId;
 const delay = 800;
 const warehouse_controllers = {
+    /**
+  * @param {import('express').Request} req
+  * @param {import('express').Response} res
+ */
     createWarehouse: async (req, res) => {
         try {
             const response = await warehouseModel.create(req.body)

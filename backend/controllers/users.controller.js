@@ -10,6 +10,10 @@ import { getUser, setUser } from '../services/auth.js'
 // /** @type {Object.<string, (req: import('express').Request, res: import('express').Response) => Promise<any>>} */
 const delay = 800;
 const users_controllers = {
+       /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+    */
     checkUserIsLoggin: async (req, res) => {
         try {
             const user = getUser(req.headers['authorization'].split(' ')[1])

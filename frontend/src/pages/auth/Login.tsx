@@ -14,12 +14,12 @@ const Login = () => {
     const navigate = useNavigate()
     const [passwordtype, setpasswordtype] = useState(false)
     const { register, handleSubmit } = useForm()
+    const [timeout, settimeout] = useState(null)
 
     const handleLogin = async (formData: object) => {
         try {
-            let timeout;
             const res = await DataService.post('/user/login', formData)
-            Notify(res), handleLogoutAfterLoginIn(timeout)
+            Notify(res), handleLogoutAfterLoginIn()
             localStorage.setItem(`${config.token_name}`, res.stockify_auth_token)
             if (res.success) navigate('/dashboard')
             else navigate('/login')
@@ -28,13 +28,14 @@ const Login = () => {
         }
     }
 
-    const handleLogoutAfterLoginIn = (timeout: any) => {
+    const handleLogoutAfterLoginIn = () => {
         if (timeout) clearTimeout(timeout) // clear previous SetTimeout
 
-        timeout = setTimeout(() => {
+        const time: any = setTimeout(() => {
             localStorage.removeItem(`${config.token_name}`)
             navigate('/login')
-        }, 4 * 60 * 60 * 1000) // Expire TOken after 4 hours
+        }, 1 * 60 * 60 * 1000) // Expire Token after 1 hours
+        settimeout(time)
     }
 
     return (

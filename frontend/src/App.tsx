@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider } from "react-router"
-import { PDFViewer } from '@react-pdf/renderer'
 import Login from "./pages/auth/Login"
 import Dashboard from "./pages/dashboard/Dashboard"
 import Users from "./pages/peoples/user/Users"
@@ -15,7 +14,8 @@ import Units from "./pages/product/units/Units"
 import Sales from "./pages/sales/Sales"
 import Purchases from "./pages/purchase/Purchases"
 import Purchase from "./pages/purchase/Purchase"
-
+import SalesOrderForm from "./pages/sales/SalesOrderForm"
+import POS from "./pages/sales/POS"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -82,6 +82,14 @@ const App = () => {
         {
           path: '/dashboard/create/purchase',
           element: <Purchase />
+        },
+        {
+          path: '/dashboard/create/sales',
+          element: <SalesOrderForm />
+        },
+        {
+          path: '/dashboard/pos',
+          element: <POS />
         }
       ],
     }

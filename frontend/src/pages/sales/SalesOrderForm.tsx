@@ -16,23 +16,21 @@ import {
     getorderTax,
     handelvalToNotbeNegitive
 } from '../../hooks/hook'
-import config from '../../config/config'
 
 interface Option { value: string, label: string }
 interface Searches { _id: string, sku: string, name: string, }
-const defaultValues = { supplierId: '', warehouseId: '', status: '', shipping: 0, orderTax: 0, discount: 0, note: '', pruchaseDate: new Date() }
+const defaultValues = { customerId: '', warehouseId: '', status: '', shipping: 0, orderTax: 0, discount: 0, note: '', pruchaseDate: new Date() }
 const validationSchema = yup.object().shape({
     pruchaseDate: yup.date().required('required!'),
-    supplierId: yup.object().required('required!'),
+    customerId: yup.object().required('required!'),
     warehouseId: yup.object().required('required!'),
     note: yup.string(),
 })
 
-const Purchase = () => {
+const SalesOrderForm = () => {
     const { id } = useParams()
     const navigate = useNavigate()
-    const [searchResults, setsearchResults] = useState<Searches[]>([])
-    const [suppliers, setsuppliers] = useState([])
+    const [customers, setscustomers] = useState([])
     const [warehouses, setWarehouses] = useState<any>([])
     const [shippment, setshippment] = useState<number | null>(null)
     const [discount, setdiscount] = useState<number | null>(null)
@@ -41,24 +39,23 @@ const Purchase = () => {
     const [calOrdertax, setcalOrdertax] = useState<number | any>(null)
     const [total, settotal] = useState<number | any>(0)
     const [count, setcount] = useState<number>(0)
-    const [supplierOption, setsupplierOption] = useState<Option | null>(null)
+    const [customerOption, setcustomerOption] = useState<Option | null>(null)
     const [abortController, setAbortController] = useState<AbortController | null>(null)
     const [searchtimeout, settimeout] = useState<any>(null)
+    const [searchResults, setsearchResults] = useState<Searches[]>([])
     const [searchedProducts, setsearchedProducts] = useState<any>([])
 
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
         // resolver: yupResolver(validationSchema)
     })
-    const fetchSuppliers = async () => {
-        const res = await DataService.get('/all/supplier-details')
-        const suppliers = res.map((item: any) => ({ value: item._id, label: item.name }))
-        setsuppliers(suppliers)
+    const fetchCustomers = async () => {
+        const res = await DataService.get('/all/customers-details')
+        const customers = res.map((item: any) => ({ value: item._id, label: item.name }))
+        setscustomers(customers)
     }
     const fetchWarehouses = async () => {
-        const res = await DataService.get('/warehouses', {
-            'Authorization': `Bearer ${config.token_name}`
-        })
+        const res = await DataService.get('/warehouses')
         const warehouses = res.map((item: any) => ({ value: item._id, label: item.name }))
         setWarehouses(warehouses)
     }
@@ -70,7 +67,7 @@ const Purchase = () => {
             const controller = new AbortController()
 
             const timeout = setTimeout(async () => {
-                const res = await DataService.get(`/get-search-results/${searchVal}/${supplierOption?.value}`, {}, controller.signal)
+                const res = await DataService.get(`/get-search-results/${searchVal}/${customerOption?.value}`, {}, controller.signal)
                 const results = res.map((item: any) => ({ _id: item._id, sku: item.sku, name: item.title }))
                 setsearchResults(results) // Calling Api & set Results
             }, 800)
@@ -186,36 +183,31 @@ const Purchase = () => {
 
     const registeration = async (formdata: object) => {
         try {
-            console.log(formdata);
-
-            // const res: any = id
-            //     ? DataService.put(`/ purchase / ${id} `, formdata)
-            //     : DataService.post('/purchase', formdata)
-            // if (res.success) navigate('/dashboard/purchases')
-            // Notify(res) // Show API Response
+            const res: any = id
+                ? DataService.put(`/ purchase / ${id} `, formdata)
+                : DataService.post('/purchase', formdata)
+            if (res.success) navigate('/dashboard/purchases')
+            Notify(res) // Show API Response
         } catch (error) {
             console.error(error)
         }
     } // this handle POST operation
 
-    useEffect(() => { fetchSuppliers(), fetchWarehouses() }, [])
+    useEffect(() => { fetchCustomers(), fetchWarehouses() }, [])
     useEffect(() => { handleTotal() }, [count]) // Set Grand Total
+    // useEffect(() => {
+    //     setPrevValues((prev) => [total, ...prev].slice(0, 2)); // Store last 2 values
+    // }, [total])
     useEffect(() => {
-        const timeout = setTimeout(() => {
-            setordertax(ordertax), setValue('orderTax', calOrdertax)
-        }, 800)
+        const timeout = setTimeout(() => setordertax(ordertax), 800)
         return () => clearTimeout(timeout)
     }, [ordertax])
     useEffect(() => {
-        const timeout = setTimeout(() => {
-            setdiscount(discount), setValue('discount', calDiscount)
-        }, 800)
+        const timeout = setTimeout(() => setdiscount(discount), 800)
         return () => clearTimeout(timeout)
     }, [discount])
     useEffect(() => {
-        const timeout = setTimeout(() => {
-            setshippment(shippment), setValue('shipping', Number(shippment))
-        }, 800)
+        const timeout = setTimeout(() => setshippment(shippment), 800)
         return () => clearTimeout(timeout)
     }, [shippment])
     return (
@@ -231,9 +223,8 @@ const Purchase = () => {
                                         <div className="w-100">
                                             <div className="flex-column">
                                                 <label>Date </label>
-                                                <span className='importantField'>*</span>
                                             </div>
-                                            <div className={`inputForm ${errors.supplierId?.message ? 'inputError' : ''} `}>
+                                            <div className={`inputForm ${errors.customerId?.message ? 'inputError' : ''} `}>
                                                 <Controller
                                                     name="pruchaseDate"
                                                     control={control}
@@ -252,12 +243,11 @@ const Purchase = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Supplier </label>
-                                                <span className='importantField'>*</span>
+                                                <label>Customer </label>
                                             </div>
-                                            <div className={`inputForm ${errors.supplierId?.message ? 'inputError' : ''} `}>
+                                            <div className={`inputForm ${errors.customerId?.message ? 'inputError' : ''} `}>
                                                 <Controller
-                                                    name="supplierId"
+                                                    name="customerId"
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Select
@@ -267,11 +257,11 @@ const Purchase = () => {
                                                             isSearchable
                                                             className='select'
                                                             isRtl={false}
-                                                            placeholder='Select Supplier'
-                                                            options={suppliers}
+                                                            placeholder='Select your customer'
+                                                            options={customers}
                                                             onChange={(selectedoption: any) => {
                                                                 field.onChange(selectedoption)
-                                                                setsupplierOption(selectedoption)
+                                                                setcustomerOption(selectedoption)
                                                             }}
                                                             styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none', }) }}
                                                         />
@@ -280,11 +270,10 @@ const Purchase = () => {
                                             </div>
                                         </div>
                                     </Col>
-                                    <Col md='4' >
+                                    <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
                                                 <label>Warehouse </label>
-                                                <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm ${errors.warehouseId?.message ? 'inputError' : ''} `}>
                                                 <Controller
@@ -327,7 +316,7 @@ const Purchase = () => {
                                                 placeholder="Search Product by Code or Name"
                                                 onFocus={() => {
                                                     const res: any = { info: 'Select your supplier' }
-                                                    if (!supplierOption) Notify(res)
+                                                    if (!customerOption) Notify(res)
                                                 }}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => getSearchResults(e.target.value)}
                                             />
@@ -534,4 +523,4 @@ const Purchase = () => {
     )
 }
 
-export default Purchase
+export default SalesOrderForm

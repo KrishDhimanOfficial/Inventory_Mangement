@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -19,11 +19,18 @@ const validationSchema = yup.object().shape({
 
 const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
     const { data }: { data: Data } = useSelector((state: any) => state.singleData)
+    const [units, setunits] = useState([])
 
     const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
         resolver: yupResolver(validationSchema)
     })
+
+    const setUnits = async () => {
+        const res = await DataService.get('/all/units')
+        const units = res.map((item: any) => ({ value: item._id, label: item.name }))
+        setunits(units)
+    }
 
     const registeration = async (formdata: object) => {
         try {
@@ -38,10 +45,8 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
         }
     }
 
-    useEffect(() => {
-        if (data) setValue('name', data.name)
-    }, [data])
-
+    useEffect(() => { if (data) setValue('name', data.name) }, [])
+    useEffect(() => { setUnits() }, [])
     return (
         <Modal
             show={show}
@@ -56,7 +61,7 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
             <Modal.Body>
                 <form onSubmit={handleSubmit(registeration)} className="form p-0">
                     <div className="row">
-                        <div className="col-md-12">
+                        <div className="col-md-12 mb-3">
                             <div className="flex-column">
                                 <label>Name </label>
                                 <span className='importantField'>*</span>
@@ -78,7 +83,7 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                         </div>
                         <div className="col-md-12">
                             <div className="flex-column">
-                                <label>Name </label>
+                                <label>Select Category Units </label>
                                 <span className='importantField'>*</span>
                             </div>
                             <div className={`inputForm ${errors.name?.message ? 'inputError' : ''}`}>
@@ -92,7 +97,7 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
                                             isClearable
                                             isSearchable
                                             isMulti
-                                            // options={categories}
+                                            options={units}
                                             placeholder="Select Units"
                                             onChange={(option: any) => {
                                                 field.onChange(option)

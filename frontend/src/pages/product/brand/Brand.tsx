@@ -41,8 +41,10 @@ const Brand = () => {
             const res = await DataService.get('/all/brands')
             const response = res.map((brand: Brand_Details, i: number) => ({
                 id: i + 1, _id: brand._id, name: brand.name,
-                category: brand.category?.map((category: any) => `${category.name},`)
+                category: brand.category?.map((category: any) => `${category.name} ,`)
             }))
+            console.log(response );
+            
             setdata(response), setloading(false)
         } catch (error) {
             console.error(error)
@@ -53,6 +55,7 @@ const Brand = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/brand/${Id}`}
+                handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)

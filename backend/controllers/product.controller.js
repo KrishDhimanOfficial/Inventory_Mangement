@@ -10,6 +10,10 @@ const ObjectId = mongoose.Types.ObjectId;
 const delay = 800;
 
 const pro_controllers = {
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+    */
     getAll_categories: async (req, res) => {
         try {
             const response = await categoryModel.find({})
@@ -468,23 +472,40 @@ const pro_controllers = {
     searchProduct: async (req, res) => {
         try {
             const { searchTerm, supplierId } = req.params;
-            const response = await productModel.aggregate([
-                {
-                    $match: {
-                        $or: [
-                            { title: { $regex: searchTerm, $options: "i" } },
-                            { sku: { $regex: searchTerm, } }
-                        ],
-                        supplierId: new ObjectId(supplierId)
+            const query = supplierId
+                ? [
+                    {
+                        $match: {
+                            $or: [
+                                { title: { $regex: searchTerm, $options: "i" } },
+                                { sku: { $regex: searchTerm, } }
+                            ],
+                            supplierId: new ObjectId(supplierId)
+                        }
+                    },
+                    {
+                        $project: {
+                            createdAt: 0, updatedAt: 0, image: 0, categoryId: 0, brandId: 0, unitId: 0
+                        }
                     }
-                },
-                {
-                    $project: {
-                        createdAt: 0, updatedAt: 0, image: 0, categoryId: 0, brandId: 0, unitId: 0
+                ]
+                : [
+                    {
+                        $match: {
+                            $or: [
+                                { title: { $regex: searchTerm, $options: "i" } },
+                                { sku: { $regex: searchTerm, } }
+                            ],
+                        }
+                    },
+                    {
+                        $project: {
+                            createdAt: 0, updatedAt: 0, image: 0, categoryId: 0, brandId: 0, unitId: 0
+                        }
                     }
-                }
-            ])
-            // if (response.length == 0) return res.json({ warning: 'No Results Found!' })
+                ]
+            const response = await productModel.aggregate(query)
+            if (response.length == 0) return res.json({ warning: 'No Results Found!' })
             return res.json(response)
         } catch (error) {
             console.log('searchProduct : ' + error.message)

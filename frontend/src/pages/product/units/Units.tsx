@@ -51,6 +51,7 @@ const Units = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/unit/${Id}`}
+              handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)

@@ -20,7 +20,6 @@ interface UserPermission {
 
 const Sidebar = () => {
     const dispatch = useDispatch()
-    console.log('Re-render Sidebar')
     const [user, setuser] = useState<UserPermission>({
         role: '', permissions: {
             customer: { view: null },
@@ -159,7 +158,7 @@ const Sidebar = () => {
                                             </Link>
                                         </li>
                                         <li className="nav-item">
-                                            <Link to="/dashboard/sales/pos" className="nav-link">
+                                            <Link to="/dashboard/pos" className="nav-link">
                                                 <i className="fa-solid fa-file-invoice nav-icon"></i>
                                                 <p className="text">POS</p>
                                             </Link>
@@ -210,23 +209,27 @@ const Sidebar = () => {
                             </ul>
                         </li>
                         {/* settings */}
-                        <li className="nav-item">
-                            <Link to="#" className="nav-link">
-                                <i className="fa-solid fa-gear me-2"></i>
-                                <p>
-                                    Settings
-                                    <i className="right fas fa-angle-left"></i>
-                                </p>
-                            </Link>
-                            <ul className="nav nav-treeview">
+                        {
+                            user.role === 'admin' && (
                                 <li className="nav-item">
-                                    <Link to="/dashboard/setting/warehouse" className="nav-link">
-                                        <i className="fa-solid fa-warehouse nav-icon"></i>
-                                        <p className="text ms-2">Warehouse</p>
+                                    <Link to="#" className="nav-link">
+                                        <i className="fa-solid fa-gear me-2"></i>
+                                        <p>
+                                            Settings
+                                            <i className="right fas fa-angle-left"></i>
+                                        </p>
                                     </Link>
+                                    <ul className="nav nav-treeview">
+                                        <li className="nav-item">
+                                            <Link to="/dashboard/setting/warehouse" className="nav-link">
+                                                <i className="fa-solid fa-warehouse nav-icon"></i>
+                                                <p className="text ms-2">Warehouse</p>
+                                            </Link>
+                                        </li>
+                                    </ul>
                                 </li>
-                            </ul>
-                        </li>
+                            )
+                        }
                     </ul>
                 </nav>
                 {/* <!-- /.sidebar-menu --> */}

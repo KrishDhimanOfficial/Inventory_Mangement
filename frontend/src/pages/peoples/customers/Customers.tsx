@@ -80,6 +80,7 @@ const Customers = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/customer/${Id}`}
+              handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)

@@ -51,6 +51,7 @@ const Category = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/category/${Id}`}
+              handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)

@@ -61,6 +61,7 @@ const Users = () => {
         <>
             <title>Dashboard | Users Management</title>
             <Static_Modal show={warnModal} endApi={`/user/${Id}`}
+                handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)

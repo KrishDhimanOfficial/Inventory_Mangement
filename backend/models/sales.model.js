@@ -1,7 +1,7 @@
 import mongoose from "../config/DB.js"
 
-const purchaseSchema = new mongoose.Schema({
-    purchaseId: {
+const salesSchema = new mongoose.Schema({
+    salesId: {
         type: mongoose.Schema.Types.String,
         unique: true,
     },
@@ -11,7 +11,7 @@ const purchaseSchema = new mongoose.Schema({
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
         ref: 'Warehouse'
     },
-    supplierId: {
+    customerId: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Please Select Supplier!'],
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
@@ -19,14 +19,19 @@ const purchaseSchema = new mongoose.Schema({
     },
     discount: {
         type: mongoose.Schema.Types.Number,
-        default: 0
     },
     total: {
         type: mongoose.Schema.Types.Number,
-        match: [/^[0-9]+$/, 'Invalid Grand Total!']
     },
     orderTax: {
         type: mongoose.Schema.Types.Number,
+    },
+    shippment: {
+        type: mongoose.Schema.Types.Number,
+    },
+    salestype: {
+        type: mongoose.Schema.Types.Number,
+        enum: [0, 1],  // 0 : POS , 1 : Sales
     },
     orderItems: {
         type: [
@@ -52,11 +57,9 @@ const purchaseSchema = new mongoose.Schema({
     note: {
         type: mongoose.Schema.Types.String,
     },
-    purchase_date: {
+    selling_date: {
         type: mongoose.Schema.Types.Date,
     }
 },
     { timestamps: true }
 )
-
-export default mongoose.model('purchase', purchaseSchema)
