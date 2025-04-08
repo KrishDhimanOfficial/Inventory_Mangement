@@ -4,7 +4,7 @@ import { useFetchData, DataService, downloadCSV, generatePDF } from '../../../ho
 import DataTable from 'react-data-table-component'
 
 const Category_Modal = lazy(() => import('./Category_Modal'))
-interface Category_Details { id: string, _id: string, name: string }
+interface Category_Details { id: string, _id: string, name: string, units: [] }
 
 const Category = () => {
     const [showmodal, setmodal] = useState(false)
@@ -18,6 +18,7 @@ const Category = () => {
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true },
         { name: "Name", selector: (row: any) => row.name, sortable: true },
+        { name: "Units", selector: (row: any) => row.units, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
@@ -37,9 +38,12 @@ const Category = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get('/all/categories')
+            const res = await DataService.get('/lookup-category-with-units')
             const response = res.map((category: Category_Details, i: number) => ({
                 id: i + 1, _id: category._id, name: category.name,
+                units: category.units?.map((unit: any, i: number) => (
+                    i === category.units?.length - 1 ? `${unit.name}` : `${unit.name} ,`
+                )).join('')
             }))
             setdata(response), setloading(false)
         } catch (error) {
@@ -51,7 +55,7 @@ const Category = () => {
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/category/${Id}`}
-              handleClose={() => setwarnmodal(!warnModal)}
+                handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)

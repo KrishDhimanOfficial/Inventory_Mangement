@@ -16,6 +16,8 @@ import Purchases from "./pages/purchase/Purchases"
 import Purchase from "./pages/purchase/Purchase"
 import SalesOrderForm from "./pages/sales/SalesOrderForm"
 import POS from "./pages/sales/POS"
+import System_Setting from "./pages/settings/system/System_Setting"
+import Update_purchase from "./pages/purchase/Update_purchase"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -84,12 +86,20 @@ const App = () => {
           element: <Purchase />
         },
         {
+          path: '/dashboard/purchase/:id',
+          element: <Update_purchase />
+        },
+        {
           path: '/dashboard/create/sales',
           element: <SalesOrderForm />
         },
         {
           path: '/dashboard/pos',
           element: <POS />
+        },
+        {
+          path: '/dashboard/system_setting',
+          element: <System_Setting />
         }
       ],
     }

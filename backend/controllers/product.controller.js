@@ -6,14 +6,33 @@ import validate from '../services/validateData.js'
 import mongoose from "mongoose";
 import config from '../config/config.js';
 import deleteImage from '../services/deleteImg.js';
+import purchaseModel from '../models/purchase.model.js';
 const ObjectId = mongoose.Types.ObjectId;
-const delay = 800;
+const delay = 100;
 
 const pro_controllers = {
     /**
      * @param {import('express').Request} req
      * @param {import('express').Response} res
     */
+    lookupwithUnits: async (req, res) => {
+        try {
+            const response = await categoryModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'units',
+                        localField: 'unitId',
+                        foreignField: '_id',
+                        as: 'units'
+                    }
+                },
+                { $project: { unitId: 0 } }
+            ])
+            setTimeout(() => res.status(200).json(response), delay)
+        } catch (error) {
+            console.log('lookupwithUnits : ' + error.message)
+        }
+    },
     getAll_categories: async (req, res) => {
         try {
             const response = await categoryModel.find({})
@@ -28,7 +47,10 @@ const pro_controllers = {
             const existence = await categoryModel.find({ name: req.body.name, })
             if (existence[0]) return res.json({ warning: 'Category Name Already Exists!' })
 
-            const response = await categoryModel.create(req.body)
+            const response = await categoryModel.create({
+                name: req.body.name,
+                unitId: req.body.unitId.map(id => new ObjectId(id.value))
+            })
             if (!response) return res.json({ error: 'Unable to handle request!' })
             return res.json({ success: 'Created Successfully!' })
         } catch (error) {
@@ -46,7 +68,10 @@ const pro_controllers = {
     },
     update_Category: async (req, res) => {
         try {
-            const response = await categoryModel.findByIdAndUpdate({ _id: req.params.id }, req.body, { new: true, runValidators: true })
+            const response = await categoryModel.findByIdAndUpdate({ _id: req.params.id }, {
+                name: req.body.name,
+                unitId: req.body.unitId.map(id => new ObjectId(id.value))
+            }, { new: true, runValidators: true })
             if (!response) return res.json({ error: 'Not Found!' })
             return res.json({ success: 'Updated Successfully!' })
         } catch (error) {
@@ -161,7 +186,21 @@ const pro_controllers = {
     },
     getProduct_units: async (req, res) => {
         try {
-            const response = await unitModel.find({})
+            const response = req.params.id
+                ? await categoryModel.aggregate([
+                    { $match: { _id: new ObjectId(req.params.id) } },
+                    {
+                        $lookup: {
+                            from: 'units',
+                            localField: 'unitId',
+                            foreignField: '_id',
+                            as: 'unit'
+                        }
+                    },
+                    { $unwind: '$unit' },
+                    { $replaceRoot: { newRoot: '$unit' } }
+                ])
+                : await unitModel.find({})
             return setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getProduct_units : ' + error.message)
@@ -511,22 +550,222 @@ const pro_controllers = {
             console.log('searchProduct : ' + error.message)
         }
     },
+    getAll_purchase_Details: async (req, res) => {
+        try {
+            const response = await purchaseModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'suppliers',
+                        localField: 'supplierId',
+                        foreignField: '_id',
+                        as: 'supplier'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$supplier',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$warehouse',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        supplier: { $ifNull: ['$supplier', { name: 'N/A' }] },
+                        warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
+                        date: {
+                            $dateToString: {
+                                format: "%Y-%m-%d",
+                                date: "$purchase_date"
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: { createdAt: 0, updatedAt: 0, note: 0, supplierId: 0, warehouseId: 0 }
+                },
+                {
+                    $sort: { purchase_date: -1 }
+                }
+            ])
+            return res.json(response)
+        } catch (error) {
+            console.log('getAll_purchase_Details : ' + error.message)
+        }
+    },
     createProductPruchase: async (req, res) => {
         try {
+            let code = '';
+            for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
+            const { discount, note, orderItems, total, orderTax, pruchaseDate, shipping, supplierId, warehouseId } = req.body
+            const response = await purchaseModel.create({
+                purchaseId: `P_${code}`,
+                discount, note, orderTax, shipping, total,
+                purchase_date: new Date(pruchaseDate),
+                supplierId: new ObjectId(supplierId.value),
+                warehouseId: new ObjectId(warehouseId.value),
+                orderItems: orderItems.map(item => ({
+                    productId: new ObjectId(item._id),
+                    quantity: item.qty,
+                    productTaxPrice: item.subtotal
+                }))
+
+            })
             if (!response) return res.json({ error: 'Unable to process your request!' })
-            return res.json({ success: 'Created Successfully!' })
+            response.orderItems.map(async (pro) => {
+                await productModel.findByIdAndUpdate({ _id: pro.productId }, {
+                    $inc: { stock: pro.quantity }
+                })
+            })
+            await productModel.findByIdAndUpdate()
+            return res.status(200).json({ success: 'Created Successfully!' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('createProductPruchase : ' + error.message)
         }
     },
+    getSingleProductPruchase_Details: async (req, res) => {
+        try {
+            const response = await purchaseModel.aggregate([
+                {
+                    $match: { _id: new ObjectId(req.params.id) }
+                },
+                {
+                    $unwind: "$orderItems" // Flatten the array first
+                },
+                {
+                    $lookup: {
+                        from: "products",
+                        localField: "orderItems.productId",
+                        foreignField: "_id",
+                        as: "orderItems.product"
+                    }
+                },
+                {
+                    $unwind: "$orderItems.product"
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        orderItems: {
+                            $push: {
+                                productId: "$orderItems.product._id",
+                                name: "$orderItems.product.title",
+                                cost: "$orderItems.product.cost",
+                                tax: "$orderItems.product.tax",
+                                quantity: "$orderItems.quantity"
+                            }
+                        },
+                        supplierId: { $first: "$supplierId" },
+                        warehouseId: { $first: "$warehouseId" },
+                        discount: { $first: "$discount" },
+                        total: { $first: "$total" },
+                        shipping: { $first: "$shipping" },
+                        orderTax: { $first: "$orderTax" },
+                        purchase_date: { $first: "$purchase_date" },
+                        stock: { $first: "$stock" }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'suppliers',
+                        localField: 'supplierId',
+                        foreignField: '_id',
+                        as: 'supplier'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$supplier',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$warehouse',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        supplier: { $ifNull: ['$supplier', { name: 'N/A' }] },
+                        warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
+                    }
+                },
+                {
+                    $project: {
+                        createdAt: 0, updatedAt: 0, supplierId: 0, warehouseId: 0,
+                        'warehouse.address': 0,
+                        'warehouse.city': 0,
+                        'warehouse.country': 0,
+                        'warehouse.createdAt': 0,
+                        'warehouse.updatedAt': 0,
+                        'warehouse.zipcode': 0,
+                        'supplier.address': 0,
+                        'supplier.city': 0,
+                        'supplier.country': 0,
+                        'supplier.createdAt': 0,
+                        'supplier.updatedAt': 0,
+                        'supplier.email': 0,
+                        'supplier.phone': 0,
+                    }
+                }
+            ])
+            if (!response[0]) return res.json({ error: 'Not Found!' })
+            return res.json(response[0])
+        } catch (error) {
+            console.log('getSingleProductPruchase_Details : ' + error.message)
+        }
+    },
     updateProductPurchase: async (req, res) => {
         try {
+            const { discount, note, orderItems, total, orderTax, pruchaseDate, shipping, supplierId, warehouseId } = req.body;
+            const response = await purchaseModel.create({
+                discount, note, orderTax, shipping, total,
+                purchase_date: new Date(pruchaseDate),
+                supplierId: new ObjectId(supplierId.value),
+                warehouseId: new ObjectId(warehouseId.value),
+                orderItems: orderItems.map(item => ({
+                    productId: new ObjectId(item._id),
+                    quantity: item.qty,
+                    productTaxPrice: item.subtotal
+                }))
+
+            })
             if (!response) return res.json({ error: 'Unable to process your request!!' })
             return res.json({ success: 'updated successfully!' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updateProductPurchase : ' + error.message)
+        }
+    },
+    deleteProductPurchase: async (req, res) => {
+        try {
+            const response = await purchaseModel.findByIdAndDelete({ _id: req.params.id }, { new: true })
+            if (!response) return res.json({ error: 'Not Found!' })
+            return res.json({ success: 'Deleted successfully!' })
+        } catch (error) {
+            console.log('deleteProductPurchase: async (req, res) => {' + error.message)
         }
     },
 }

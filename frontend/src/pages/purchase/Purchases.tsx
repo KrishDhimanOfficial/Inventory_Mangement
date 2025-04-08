@@ -1,39 +1,81 @@
-import { useState } from 'react'
-import { Section, Sec_Heading, Loader, Button } from '../../components/component'
-import { generatePDF, downloadCSV } from '../../hooks/hook'
+import { useEffect, useState } from 'react'
+import { Section, Sec_Heading, Loader, Button, Static_Modal } from '../../components/component'
+import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 const Purchases = () => {
     const navigate = useNavigate()
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
     const [Id, setId] = useState('')
+    const [warnModal, setwarnmodal] = useState(false)
+    const [refreshTable, setrefreshTable] = useState(false)
 
     const columns = [
-        { name: "ID", selector: (row: any) => row.id, sortable: true },
-        { name: "Name", selector: (row: any) => row.name, sortable: true },
-        { name: "Email", selector: (row: any) => row.email, sortable: true },
-        { name: "Phone", selector: (row: any) => row.phone, sortable: true },
-        { name: "City", selector: (row: any) => row.city, sortable: true },
-        { name: "Country", selector: (row: any) => row.country, sortable: true },
-        { name: "Address", selector: (row: any) => row.address, sortable: true },
+        { name: "Date", selector: (row: any) => row.date, sortable: true },
+        { name: "Reference", selector: (row: any) => row.reference, sortable: true },
+        { name: "Supplier", selector: (row: any) => row.supplier, sortable: true },
+        { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
+        { name: "Grand Total", selector: (row: any) => row.total, sortable: true },
+        { name: "Paid", selector: (row: any) => row.paid, sortable: true },
+        { name: "Due", selector: (row: any) => row.due, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
                 <div className="d-flex justify-content-between">
-                    <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
+                    <Link to={`/dashboard/purchase/${row.id}`} className='btn btn-success me-2'>
+                        <i className="fa-solid fa-pen-to-square"></i>
+                    </Link>
                     <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
                 </div>
             )
         },
     ]
-    const handleTableRow = async (id: string) => { }
+    const tableBody = data.map((purchase: any, i: number) => [
+        i + 1,
+        purchase.date,
+        purchase.reference,
+        purchase.supplier,
+        purchase.warehouse,
+        purchase.total,
+        purchase.paid,
+        purchase.due
+    ])
+    const pdfColumns = ["S.No", "Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due"]
     const deleteTableRow = (id: string) => { setId(id) }
 
-
+    const fetch = async () => {
+        try {
+            setloading(true)
+            const res = await DataService.get('/get-all-purchases-details')
+            const purchases = res?.map((item: any) => ({
+                id: item._id,
+                date: item.date,
+                reference: item.purchaseId,
+                supplier: item.supplier?.name,
+                warehouse: item.warehouse?.name,
+                total: item.total,
+                paid: item.payment_paid,
+                due: item.payment_due
+            }))
+            setdata(purchases), setloading(false)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setloading(false)
+        }
+    }
+    useEffect(() => { fetch() }, [])
     return (
         <>
+            <Static_Modal show={warnModal} endApi={`/purchase/${Id}`}
+                refreshTable={() => {
+                    setwarnmodal(!warnModal)
+                    setrefreshTable(!refreshTable)
+                    setloading(!loading)
+                }}
+            />
             <Sec_Heading page={"All Purchase"} subtitle="Purchases" />
             <Section>
                 <div className="col-12">
@@ -52,12 +94,12 @@ const Purchases = () => {
                                         <Button
                                             text='Generate PDF'
                                             className='btn btn-danger'
-                                        // onclick={() => generatePDF('Purchase', pdfColumns, tableBody)}
+                                            onclick={() => generatePDF('Purchases', pdfColumns, tableBody)}
                                         />
                                         <Button
                                             text='CSV'
                                             className='btn btn-success'
-                                        // onclick={() => downloadCSV('purchase', data)}
+                                            onclick={() => downloadCSV('purchase', data)}
                                         />
                                         <Button
                                             text='Create'

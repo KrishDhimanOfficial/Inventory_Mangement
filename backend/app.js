@@ -2,6 +2,8 @@ import express from 'express'
 import cookieParser from 'cookie-parser'
 import apiRouter from './routes/api.routes.js'
 import cors from 'cors'
+import compression from 'compression'
+import responseTime from 'response-time'
 import './services/cronJob.js'
 const app = express()
 
@@ -18,7 +20,15 @@ app.use(cors(
     credentials: true,
   }
 ))
-
+app.use(compression(
+  {
+    level: 2, // compression level
+    threshold: 0, // Compress all
+    memLevel: 9, // memory usuage
+    filter: (req, res) => compression.filter(req, res)
+  }
+))
+app.use(responseTime((req, res, time) => console.log(`${req.method} ${req.url} - ${time.toFixed(2)} ms`)))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())

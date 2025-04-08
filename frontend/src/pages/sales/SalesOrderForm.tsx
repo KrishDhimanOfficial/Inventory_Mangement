@@ -67,7 +67,7 @@ const SalesOrderForm = () => {
             const controller = new AbortController()
 
             const timeout = setTimeout(async () => {
-                const res = await DataService.get(`/get-search-results/${searchVal}/${customerOption?.value}`, {}, controller.signal)
+                const res = await DataService.get(`/get-search-results/${searchVal}`, {}, controller.signal)
                 const results = res.map((item: any) => ({ _id: item._id, sku: item.sku, name: item.title }))
                 setsearchResults(results) // Calling Api & set Results
             }, 800)
@@ -195,9 +195,6 @@ const SalesOrderForm = () => {
 
     useEffect(() => { fetchCustomers(), fetchWarehouses() }, [])
     useEffect(() => { handleTotal() }, [count]) // Set Grand Total
-    // useEffect(() => {
-    //     setPrevValues((prev) => [total, ...prev].slice(0, 2)); // Store last 2 values
-    // }, [total])
     useEffect(() => {
         const timeout = setTimeout(() => setordertax(ordertax), 800)
         return () => clearTimeout(timeout)

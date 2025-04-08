@@ -48,6 +48,9 @@ const productSchema = new mongoose.Schema({
     desc: {
         type: mongoose.Schema.Types.String,
     },
+    stock: {
+        type: mongoose.Schema.Types.Number,
+    },
     warehouses: {
         type: [
             {

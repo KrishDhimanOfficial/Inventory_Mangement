@@ -13,13 +13,14 @@ import {
     getDiscount,
     getTaxonProduct,
     getorderTax,
-    handelvalToNotbeNegitive
+    handelvalToNotbeNegitive,
+    useFetchData
 } from '../../hooks/hook'
 import config from '../../config/config'
 import { toast } from 'react-toastify'
 import { validationSchema, defaultValues, Searches, Option } from './info'
 
-const Purchase = () => {
+const Update_purchase = () => {
     const { id } = useParams()
     const navigate = useNavigate()
     const [searchResults, setsearchResults] = useState<Searches[]>([])
@@ -27,58 +28,36 @@ const Purchase = () => {
     const [warehouses, setWarehouses] = useState<any>([])
     const [shippment, setshippment] = useState<number>(0)
     const [discount, setdiscount] = useState<number>(0)
-    const [calDiscount, setcalDiscount] = useState<number | any>(null)
+    const [calDiscount, setcalDiscount] = useState<number>(0)
     const [ordertax, setordertax] = useState<number>(0)
-    const [calOrdertax, setcalOrdertax] = useState<number | any>(null)
-    const [total, settotal] = useState<number | any>(0)
+    const [calOrdertax, setcalOrdertax] = useState<number>(0)
+    const [total, settotal] = useState<number>(0)
     const [count, setcount] = useState<number>(0)
     const [supplierOption, setsupplierOption] = useState<Option | null>(null)
+    const [warehouseOption, setwarehouseOption] = useState<Option | null>(null)
     const [abortController, setAbortController] = useState<AbortController | null>(null)
     const [searchtimeout, settimeout] = useState<any>(null)
     const [searchedProducts, setsearchedProducts] = useState<any>([])
-
+    const { apiData, fetchData }: { apiData: any, fetchData: any } = useFetchData({})
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
         resolver: yupResolver(validationSchema)
     })
-    const fetchSuppliers = async () => {
+
+    const fetchSupplier = async () => {
         try {
-            const res = await DataService.get('/all/supplier-details')
-            const suppliers = res.map((item: any) => ({ value: item._id, label: item.name }))
-            setsuppliers(suppliers)
+            const token = localStorage.getItem(config.token_name)
+            const [supplierRes, warehouseRes]: any = await Promise.all([
+                DataService.get('/all/supplier-details'),
+                DataService.get('/warehouses', { Authorization: `Bearer ${token}` })
+            ])
+            setsuppliers(() => (
+                supplierRes?.map((item: any) => ({ value: item._id, label: item.name }))
+            ))
+            setWarehouses(() => (
+                warehouseRes?.map((item: any) => ({ value: item._id, label: item.name }))
+            ))
         } catch (error) {
-            console.error(error), setsuppliers([])
-        }
-    }
-    const fetchWarehouses = async () => {
-        try {
-            const res = await DataService.get('/warehouses', {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
-            const warehouses = res.map((item: any) => ({ value: item._id, label: item.name }))
-            setWarehouses(warehouses)
-        } catch (error) {
-            console.error(error), setWarehouses([])
-        }
-    }
-
-    const getSearchResults = async (searchVal: string) => {
-        try {
-            if (!searchVal) setsearchResults([]) // clear searchResults, previous Timeout & Abort signal
-            if (searchtimeout && abortController) clearTimeout(searchtimeout), abortController.abort()
-            const controller = new AbortController()
-
-            const timeout = setTimeout(async () => {
-                const res = await DataService.get(`/get-search-results/${searchVal}/${supplierOption?.value}`, {}, controller.signal)
-                const results = res.map((item: any) => ({ _id: item._id, sku: item.sku, name: item.title }))
-                setsearchResults(results) // Calling Api & set Results
-            }, 800)
-
-            settimeout(timeout)
-            setAbortController(controller)
-        } catch (error: any) {
-            setsearchResults([])
-            if (error.name === "AbortError") console.log("Fetch request was aborted")
             console.error(error)
         }
     }
@@ -110,43 +89,26 @@ const Purchase = () => {
             console.error(error)
         }
     }
+    const getSearchResults = async (searchVal: string) => {
+        try {
+            if (!searchVal) setsearchResults([]) // clear searchResults, previous Timeout & Abort signal
+            if (searchtimeout && abortController) clearTimeout(searchtimeout), abortController.abort()
+            const controller = new AbortController()
 
-    const handleQuantityPlus = useCallback((id: string) => {
-        setsearchedProducts((prevProducts: any) =>
-            prevProducts.map((product: any) =>
-                product._id === id
-                    ? {
-                        ...product,
-                        qty: product.qty + 1,
-                        subtotal: getTaxonProduct(product.cost, product.tax, product.qty + 1),
-                    }
-                    : product
-            )
-        )
-        setcount((prev: number) => prev + 1)
-    }, [])
+            const timeout = setTimeout(async () => {
+                const res = await DataService.get(`/get-search-results/${searchVal}/${supplierOption?.value}`, {}, controller.signal)
+                const results = res.map((item: any) => ({ _id: item._id, sku: item.sku, name: item.title }))
+                setsearchResults(results) // Calling Api & set Results
+            }, 800)
 
-    const handleQuantityMinus = useCallback((id: string) => {
-        setsearchedProducts((prevProducts: any) =>
-            prevProducts.map((product: any) =>
-                product._id === id
-                    ? {
-                        ...product,
-                        qty: handleqtytonotbeNegitive(product),
-                        subtotal: getTaxonProduct(product.cost, product.tax, handleqtytonotbeNegitive(product)),
-                    }
-                    : product
-            )
-        )
-        setcount((prev: number) => prev - 1)
-    }, [])
-
-    const handleTotal = () => {
-        let grandTotal = 0;
-        searchedProducts.forEach((pro: any) => grandTotal += pro.subtotal)
-        settotal(parseFloat(grandTotal.toFixed(2)))
-    } // this will set grand total of purchase
-
+            settimeout(timeout)
+            setAbortController(controller)
+        } catch (error: any) {
+            setsearchResults([])
+            if (error.name === "AbortError") console.log("Fetch request was aborted")
+            console.error(error)
+        }
+    }
     const columns = [
         { name: "Product", selector: (row: any) => row.product, sortable: true },
         { name: "Cost", selector: (row: any) => row.cost, sortable: true },
@@ -187,12 +149,38 @@ const Purchase = () => {
             )
         }
     ]
+    const handleQuantityPlus = useCallback((id: string) => {
+        setsearchedProducts((prevProducts: any) =>
+            prevProducts.map((product: any) =>
+                product._id === id
+                    ? {
+                        ...product,
+                        qty: product.qty + 1,
+                        subtotal: getTaxonProduct(product.cost, product.tax, product.qty + 1),
+                    }
+                    : product
+            )
+        )
+        setcount((prev: number) => prev + 1)
+    }, [])
 
+    const handleQuantityMinus = useCallback((id: string) => {
+        setsearchedProducts((prevProducts: any) =>
+            prevProducts.map((product: any) =>
+                product._id === id
+                    ? {
+                        ...product,
+                        qty: handleqtytonotbeNegitive(product),
+                        subtotal: getTaxonProduct(product.cost, product.tax, handleqtytonotbeNegitive(product)),
+                    }
+                    : product
+            )
+        )
+        setcount((prev: number) => prev - 1)
+    }, [])
     const registeration = async (formdata: object) => {
         try {
-            console.log(formdata);
-
-            const res: any = await DataService.post('/purchase', formdata)
+            const res = await DataService.put(`/purchase/${id} `, formdata)
             if (res.success) navigate('/dashboard/purchases')
             Notify(res) // Show API Response
         } catch (error) {
@@ -200,33 +188,33 @@ const Purchase = () => {
         }
     } // this handle POST operation
 
+
+    useEffect(() => { fetchData(`/purchase/${id}`), fetchSupplier() }, [])
     useEffect(() => {
-        setValue('orderItems', searchedProducts),
-            setValue('total', total)
-    }, [searchedProducts?.length, calDiscount, calOrdertax, shippment])
-    useEffect(() => { fetchSuppliers(), fetchWarehouses() }, [])
-    useEffect(() => { handleTotal() }, [count]) // Set Grand Total
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setordertax(ordertax), setValue('orderTax', ordertax!)
-        }, 1000)
-        return () => clearTimeout(timeout)
-    }, [ordertax])
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setdiscount(discount), setValue('discount', discount!)
-        }, 1000)
-        return () => clearTimeout(timeout)
-    }, [discount])
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setshippment(shippment), setValue('shipping', Number(shippment))
-        }, 1000)
-        return () => clearTimeout(timeout)
-    }, [shippment])
+        if (apiData?._id) {
+            console.log(apiData);
+            setValue('pruchaseDate', apiData.purchase_date.split('T')[0])
+            setValue('orderTax', apiData.orderTax)
+            setValue('discount', apiData.discount)
+            setValue('shipping', apiData.shipping)
+            setsupplierOption({ value: apiData.supplier._id, label: apiData.supplier.name })
+            setwarehouseOption({ value: apiData.warehouse._id, label: apiData.warehouse.name })
+            setsearchedProducts(() => {
+                return apiData.orderItems?.map((product: any) => ({
+                    // _id: product._id,
+                    // product: product.title,
+                    // current_stock: 0,
+                    // qty: 1,
+                    // tax: product.tax,
+                    // cost: product.cost,
+                    // subtotal: getTaxonProduct(product.cost, product.tax, 1)
+                }))
+            })
+        }
+    }, [apiData])
     return (
         <>
-            <Sec_Heading page={"Create Purchase"} subtitle="Purchase" />
+            <Sec_Heading page={"Edit Purchase Details"} subtitle="Purchase" />
             <Section>
                 <div className="col-12">
                     <div className="card">
@@ -239,7 +227,7 @@ const Purchase = () => {
                                                 <label>Date </label>
                                                 <span className='importantField'>*</span>
                                             </div>
-                                            <div className={`inputForm ${errors.supplierId?.message ? 'inputError' : ''} `}>
+                                            <div className={`inputForm${errors.supplierId?.message ? 'inputError' : ''}`}>
                                                 <Controller
                                                     name="pruchaseDate"
                                                     control={control}
@@ -268,7 +256,7 @@ const Purchase = () => {
                                                     render={({ field }) => (
                                                         <Select
                                                             {...field}
-                                                            // value={field.value || unitOption}
+                                                            value={field.value || supplierOption}
                                                             isClearable
                                                             isSearchable
                                                             className='select'
@@ -299,11 +287,12 @@ const Purchase = () => {
                                                     render={({ field }) => (
                                                         <Select
                                                             {...field}
-                                                            // value={field.value || unitOption}
+                                                            value={field.value || warehouseOption}
                                                             isClearable
                                                             isSearchable
                                                             className='select'
                                                             isRtl={false}
+                                                            loadingMessage={() => true ? "Loading... Please wait" : ''}
                                                             placeholder='Select Warehouse'
                                                             options={warehouses}
                                                             onChange={(selectedoption) => field.onChange(selectedoption)}
@@ -530,5 +519,4 @@ const Purchase = () => {
         </>
     )
 }
-
-export default Purchase
+export default Update_purchase

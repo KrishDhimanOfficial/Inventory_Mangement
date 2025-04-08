@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 import validate from '../services/validateData.js'
 import warehouseModel from '../models/warehouse.model.js'
+import { getUser } from "../services/auth.js";
+import userModel from "../models/user.model.js";
 
 const ObjectId = mongoose.Types.ObjectId;
-const delay = 800;
+const delay = 100;
 const warehouse_controllers = {
     /**
   * @param {import('express').Request} req
@@ -21,7 +23,33 @@ const warehouse_controllers = {
     },
     getAllWarehouses: async (req, res) => {
         try {
-            const response = await warehouseModel.find({})
+            const user = getUser(req.headers['authorization'].split(' ')[1])
+            let response = await userModel.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(user.id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehousesId',
+                        foreignField: '_id',
+                        as: 'warehouses'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$warehouses",
+                        // preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $replaceRoot: { newRoot: '$warehouses' }
+                }
+            ])
+
+            if (!response[0]) response = await warehouseModel.find({})
             setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getAllWarehouses : ' + error.message)

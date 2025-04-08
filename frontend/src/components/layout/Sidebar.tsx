@@ -221,6 +221,12 @@ const Sidebar = () => {
                                     </Link>
                                     <ul className="nav nav-treeview">
                                         <li className="nav-item">
+                                            <Link to="/dashboard/system_setting" className="nav-link">
+                                                <i className="fa-solid fa-gears nav-icon"></i>
+                                                <p className="text ms-2">System Setting</p>
+                                            </Link>
+                                        </li>
+                                        <li className="nav-item">
                                             <Link to="/dashboard/setting/warehouse" className="nav-link">
                                                 <i className="fa-solid fa-warehouse nav-icon"></i>
                                                 <p className="text ms-2">Warehouse</p>

@@ -8,12 +8,12 @@ import bcrypt from 'bcrypt'
 import { getUser, setUser } from '../services/auth.js'
 
 // /** @type {Object.<string, (req: import('express').Request, res: import('express').Response) => Promise<any>>} */
-const delay = 800;
+const delay = 100;
 const users_controllers = {
-       /**
-     * @param {import('express').Request} req
-     * @param {import('express').Response} res
-    */
+    /**
+  * @param {import('express').Request} req
+  * @param {import('express').Response} res
+ */
     checkUserIsLoggin: async (req, res) => {
         try {
             const user = getUser(req.headers['authorization'].split(' ')[1])
@@ -193,7 +193,7 @@ const users_controllers = {
     getAllSuppliersDetails: async (req, res) => {
         try {
             const response = await supplierModel.find({})
-            setTimeout(() => res.json(response), delay)
+            setTimeout(() => res.status(200).json(response), delay)
         } catch (error) {
             console.log('getAllSuppliersDetails : ' + error.message)
         }

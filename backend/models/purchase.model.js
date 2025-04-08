@@ -18,31 +18,36 @@ const purchaseSchema = new mongoose.Schema({
         ref: 'Supplier'
     },
     discount: {
-        type: mongoose.Schema.Types.Number,
-        default: 0
+        type: mongoose.Schema.Types.Number
     },
     total: {
         type: mongoose.Schema.Types.Number,
         match: [/^[0-9]+$/, 'Invalid Grand Total!']
     },
+    shipping: {
+        type: mongoose.Schema.Types.Number
+    },
     orderTax: {
-        type: mongoose.Schema.Types.Number,
+        type: mongoose.Schema.Types.Number
     },
     orderItems: {
         type: [
             {
                 quantity: { type: mongoose.Schema.Types.Number },
-                productId: { type: mongoose.Schema.Types.ObjectId }
+                productId: { type: mongoose.Schema.Types.ObjectId },
+                productTaxPrice: { type: mongoose.Schema.Types.Number },
             }
         ]
     },
     payment_paid: {
         type: mongoose.Schema.Types.Number,
-        match: [/^[0-9]+$/, 'Invalid Paid Payment!']
+        match: [/^[0-9]+$/, 'Invalid Paid Payment!'],
+        default: 0
     },
     payment_due: {
         type: mongoose.Schema.Types.Number,
-        match: [/^[0-9]+$/, 'Invalid Due Payment!']
+        match: [/^[0-9]+$/, 'Invalid Due Payment!'],
+        default: 0
     },
     payment_status: {
         type: mongoose.Schema.Types.String,

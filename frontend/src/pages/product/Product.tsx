@@ -76,8 +76,8 @@ const Product = () => {
         setsuppliers(suppliers)
     }
 
-    const setUnits = async () => {
-        const res = await DataService.get('/all/units')
+    const fetchUnits = async (id: string) => {
+        const res = await DataService.get(`/all/units/${id}`)
         const units = res.map((item: any) => ({ value: item._id, label: item.name }))
         setunits(units)
     }
@@ -120,7 +120,7 @@ const Product = () => {
         }
     }
 
-    useEffect(() => { fetchCategories(), setUnits(), fetchSuppliers() }, [])
+    useEffect(() => { fetchCategories(), fetchSuppliers() }, [])
     useEffect(() => { if (id) fetchProduct(`/product/${id}`) }, [])
     useEffect(() => {
         if (productData && id) {
@@ -232,6 +232,7 @@ const Product = () => {
                                                         onChange={(selectedoption: any) => {
                                                             field.onChange(selectedoption)
                                                             fetchBrands(selectedoption.value)
+                                                            fetchUnits(selectedoption.value)
                                                         }}
                                                         styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
                                                     />

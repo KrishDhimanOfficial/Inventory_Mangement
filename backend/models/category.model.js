@@ -6,6 +6,9 @@ const categorySchema = new mongoose.Schema({
         unique: true,
         trim: true,
         match: [/^[A-Za-z\s]{1,30}$/, 'Name must be 1-30 characters long.']
+    },
+    unitId: {
+        type: [mongoose.Schema.Types.ObjectId],
     }
 })
 

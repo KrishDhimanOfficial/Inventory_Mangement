@@ -45,7 +45,9 @@ const Category_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) =>
         }
     }
 
-    useEffect(() => { if (data) setValue('name', data.name) }, [])
+    useEffect(() => { if (data) {
+        setValue('name', data.name)
+    } }, [data])
     useEffect(() => { setUnits() }, [])
     return (
         <Modal
