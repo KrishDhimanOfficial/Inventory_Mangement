@@ -18,6 +18,7 @@ import SalesOrderForm from "./pages/sales/SalesOrderForm"
 import POS from "./pages/sales/POS"
 import System_Setting from "./pages/settings/system/System_Setting"
 import Update_purchase from "./pages/purchase/Update_purchase"
+import UpdateSales from "./pages/sales/updateSales"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -92,6 +93,10 @@ const App = () => {
         {
           path: '/dashboard/create/sales',
           element: <SalesOrderForm />
+        },
+        {
+          path: '/dashboard/sales/:id',
+          element: <UpdateSales />
         },
         {
           path: '/dashboard/pos',

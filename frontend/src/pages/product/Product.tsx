@@ -59,27 +59,30 @@ const Product = () => {
         setprevImage(URL.createObjectURL(file))
     }
 
-    const fetchCategories = async () => {
-        const res = await DataService.get('/all/categories')
-        const category = res.map((item: any) => ({ value: item._id, label: item.name }))
-        setcategories(category)
+    const fetchBrand_unit_by_category_Id = async (id: string) => {
+        try {
+            const [brandsRes, unitRes] = await Promise.all([
+                DataService.get(`/all/brands/${id}`),
+                DataService.get(`/all/units/${id}`)
+            ])
+            setbrands(brandsRes.map((item: any) => ({ value: item.brand?._id, label: item.brand?.name })))
+            setunits(unitRes.map((item: any) => ({ value: item._id, label: item.name })))
+        } catch (error) {
+            console.error(error)
+        }
     }
 
-    const fetchBrands = async (id: string) => {
-        const res = await DataService.get(`/all/brands/${id}`)
-        const brands = res.map((item: any) => ({ value: item.brand?._id, label: item.brand?.name }))
-        setbrands(brands)
-    }
-    const fetchSuppliers = async () => {
-        const res = await DataService.get('/all/supplier-details')
-        const suppliers = res.map((item: any) => ({ value: item._id, label: item.name }))
-        setsuppliers(suppliers)
-    }
-
-    const fetchUnits = async (id: string) => {
-        const res = await DataService.get(`/all/units/${id}`)
-        const units = res.map((item: any) => ({ value: item._id, label: item.name }))
-        setunits(units)
+    const fetchCategory_Supplier = async () => {
+        try {
+            const [categoryRes, suppliersRes] = await Promise.all([
+                DataService.get('/all/categories'),
+                DataService.get('/all/supplier-details')
+            ])
+            setcategories(categoryRes.map((item: any) => ({ value: item?._id, label: item?.name })))
+            setsuppliers(suppliersRes.map((item: any) => ({ value: item._id, label: item.name })))
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     const BarcodeGenerator = () => {
@@ -120,7 +123,7 @@ const Product = () => {
         }
     }
 
-    useEffect(() => { fetchCategories(), fetchSuppliers() }, [])
+    useEffect(() => { fetchCategory_Supplier() }, [])
     useEffect(() => { if (id) fetchProduct(`/product/${id}`) }, [])
     useEffect(() => {
         if (productData && id) {
@@ -231,8 +234,7 @@ const Product = () => {
                                                         options={categories}
                                                         onChange={(selectedoption: any) => {
                                                             field.onChange(selectedoption)
-                                                            fetchBrands(selectedoption.value)
-                                                            fetchUnits(selectedoption.value)
+                                                            fetchBrand_unit_by_category_Id(selectedoption.value)
                                                         }}
                                                         styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none' }) }}
                                                     />

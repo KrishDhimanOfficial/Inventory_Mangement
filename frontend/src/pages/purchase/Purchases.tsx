@@ -27,7 +27,7 @@ const Purchases = () => {
                     <Link to={`/dashboard/purchase/${row.id}`} className='btn btn-success me-2'>
                         <i className="fa-solid fa-pen-to-square"></i>
                     </Link>
-                    <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                    <Button text='' onclick={() => deleteTableRow(row.id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
                 </div>
             )
         },
@@ -43,7 +43,7 @@ const Purchases = () => {
         purchase.due
     ])
     const pdfColumns = ["S.No", "Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due"]
-    const deleteTableRow = (id: string) => { setId(id) }
+    const deleteTableRow = (id: string) => { setId(id), setwarnmodal(!warnModal) }
 
     const fetch = async () => {
         try {
@@ -66,10 +66,11 @@ const Purchases = () => {
             setloading(false)
         }
     }
-    useEffect(() => { fetch() }, [])
+    useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/purchase/${Id}`}
+                handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)

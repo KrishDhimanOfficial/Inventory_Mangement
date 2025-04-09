@@ -3,8 +3,10 @@ import cookieParser from 'cookie-parser'
 import apiRouter from './routes/api.routes.js'
 import cors from 'cors'
 import compression from 'compression'
+import helmet from 'helmet'
 import responseTime from 'response-time'
 import './services/cronJob.js'
+import config from './config/config.js'
 const app = express()
 
 // view engine setup
@@ -14,12 +16,14 @@ app.set('views', 'views')
 
 app.use(cors(
   {
-    origin: '*',
+    origin: `${config.client_url}`,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   }
 ))
+
+app.use(helmet())
 app.use(compression(
   {
     level: 2, // compression level

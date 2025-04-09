@@ -41,24 +41,19 @@ const Purchase = () => {
         defaultValues,
         resolver: yupResolver(validationSchema)
     })
-    const fetchSuppliers = async () => {
+
+    const fetchSupplier_warehouses = async () => {
         try {
-            const res = await DataService.get('/all/supplier-details')
-            const suppliers = res.map((item: any) => ({ value: item._id, label: item.name }))
-            setsuppliers(suppliers)
+            const [supplierRes, warehouseRes] = await Promise.all([
+                DataService.get('/all/supplier-details'),
+                DataService.get('/warehouses', {
+                    Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+                })
+            ])
+            setsuppliers(supplierRes.map((item: any) => ({ value: item._id, label: item.name })))
+            setWarehouses(warehouseRes.map((item: any) => ({ value: item._id, label: item.name })))
         } catch (error) {
-            console.error(error), setsuppliers([])
-        }
-    }
-    const fetchWarehouses = async () => {
-        try {
-            const res = await DataService.get('/warehouses', {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
-            const warehouses = res.map((item: any) => ({ value: item._id, label: item.name }))
-            setWarehouses(warehouses)
-        } catch (error) {
-            console.error(error), setWarehouses([])
+            console.error(error)
         }
     }
 
@@ -190,8 +185,6 @@ const Purchase = () => {
 
     const registeration = async (formdata: object) => {
         try {
-            console.log(formdata);
-
             const res: any = await DataService.post('/purchase', formdata)
             if (res.success) navigate('/dashboard/purchases')
             Notify(res) // Show API Response
@@ -200,11 +193,18 @@ const Purchase = () => {
         }
     } // this handle POST operation
 
+    const resetState = () => { // reset All when supplier change
+        settotal(0), setcalDiscount(0), setcalOrdertax(0), setshippment(0)
+        setsearchedProducts([]), setdiscount(0), setordertax(0), setshippment(0)
+    }
     useEffect(() => {
         setValue('orderItems', searchedProducts),
-            setValue('total', total)
+            setValue('subtotal', total)
     }, [searchedProducts?.length, calDiscount, calOrdertax, shippment])
-    useEffect(() => { fetchSuppliers(), fetchWarehouses() }, [])
+    useEffect(() => {
+        setValue('total', total + calOrdertax + shippment - calDiscount)
+    }, [discount, ordertax, shippment])
+    useEffect(() => { fetchSupplier_warehouses() }, [])
     useEffect(() => { handleTotal() }, [count]) // Set Grand Total
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -268,7 +268,6 @@ const Purchase = () => {
                                                     render={({ field }) => (
                                                         <Select
                                                             {...field}
-                                                            // value={field.value || unitOption}
                                                             isClearable
                                                             isSearchable
                                                             className='select'
@@ -278,6 +277,7 @@ const Purchase = () => {
                                                             onChange={(selectedoption: any) => {
                                                                 field.onChange(selectedoption)
                                                                 setsupplierOption(selectedoption)
+                                                                resetState()
                                                             }}
                                                             styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none', }) }}
                                                         />
@@ -299,7 +299,6 @@ const Purchase = () => {
                                                     render={({ field }) => (
                                                         <Select
                                                             {...field}
-                                                            // value={field.value || unitOption}
                                                             isClearable
                                                             isSearchable
                                                             className='select'
@@ -330,9 +329,7 @@ const Purchase = () => {
                                                 type="text"
                                                 className="input"
                                                 placeholder="Search Product by Code or Name"
-                                                onFocus={() => {
-                                                    if (searchedProducts.length == 0) toast.info('Select your supplier')
-                                                }}
+                                                onFocus={() => { if (!supplierOption?.value) toast.info('Select your supplier') }}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => getSearchResults(e.target.value)}
                                             />
                                         </div>
@@ -509,19 +506,11 @@ const Purchase = () => {
                                         </div>
                                     </Col>
                                 </Row>
-                                {
-                                    id
-                                        ? (<Button
-                                            type='submit'
-                                            className='button-submit w-25'
-                                            text={isSubmitting ? 'updating...' : 'Update'}
-                                        />)
-                                        : (<Button
-                                            type='submit'
-                                            className='button-submit w-25'
-                                            text={isSubmitting ? 'Submiting...' : 'Submit'}
-                                        />)
-                                }
+                                <Button
+                                    type='submit'
+                                    className='button-submit w-25'
+                                    text={isSubmitting ? 'Submiting...' : 'Submit'}
+                                />
                             </form>
                         </div>
                     </div>

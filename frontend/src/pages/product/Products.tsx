@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Sec_Heading, Section, Button, Loader, Static_Modal, Input } from '../../components/component'
 import { DataService, downloadCSV, generatePDF, filterData } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
@@ -36,6 +36,7 @@ const Products = () => {
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
+    const [searchTerm, setsearchTerm] = useState('')
     const { permission } = useSelector((state: any) => state.permission)
 
     const columns = [
@@ -87,7 +88,7 @@ const Products = () => {
     // const pdfColumns = ["S.No", "Title", "SKU", "Cost", "Price", "Tax", "Category", "Brand", "Unit", "Date"]
     const pdfColumns = ["S.No", "SKU", "Title", "Category", "Brand"]
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
-    const fetch = async () => {
+    const fetch = useCallback(async () => {
         try {
             setloading(true)
             const res = await DataService.get('/all/products')
@@ -109,11 +110,16 @@ const Products = () => {
         } catch (error) {
             console.error(error)
         }
-    }
+    }, [])
+
+    useEffect(() => {
+        // setdata(filterData(data, searchTerm))
+    }, [searchTerm])
     useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/product/${Id}`}
+                handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)
@@ -145,9 +151,7 @@ const Products = () => {
                                                             type="text"
                                                             className="searchbar-input"
                                                             autoCapitalize="off"
-                                                            onChange={(e: any) => {
-                                                                //  setdata(filterData(data, e.target.value.trim())) 
-                                                            }}
+                                                            onChange={(e: any) => setsearchTerm(e.target.value.trim())}
                                                             title="Search" role="combobox" placeholder="Search by name" />
                                                     </div>
                                                 </div>

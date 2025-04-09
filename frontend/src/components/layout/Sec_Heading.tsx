@@ -5,6 +5,7 @@ interface Props {
 }
 
 const Sec_heading: React.FC<Props> = ({ page, subtitle }) => {
+    
     return (
         <div className="content-header">
             <div className="container-fluid">

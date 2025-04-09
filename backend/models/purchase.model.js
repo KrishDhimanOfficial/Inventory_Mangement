@@ -1,5 +1,12 @@
 import mongoose from "../config/DB.js"
 
+
+const purchaseOrderSchema = new mongoose.Schema({
+    quantity: { type: mongoose.Schema.Types.Number },
+    productId: { type: mongoose.Schema.Types.ObjectId },
+    productTaxPrice: { type: mongoose.Schema.Types.Number },
+}, { _id: false })
+
 const purchaseSchema = new mongoose.Schema({
     purchaseId: {
         type: mongoose.Schema.Types.String,
@@ -15,29 +22,31 @@ const purchaseSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Please Select Supplier!'],
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
-        ref: 'Supplier'
     },
     discount: {
-        type: mongoose.Schema.Types.Number
+        type: mongoose.Schema.Types.Number,
+        default: 0
+    },
+    subtotal: {
+        type: mongoose.Schema.Types.Number,
+        match: [/^[0-9]+$/, 'Invalid SubTotal!'],
+        default: 0
     },
     total: {
         type: mongoose.Schema.Types.Number,
-        match: [/^[0-9]+$/, 'Invalid Grand Total!']
+        match: [/^[0-9]+$/, 'Invalid Grand Total!'],
+        default: 0
     },
     shipping: {
-        type: mongoose.Schema.Types.Number
+        type: mongoose.Schema.Types.Number,
+        default: 0
     },
     orderTax: {
-        type: mongoose.Schema.Types.Number
+        type: mongoose.Schema.Types.Number,
+        default: 0
     },
     orderItems: {
-        type: [
-            {
-                quantity: { type: mongoose.Schema.Types.Number },
-                productId: { type: mongoose.Schema.Types.ObjectId },
-                productTaxPrice: { type: mongoose.Schema.Types.Number },
-            }
-        ]
+        type: [purchaseOrderSchema]
     },
     payment_paid: {
         type: mongoose.Schema.Types.Number,

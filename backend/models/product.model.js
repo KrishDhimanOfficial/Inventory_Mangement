@@ -51,20 +51,9 @@ const productSchema = new mongoose.Schema({
     stock: {
         type: mongoose.Schema.Types.Number,
     },
-    warehouses: {
-        type: [
-            {
-                warehouse: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!']
-                },
-                stock: {
-                    type: mongoose.Schema.Types.Number,
-                    match: [/^[0-9]$/, 'Invalid Product Stock Count!']
-                }
-            }
-        ],
-        default: []
+    warehouseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!']
     }
 }, { timestamps: true })
 

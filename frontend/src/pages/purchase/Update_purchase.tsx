@@ -44,7 +44,7 @@ const Update_purchase = () => {
         resolver: yupResolver(validationSchema)
     })
 
-    const fetchSupplier = async () => {
+    const fetchSupplier_warehouse = async () => {
         try {
             const token = localStorage.getItem(config.token_name)
             const [supplierRes, warehouseRes]: any = await Promise.all([
@@ -69,6 +69,7 @@ const Update_purchase = () => {
             setsearchedProducts((prev_pro: any) => {
                 const isDuplicate = prev_pro.some((pro: any) => pro._id === id) // Checking duplicate Products
                 if (isDuplicate) return prev_pro // If duplicate, return unchanged array
+                settotal((prev: number) => prev += getTaxonProduct(product.cost, product.tax, 1))
                 return [...prev_pro, { // Otherwise, add new user
                     _id: product._id,
                     product: product.title,
@@ -79,17 +80,13 @@ const Update_purchase = () => {
                     subtotal: getTaxonProduct(product.cost, product.tax, 1), // 1 for inital quantity
                 }]
             })
-
-            settotal((prev: number) => {
-                return prev += getTaxonProduct(product.cost, product.tax, 1)
-            })
-            // set inital grand total
             setsearchResults([])
         } catch (error) {
             console.error(error)
         }
     }
-    const getSearchResults = async (searchVal: string) => {
+
+    const getSearchResults = useCallback(async (searchVal: string) => {
         try {
             if (!searchVal) setsearchResults([]) // clear searchResults, previous Timeout & Abort signal
             if (searchtimeout && abortController) clearTimeout(searchtimeout), abortController.abort()
@@ -108,7 +105,8 @@ const Update_purchase = () => {
             if (error.name === "AbortError") console.log("Fetch request was aborted")
             console.error(error)
         }
-    }
+    }, [])
+
     const columns = [
         { name: "Product", selector: (row: any) => row.product, sortable: true },
         { name: "Cost", selector: (row: any) => row.cost, sortable: true },
@@ -162,7 +160,7 @@ const Update_purchase = () => {
             )
         )
         setcount((prev: number) => prev + 1)
-    }, [])
+    }, [count])
 
     const handleQuantityMinus = useCallback((id: string) => {
         setsearchedProducts((prevProducts: any) =>
@@ -177,9 +175,11 @@ const Update_purchase = () => {
             )
         )
         setcount((prev: number) => prev - 1)
-    }, [])
+    }, [count])
     const registeration = async (formdata: object) => {
         try {
+            // console.log(formdata);
+
             const res = await DataService.put(`/purchase/${id} `, formdata)
             if (res.success) navigate('/dashboard/purchases')
             Notify(res) // Show API Response
@@ -188,30 +188,73 @@ const Update_purchase = () => {
         }
     } // this handle POST operation
 
+    const handleTotal = () => {
+        let grandTotal = 0;
+        searchedProducts.forEach((pro: any) => grandTotal += pro.subtotal)
+        settotal(parseFloat(grandTotal.toFixed(2)))
+        setValue('subtotal', parseFloat(grandTotal.toFixed(2)))
+        setValue('total', parseFloat((grandTotal + calOrdertax + shippment - calDiscount).toFixed(2)))
+    } // this will set sub total of purchase
 
-    useEffect(() => { fetchData(`/purchase/${id}`), fetchSupplier() }, [])
+    useEffect(() => { fetchData(`/purchase/${id}`), fetchSupplier_warehouse() }, [])
     useEffect(() => {
         if (apiData?._id) {
-            console.log(apiData);
             setValue('pruchaseDate', apiData.purchase_date.split('T')[0])
             setValue('orderTax', apiData.orderTax)
             setValue('discount', apiData.discount)
             setValue('shipping', apiData.shipping)
+            setValue('note', apiData.note)
+            setValue('supplierId', { value: apiData.supplier?._id, label: apiData.supplier?.name })
+            setValue('warehouseId', { value: apiData.warehouse?._id, label: apiData.warehouse?.name })
+            setValue('subtotal', parseFloat(apiData.subtotal.toFixed(2)))
+            setValue('total', parseFloat((apiData.subtotal
+                + getorderTax(apiData.orderTax, apiData.subtotal)
+                + shippment
+                - getDiscount(apiData.discount, apiData.subtotal)).toFixed(2))
+            )
+            settotal(apiData.subtotal)
+            setdiscount(apiData.discount)
+            setordertax(apiData.orderTax)
+            setshippment(apiData.shipping)
             setsupplierOption({ value: apiData.supplier._id, label: apiData.supplier.name })
             setwarehouseOption({ value: apiData.warehouse._id, label: apiData.warehouse.name })
+            setcalDiscount(parseFloat(getDiscount(apiData.discount, apiData.subtotal).toFixed(2)))
+            setcalOrdertax(parseFloat(getorderTax(apiData.orderTax, apiData.subtotal).toFixed(2)))
             setsearchedProducts(() => {
-                return apiData.orderItems?.map((product: any) => ({
-                    // _id: product._id,
-                    // product: product.title,
-                    // current_stock: 0,
-                    // qty: 1,
-                    // tax: product.tax,
-                    // cost: product.cost,
-                    // subtotal: getTaxonProduct(product.cost, product.tax, 1)
+                return apiData.orderItems?.map((pro: any) => ({
+                    _id: pro.productId,
+                    product: pro.name,
+                    current_stock: pro.stock,
+                    qty: pro.quantity,
+                    tax: pro.tax,
+                    cost: pro.cost,
+                    subtotal: getTaxonProduct(pro.cost, pro.tax, pro.quantity)
                 }))
             })
+
         }
     }, [apiData])
+
+    useEffect(() => { setValue('orderItems', searchedProducts) }, [searchedProducts?.length, count])
+    useEffect(() => { handleTotal() }, [count, discount, ordertax, shippment])
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setordertax(ordertax), setValue('orderTax', ordertax!)
+        }, 1000)
+        return () => clearTimeout(timeout)
+    }, [ordertax])
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setdiscount(discount), setValue('discount', discount!)
+        }, 1000)
+        return () => clearTimeout(timeout)
+    }, [discount])
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setshippment(shippment), setValue('shipping', Number(shippment))
+        }, 1000)
+        return () => clearTimeout(timeout)
+    }, [shippment])
     return (
         <>
             <Sec_Heading page={"Edit Purchase Details"} subtitle="Purchase" />
@@ -224,10 +267,10 @@ const Update_purchase = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Date </label>
+                                                <label>Purchase Date </label>
                                                 <span className='importantField'>*</span>
                                             </div>
-                                            <div className={`inputForm${errors.supplierId?.message ? 'inputError' : ''}`}>
+                                            <div className={`inputForm${errors.pruchaseDate?.message ? 'inputError' : ''}`}>
                                                 <Controller
                                                     name="pruchaseDate"
                                                     control={control}
@@ -236,7 +279,6 @@ const Update_purchase = () => {
                                                             {...field}
                                                             type="date"
                                                             className="input"
-                                                            placeholder="0"
                                                         />
                                                     )}
                                                 />
@@ -246,7 +288,7 @@ const Update_purchase = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Supplier </label>
+                                                <label>Select Supplier </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm ${errors.supplierId?.message ? 'inputError' : ''} `}>
@@ -261,6 +303,7 @@ const Update_purchase = () => {
                                                             isSearchable
                                                             className='select'
                                                             isRtl={false}
+                                                            isDisabled
                                                             placeholder='Select Supplier'
                                                             options={suppliers}
                                                             onChange={(selectedoption: any) => {
@@ -277,7 +320,7 @@ const Update_purchase = () => {
                                     <Col md='4' >
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Warehouse </label>
+                                                <label>Select Warehouse </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm ${errors.warehouseId?.message ? 'inputError' : ''} `}>
@@ -291,6 +334,7 @@ const Update_purchase = () => {
                                                             isClearable
                                                             isSearchable
                                                             className='select'
+                                                            isDisabled
                                                             isRtl={false}
                                                             loadingMessage={() => true ? "Loading... Please wait" : ''}
                                                             placeholder='Select Warehouse'
@@ -319,9 +363,7 @@ const Update_purchase = () => {
                                                 type="text"
                                                 className="input"
                                                 placeholder="Search Product by Code or Name"
-                                                onFocus={() => {
-                                                    if (searchedProducts.length == 0) toast.info('Select your supplier')
-                                                }}
+                                                onFocus={() => { if (!supplierOption?.value) toast.info('Select your supplier') }}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => getSearchResults(e.target.value)}
                                             />
                                         </div>
@@ -370,9 +412,12 @@ const Update_purchase = () => {
                                                 <tr>
                                                     <td>Grand Total</td>
                                                     <td>$ {
-                                                        (
-                                                            parseFloat((total + calOrdertax + shippment - calDiscount).toFixed(2))
-                                                        )
+                                                        parseFloat(
+                                                            (total
+                                                                + calOrdertax
+                                                                + shippment
+                                                                - calDiscount
+                                                            ).toFixed(2))
                                                     }</td>
                                                 </tr>
                                             </tbody>
@@ -481,14 +526,14 @@ const Update_purchase = () => {
                                         <div className="flex-column">
                                             <label>Note </label>
                                         </div>
-                                        <div className={`inputForm h-auto ps-0`}>
+                                        <div>
                                             <Controller
                                                 name="note"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <div className="textarea-wrapper">
+                                                    <div className="textarea-wrapper inputForm h-100 ps-0">
                                                         <TextArea
-                                                            className="adjustable-textarea w-100 h-100"
+                                                            className=" adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
                                                             {...field}
                                                         />

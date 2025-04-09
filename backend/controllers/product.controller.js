@@ -1,4 +1,5 @@
 import productModel from '../models/product.model.js';
+import { parseISO, format } from 'date-fns'
 import categoryModel from '../models/category.model.js'
 import brandModel from '../models/brand.model.js'
 import unitModel from '../models/unit.model.js';
@@ -7,6 +8,7 @@ import mongoose from "mongoose";
 import config from '../config/config.js';
 import deleteImage from '../services/deleteImg.js';
 import purchaseModel from '../models/purchase.model.js';
+import salesModel from '../models/sales.model.js';
 const ObjectId = mongoose.Types.ObjectId;
 const delay = 100;
 
@@ -511,43 +513,54 @@ const pro_controllers = {
     searchProduct: async (req, res) => {
         try {
             const { searchTerm, supplierId } = req.params;
-            const query = supplierId
-                ? [
-                    {
-                        $match: {
-                            $or: [
-                                { title: { $regex: searchTerm, $options: "i" } },
-                                { sku: { $regex: searchTerm, } }
-                            ],
-                            supplierId: new ObjectId(supplierId)
-                        }
-                    },
-                    {
-                        $project: {
-                            createdAt: 0, updatedAt: 0, image: 0, categoryId: 0, brandId: 0, unitId: 0
-                        }
+            const query = [
+                {
+                    $match: {
+                        $or: [
+                            { title: { $regex: searchTerm, $options: "i" } },
+                            { sku: { $regex: searchTerm, } }
+                        ],
+                        supplierId: new ObjectId(supplierId)
                     }
-                ]
-                : [
-                    {
-                        $match: {
-                            $or: [
-                                { title: { $regex: searchTerm, $options: "i" } },
-                                { sku: { $regex: searchTerm, } }
-                            ],
-                        }
-                    },
-                    {
-                        $project: {
-                            createdAt: 0, updatedAt: 0, image: 0, categoryId: 0, brandId: 0, unitId: 0
-                        }
+                },
+                {
+                    $project: {
+                        createdAt: 0, updatedAt: 0, image: 0, categoryId: 0, brandId: 0, unitId: 0
                     }
-                ]
+                }
+            ]
+
             const response = await productModel.aggregate(query)
             if (response.length == 0) return res.json({ warning: 'No Results Found!' })
-            return res.json(response)
+            return res.status(200).json(response)
         } catch (error) {
             console.log('searchProduct : ' + error.message)
+        }
+    },
+    searchProductwithWarehouse: async (req, res) => {
+        try {
+            const { searchTerm, warehouseId } = req.params;
+            const query = [
+                {
+                    $match: {
+                        $or: [
+                            { title: { $regex: searchTerm, $options: "i" } },
+                            { sku: { $regex: searchTerm, } }
+                        ],
+                        warehouseId: new ObjectId(warehouseId)
+                    }
+                },
+                {
+                    $project: {
+                        createdAt: 0, updatedAt: 0, image: 0, warehouseId: 0, categoryId: 0, brandId: 0, unitId: 0
+                    }
+                }
+            ]
+            const response = await productModel.aggregate(query)
+            if (response.length == 0) return res.json({ warning: 'No Results Found!' })
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('searchProductwithWarehouse : ' + error.message)
         }
     },
     getAll_purchase_Details: async (req, res) => {
@@ -596,9 +609,7 @@ const pro_controllers = {
                 {
                     $project: { createdAt: 0, updatedAt: 0, note: 0, supplierId: 0, warehouseId: 0 }
                 },
-                {
-                    $sort: { purchase_date: -1 }
-                }
+                { $sort: { _id: -1 } }
             ])
             return res.json(response)
         } catch (error) {
@@ -609,11 +620,11 @@ const pro_controllers = {
         try {
             let code = '';
             for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
-            const { discount, note, orderItems, total, orderTax, pruchaseDate, shipping, supplierId, warehouseId } = req.body
+            const { discount, note, orderItems, subtotal, total, orderTax, pruchaseDate, shipping, supplierId, warehouseId } = req.body
             const response = await purchaseModel.create({
                 purchaseId: `P_${code}`,
-                discount, note, orderTax, shipping, total,
-                purchase_date: new Date(pruchaseDate),
+                discount, note, orderTax, shipping, total, subtotal,
+                purchase_date: format(parseISO(pruchaseDate), 'yyyy-MM-dd'),
                 supplierId: new ObjectId(supplierId.value),
                 warehouseId: new ObjectId(warehouseId.value),
                 orderItems: orderItems.map(item => ({
@@ -626,10 +637,10 @@ const pro_controllers = {
             if (!response) return res.json({ error: 'Unable to process your request!' })
             response.orderItems.map(async (pro) => {
                 await productModel.findByIdAndUpdate({ _id: pro.productId }, {
-                    $inc: { stock: pro.quantity }
+                    $inc: { stock: pro.quantity },
+                    warehouseId: new ObjectId(warehouseId.value),
                 })
             })
-            await productModel.findByIdAndUpdate()
             return res.status(200).json({ success: 'Created Successfully!' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
@@ -665,17 +676,18 @@ const pro_controllers = {
                                 name: "$orderItems.product.title",
                                 cost: "$orderItems.product.cost",
                                 tax: "$orderItems.product.tax",
-                                quantity: "$orderItems.quantity"
+                                quantity: "$orderItems.quantity",
+                                stock: "$orderItems.product.stock",
                             }
                         },
                         supplierId: { $first: "$supplierId" },
                         warehouseId: { $first: "$warehouseId" },
                         discount: { $first: "$discount" },
                         total: { $first: "$total" },
+                        subtotal: { $first: "$subtotal" },
                         shipping: { $first: "$shipping" },
                         orderTax: { $first: "$orderTax" },
                         purchase_date: { $first: "$purchase_date" },
-                        stock: { $first: "$stock" }
                     }
                 },
                 {
@@ -714,7 +726,7 @@ const pro_controllers = {
                 },
                 {
                     $project: {
-                        createdAt: 0, updatedAt: 0, supplierId: 0, warehouseId: 0,
+                        updatedAt: 0, supplierId: 0, warehouseId: 0,
                         'warehouse.address': 0,
                         'warehouse.city': 0,
                         'warehouse.country': 0,
@@ -729,7 +741,7 @@ const pro_controllers = {
                         'supplier.email': 0,
                         'supplier.phone': 0,
                     }
-                }
+                },
             ])
             if (!response[0]) return res.json({ error: 'Not Found!' })
             return res.json(response[0])
@@ -739,10 +751,10 @@ const pro_controllers = {
     },
     updateProductPurchase: async (req, res) => {
         try {
-            const { discount, note, orderItems, total, orderTax, pruchaseDate, shipping, supplierId, warehouseId } = req.body;
-            const response = await purchaseModel.create({
-                discount, note, orderTax, shipping, total,
-                purchase_date: new Date(pruchaseDate),
+            const { discount, note, orderItems, subtotal, total, orderTax, pruchaseDate, shipping, supplierId, warehouseId } = req.body;
+            const response = await purchaseModel.findByIdAndUpdate({ _id: req.params.id }, {
+                discount, note, orderTax, shipping, total, subtotal,
+                purchase_date: format(parseISO(pruchaseDate), 'yyyy-MM-dd'),
                 supplierId: new ObjectId(supplierId.value),
                 warehouseId: new ObjectId(warehouseId.value),
                 orderItems: orderItems.map(item => ({
@@ -750,9 +762,15 @@ const pro_controllers = {
                     quantity: item.qty,
                     productTaxPrice: item.subtotal
                 }))
-
-            })
+            }, { new: true, runValidators: true })
             if (!response) return res.json({ error: 'Unable to process your request!!' })
+
+            response.orderItems.map(async (pro) => {
+                await productModel.findByIdAndUpdate({ _id: pro.productId }, {
+                    stock: pro.quantity,
+                    warehouseId: new ObjectId(warehouseId.value),
+                })
+            })
             return res.json({ success: 'updated successfully!' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
@@ -763,9 +781,226 @@ const pro_controllers = {
         try {
             const response = await purchaseModel.findByIdAndDelete({ _id: req.params.id }, { new: true })
             if (!response) return res.json({ error: 'Not Found!' })
-            return res.json({ success: 'Deleted successfully!' })
+            response.orderItems.map(async (pro) => {
+                await productModel.findByIdAndUpdate({ _id: pro.productId }, {
+                    $inc: { stock: -pro.quantity }
+                })
+            })
+            return res.status(200).json({ success: 'Deleted successfully!' })
         } catch (error) {
             console.log('deleteProductPurchase: async (req, res) => {' + error.message)
+        }
+    },
+    getAll_sales_Details: async (req, res) => {
+        try {
+            const response = await salesModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'customers',
+                        localField: 'customerId',
+                        foreignField: '_id',
+                        as: 'customer'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$customer',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$warehouse',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        customer: { $ifNull: ['$customer', { name: 'N/A' }] },
+                        warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
+                        date: {
+                            $dateToString: {
+                                format: "%Y-%m-%d",
+                                date: "$selling_date"
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: { createdAt: 0, updatedAt: 0, note: 0, supplierId: 0, warehouseId: 0 }
+                },
+                { $sort: { _id: -1 } }
+            ])
+            return res.json(response)
+        } catch (error) {
+            console.log('getAll_sales_Details : ' + error.message)
+        }
+    },
+    createProductSales: async (req, res) => {
+        try {
+            let code = '';
+            for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
+            const { discount, note, orderItems, subtotal, total, orderTax, selling_date, shipping, customerId, warehouseId } = req.body
+            const response = await salesModel.create({
+                salesId: `S_${code}`,
+                discount, note, orderTax, shipping, total, subtotal,
+                selling_date: format(parseISO(selling_date), 'yyyy-MM-dd'),
+                customerId: new ObjectId(customerId.value),
+                warehouseId: new ObjectId(warehouseId.value),
+                salestype: 1,
+                orderItems: orderItems?.map(item => ({
+                    productId: new ObjectId(item._id),
+                    quantity: item.qty,
+                    productTaxPrice: item.subtotal
+                }))
+
+            })
+            if (!response) return res.json({ error: 'An error occurred. Please try again.' })
+            return res.status(200).json({ success: 'Item added successfully.' })
+        } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('createProductSales : ' + error.message)
+        }
+    },
+    getSingleProductSales_Details: async (req, res) => {
+        try {
+            const response = await salesModel.aggregate([
+                {
+                    $match: { _id: new ObjectId(req.params.id) }
+                },
+                {
+                    $unwind: "$orderItems" // Flatten the array first
+                },
+                {
+                    $lookup: {
+                        from: "products",
+                        localField: "orderItems.productId",
+                        foreignField: "_id",
+                        as: "orderItems.product"
+                    }
+                },
+                {
+                    $unwind: "$orderItems.product"
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        orderItems: {
+                            $push: {
+                                productId: "$orderItems.product._id",
+                                name: "$orderItems.product.title",
+                                cost: "$orderItems.product.cost",
+                                tax: "$orderItems.product.tax",
+                                quantity: "$orderItems.quantity",
+                                stock: "$orderItems.product.stock",
+                            }
+                        },
+                        customerId: { $first: "$customerId" },
+                        warehouseId: { $first: "$warehouseId" },
+                        discount: { $first: "$discount" },
+                        total: { $first: "$total" },
+                        subtotal: { $first: "$subtotal" },
+                        shipping: { $first: "$shipping" },
+                        orderTax: { $first: "$orderTax" },
+                        selling_date: { $first: "$selling_date" },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'customers',
+                        localField: 'customerId',
+                        foreignField: '_id',
+                        as: 'customer'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$customer',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$warehouse',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        customer: { $ifNull: ['$customer', { name: 'N/A' }] },
+                        warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
+                    }
+                },
+                {
+                    $project: {
+                        updatedAt: 0, supplierId: 0, warehouseId: 0,
+                        'warehouse.address': 0,
+                        'warehouse.city': 0,
+                        'warehouse.country': 0,
+                        'warehouse.createdAt': 0,
+                        'warehouse.updatedAt': 0,
+                        'warehouse.zipcode': 0,
+                        'customer.address': 0,
+                        'customer.city': 0,
+                        'customer.country': 0,
+                        'customer.createdAt': 0,
+                        'customer.updatedAt': 0,
+                        'customer.email': 0,
+                        'customer.phone': 0,
+                    }
+                },
+            ])
+            if (!response[0]) return res.json({ error: 'Not Found!' })
+            return res.status(200).json(response[0])
+        } catch (error) {
+            console.log('getSingleProductSales_Details : ' + error.message)
+        }
+    },
+    updateProductSales: async (req, res) => {
+        try {
+            const { discount, note, orderItems, subtotal, total, orderTax, selling_date, shipping, customerId, warehouseId } = req.body
+            const response = await salesModel.findByIdAndUpdate({ _id: req.params.id }, {
+                discount, note, orderTax, shipping, total, subtotal,
+                selling_date: format(parseISO(selling_date), 'yyyy-MM-dd'),
+                customerId: new ObjectId(customerId.value),
+                warehouseId: new ObjectId(warehouseId.value),
+                salestype: 1,
+                orderItems: orderItems?.map(item => ({
+                    productId: new ObjectId(item._id),
+                    quantity: item.qty,
+                    productTaxPrice: item.subtotal
+                }))
+            }, { new: true, runValidators: true })
+            if (!response) return res.json({ error: 'An error occurred. Please try again.' })
+            return res.status(200).json({ success: 'Updated successfully!' })
+        } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('updateProductSales : ' + error.message)
+        }
+    },
+    deleteProductSales: async (req, res) => {
+        try {
+            const response = await salesModel.findByIdAndDelete({ _id: req.params.id }, { new: true })
+            if (!response) return res.json({ error: 'Not Found!' })
+            return res.status(200).json({ success: 'Deleted successfully!' })
+        } catch (error) {
+            console.log('deleteProductSales : ' + error.message)
         }
     },
 }

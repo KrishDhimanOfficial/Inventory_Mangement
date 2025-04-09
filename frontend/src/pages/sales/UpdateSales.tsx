@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Section, Sec_Heading, Input, Button, TextArea } from '../../components/component'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import Select from 'react-select'
 import Big from "big.js"
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -13,59 +13,88 @@ import {
     getDiscount,
     getTaxonProduct,
     getorderTax,
-    handelvalToNotbeNegitive
+    handelvalToNotbeNegitive,
+    useFetchData
 } from '../../hooks/hook'
 import config from '../../config/config'
 import { toast } from 'react-toastify'
 import { validationSchema, defaultValues, Searches, Option } from './info'
 
-const SalesOrderForm = () => {
+const UpdateSales = () => {
+    const { id } = useParams()
     const navigate = useNavigate()
     const [searchResults, setsearchResults] = useState<Searches[]>([])
-    const [customers, setcustomers] = useState([])
+    const [suppliers, setsuppliers] = useState([])
     const [warehouses, setWarehouses] = useState<any>([])
     const [shippment, setshippment] = useState<number>(0)
     const [discount, setdiscount] = useState<number>(0)
-    const [calDiscount, setcalDiscount] = useState<number | any>(null)
+    const [calDiscount, setcalDiscount] = useState<number>(0)
     const [ordertax, setordertax] = useState<number>(0)
-    const [calOrdertax, setcalOrdertax] = useState<number | any>(null)
-    const [total, settotal] = useState<number | any>(0)
+    const [calOrdertax, setcalOrdertax] = useState<number>(0)
+    const [total, settotal] = useState<number>(0)
     const [count, setcount] = useState<number>(0)
     const [customerOption, setcustomerOption] = useState<Option | null>(null)
     const [warehouseOption, setwarehouseOption] = useState<Option | null>(null)
     const [abortController, setAbortController] = useState<AbortController | null>(null)
     const [searchtimeout, settimeout] = useState<any>(null)
     const [searchedProducts, setsearchedProducts] = useState<any>([])
-
+    const { apiData, fetchData }: { apiData: any, fetchData: any } = useFetchData({})
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
         resolver: yupResolver(validationSchema)
     })
 
-    const fetchSupplier_warehouses = async () => {
+    const fetchSupplier_warehouse = async () => {
         try {
-            const [customerRes, warehouseRes] = await Promise.all([
-                DataService.get('/all/customers-details'),
-                DataService.get('/warehouses', {
-                    Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-                })
+            const token = localStorage.getItem(config.token_name)
+            const [supplierRes, warehouseRes]: any = await Promise.all([
+                DataService.get('/all/supplier-details'),
+                DataService.get('/warehouses', { Authorization: `Bearer ${token}` })
             ])
-            setcustomers(customerRes.map((item: any) => ({ value: item._id, label: item.name })))
-            setWarehouses(warehouseRes.map((item: any) => ({ value: item._id, label: item.name })))
+            setsuppliers(() => (
+                supplierRes?.map((item: any) => ({ value: item._id, label: item.name }))
+            ))
+            setWarehouses(() => (
+                warehouseRes?.map((item: any) => ({ value: item._id, label: item.name }))
+            ))
         } catch (error) {
             console.error(error)
         }
     }
 
-    const getSearchResults = async (searchVal: string) => {
+    const fetchProduct = async (id: string) => {
+        try {
+            const product: any = await DataService.get(`/sales/${id}`)
+
+            setsearchedProducts((prev_pro: any) => {
+                const isDuplicate = prev_pro.some((pro: any) => pro._id === id) // Checking duplicate Products
+                if (isDuplicate) return prev_pro // If duplicate, return unchanged array
+                settotal((prev: number) => prev += getTaxonProduct(product.cost, product.tax, 1))
+                return [...prev_pro, { // Otherwise, add new user
+                    _id: product._id,
+                    product: product.title,
+                    current_stock: 0,
+                    qty: 1,
+                    tax: product.tax,
+                    cost: product.cost,
+                    subtotal: getTaxonProduct(product.cost, product.tax, 1), // 1 for inital quantity
+                }]
+            })
+            setsearchResults([])
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    const getSearchResults = useCallback(async (searchVal: string) => {
         try {
             if (!searchVal) setsearchResults([]) // clear searchResults, previous Timeout & Abort signal
             if (searchtimeout && abortController) clearTimeout(searchtimeout), abortController.abort()
             const controller = new AbortController()
 
             const timeout = setTimeout(async () => {
-                const res = await DataService.get(`/get-search-results-with-warehouse/${searchVal}/${warehouseOption?.value}`, {}, controller.signal)
-                const results = res?.map((item: any) => ({ _id: item._id, sku: item.sku, name: item.title }))
+                const res = await DataService.get(`/get-search-results/${searchVal}/${customerOption?.value}`, {}, controller.signal)
+                const results = res.map((item: any) => ({ _id: item._id, sku: item.sku, name: item.title }))
                 setsearchResults(results) // Calling Api & set Results
             }, 800)
 
@@ -76,71 +105,7 @@ const SalesOrderForm = () => {
             if (error.name === "AbortError") console.log("Fetch request was aborted")
             console.error(error)
         }
-    }
-
-    const fetchProduct = async (id: string) => {
-        try {
-            const product: any = await DataService.get(`/product/${id}`)
-
-            setsearchedProducts((prev_pro: any) => {
-                const isDuplicate = prev_pro.some((pro: any) => pro._id === id) // Checking duplicate Products
-                if (isDuplicate) return prev_pro // If duplicate, return unchanged array
-                return [...prev_pro, { // Otherwise, add new user
-                    _id: product._id,
-                    product: product.title,
-                    current_stock: product.stock,
-                    qty: 1,
-                    tax: product.tax,
-                    cost: product.cost,
-                    subtotal: getTaxonProduct(product.cost, product.tax, 1), // 1 for inital quantity
-                }]
-            })
-
-            settotal((prev: number) => {
-                return prev += getTaxonProduct(product.cost, product.tax, 1)
-            })
-            // set inital grand total
-            setsearchResults([])
-        } catch (error) {
-            console.error(error)
-        }
-    }
-
-    const handleQuantityPlus = useCallback((id: string) => {
-        setsearchedProducts((prevProducts: any) =>
-            prevProducts.map((product: any) =>
-                product._id === id
-                    ? {
-                        ...product,
-                        qty: product.qty + 1,
-                        subtotal: getTaxonProduct(product.cost, product.tax, product.qty + 1),
-                    }
-                    : product
-            )
-        )
-        setcount((prev: number) => prev + 1)
     }, [])
-
-    const handleQuantityMinus = useCallback((id: string) => {
-        setsearchedProducts((prevProducts: any) =>
-            prevProducts.map((product: any) =>
-                product._id === id
-                    ? {
-                        ...product,
-                        qty: handleqtytonotbeNegitive(product),
-                        subtotal: getTaxonProduct(product.cost, product.tax, handleqtytonotbeNegitive(product)),
-                    }
-                    : product
-            )
-        )
-        setcount((prev: number) => prev - 1)
-    }, [])
-
-    const handleTotal = () => {
-        let grandTotal = 0;
-        searchedProducts.forEach((pro: any) => grandTotal += pro.subtotal)
-        settotal(parseFloat(grandTotal.toFixed(2)))
-    } // this will set grand total of purchase
 
     const columns = [
         { name: "Product", selector: (row: any) => row.product, sortable: true },
@@ -182,10 +147,39 @@ const SalesOrderForm = () => {
             )
         }
     ]
+    const handleQuantityPlus = useCallback((id: string) => {
+        setsearchedProducts((prevProducts: any) =>
+            prevProducts.map((product: any) =>
+                product._id === id
+                    ? {
+                        ...product,
+                        qty: product.qty + 1,
+                        subtotal: getTaxonProduct(product.cost, product.tax, product.qty + 1),
+                    }
+                    : product
+            )
+        )
+        setcount((prev: number) => prev + 1)
+    }, [count])
 
+    const handleQuantityMinus = useCallback((id: string) => {
+        setsearchedProducts((prevProducts: any) =>
+            prevProducts.map((product: any) =>
+                product._id === id
+                    ? {
+                        ...product,
+                        qty: handleqtytonotbeNegitive(product),
+                        subtotal: getTaxonProduct(product.cost, product.tax, handleqtytonotbeNegitive(product)),
+                    }
+                    : product
+            )
+        )
+        setcount((prev: number) => prev - 1)
+    }, [count])
+    
     const registeration = async (formdata: object) => {
         try {
-            const res: any = await DataService.post('/sales', formdata)
+            const res = await DataService.put(`/sales/${id} `, formdata)
             if (res.success) navigate('/dashboard/sales')
             Notify(res) // Show API Response
         } catch (error) {
@@ -193,19 +187,57 @@ const SalesOrderForm = () => {
         }
     } // this handle POST operation
 
-    const resetState = () => {// reset when customer change
-        settotal(0), setcalDiscount(0), setcalOrdertax(0), setshippment(0)
-        setsearchedProducts([]), setdiscount(0), setordertax(0), setshippment(0)
-    }
+    const handleTotal = () => {
+        let grandTotal = 0;
+        searchedProducts.forEach((pro: any) => grandTotal += pro.subtotal)
+        settotal(parseFloat(grandTotal.toFixed(2)))
+        setValue('subtotal', parseFloat(grandTotal.toFixed(2)))
+        setValue('total', parseFloat((grandTotal + calOrdertax + shippment - calDiscount).toFixed(2)))
+    } // this will set sub total of purchase
+
+    useEffect(() => { fetchData(`/sales/${id}`), fetchSupplier_warehouse() }, [])
     useEffect(() => {
-        setValue('orderItems', searchedProducts),
-            setValue('subtotal', total)
-    }, [searchedProducts?.length, calDiscount, calOrdertax, shippment])
-    useEffect(() => {
-        setValue('total', total + calOrdertax + shippment - calDiscount)
-    }, [discount, ordertax, shippment])
-    useEffect(() => { fetchSupplier_warehouses() }, [])
-    useEffect(() => { handleTotal() }, [count]) // Set Grand Total
+        if (apiData?._id) {
+            console.log(apiData);
+
+            setValue('selling_date', apiData.selling_date.split('T')[0])
+            setValue('orderTax', apiData.orderTax)
+            setValue('discount', apiData.discount)
+            setValue('shipping', apiData.shipping)
+            setValue('note', apiData.note)
+            setValue('customerId', { value: apiData.customer?._id, label: apiData.customer?.name })
+            setValue('warehouseId', { value: apiData.warehouse?._id, label: apiData.warehouse?.name })
+            setValue('subtotal', parseFloat(apiData.subtotal.toFixed(2)))
+            setValue('total', parseFloat((apiData.subtotal
+                + getorderTax(apiData.orderTax, apiData.subtotal)
+                + shippment
+                - getDiscount(apiData.discount, apiData.subtotal)).toFixed(2))
+            )
+            settotal(apiData.subtotal)
+            setdiscount(apiData.discount)
+            setordertax(apiData.orderTax)
+            setshippment(apiData.shipping)
+            setcustomerOption({ value: apiData.customer._id, label: apiData.customer.name })
+            setwarehouseOption({ value: apiData.warehouse._id, label: apiData.warehouse.name })
+            setcalDiscount(parseFloat(getDiscount(apiData.discount, apiData.subtotal).toFixed(2)))
+            setcalOrdertax(parseFloat(getorderTax(apiData.orderTax, apiData.subtotal).toFixed(2)))
+            setsearchedProducts(() => {
+                return apiData.orderItems?.map((pro: any) => ({
+                    _id: pro.productId,
+                    product: pro.name,
+                    current_stock: pro.stock,
+                    qty: pro.quantity,
+                    tax: pro.tax,
+                    cost: pro.cost,
+                    subtotal: getTaxonProduct(pro.cost, pro.tax, pro.quantity)
+                }))
+            })
+
+        }
+    }, [apiData])
+
+    useEffect(() => { setValue('orderItems', searchedProducts) }, [searchedProducts?.length, count])
+    useEffect(() => { handleTotal() }, [count, discount, ordertax, shippment])
     useEffect(() => {
         const timeout = setTimeout(() => {
             setordertax(ordertax), setValue('orderTax', ordertax!)
@@ -226,7 +258,7 @@ const SalesOrderForm = () => {
     }, [shippment])
     return (
         <>
-            <Sec_Heading page={"Create Sales"} subtitle="Sales" />
+            <Sec_Heading page={"Edit Purchase Details"} subtitle="Purchase" />
             <Section>
                 <div className="col-12">
                     <div className="card">
@@ -236,10 +268,10 @@ const SalesOrderForm = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Date </label>
+                                                <label>Purchase Date </label>
                                                 <span className='importantField'>*</span>
                                             </div>
-                                            <div className={`inputForm ${errors.selling_date?.message ? 'inputError' : ''} `}>
+                                            <div className={`inputForm${errors.selling_date?.message ? 'inputError' : ''}`}>
                                                 <Controller
                                                     name="selling_date"
                                                     control={control}
@@ -248,7 +280,6 @@ const SalesOrderForm = () => {
                                                             {...field}
                                                             type="date"
                                                             className="input"
-                                                            placeholder="0"
                                                         />
                                                     )}
                                                 />
@@ -258,7 +289,7 @@ const SalesOrderForm = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Select your Customer </label>
+                                                <label>Select Supplier </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm ${errors.customerId?.message ? 'inputError' : ''} `}>
@@ -268,16 +299,17 @@ const SalesOrderForm = () => {
                                                     render={({ field }) => (
                                                         <Select
                                                             {...field}
+                                                            value={field.value || customerOption}
                                                             isClearable
                                                             isSearchable
                                                             className='select'
                                                             isRtl={false}
-                                                            placeholder='Select customer'
-                                                            options={customers}
+                                                            isDisabled
+                                                            placeholder='Select Supplier'
+                                                            options={suppliers}
                                                             onChange={(selectedoption: any) => {
                                                                 field.onChange(selectedoption)
                                                                 setcustomerOption(selectedoption)
-                                                                resetState()
                                                             }}
                                                             styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none', }) }}
                                                         />
@@ -289,7 +321,7 @@ const SalesOrderForm = () => {
                                     <Col md='4' >
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Warehouse </label>
+                                                <label>Select Warehouse </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm ${errors.warehouseId?.message ? 'inputError' : ''} `}>
@@ -299,18 +331,23 @@ const SalesOrderForm = () => {
                                                     render={({ field }) => (
                                                         <Select
                                                             {...field}
+                                                            value={field.value || warehouseOption}
                                                             isClearable
                                                             isSearchable
                                                             className='select'
+                                                            isDisabled
                                                             isRtl={false}
+                                                            loadingMessage={() => true ? "Loading... Please wait" : ''}
                                                             placeholder='Select Warehouse'
                                                             options={warehouses}
-                                                            onChange={(selectedoption: any) => {
-                                                                field.onChange(selectedoption)
-                                                                setwarehouseOption(selectedoption)
-                                                                resetState()
+                                                            onChange={(selectedoption) => field.onChange(selectedoption)}
+                                                            styles={{
+                                                                control: (style) => ({
+                                                                    ...style,
+                                                                    boxShadow: 'none',
+                                                                    border: 'none',
+                                                                })
                                                             }}
-                                                            styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none', }) }}
                                                         />
                                                     )}
                                                 />
@@ -327,7 +364,7 @@ const SalesOrderForm = () => {
                                                 type="text"
                                                 className="input"
                                                 placeholder="Search Product by Code or Name"
-                                                onFocus={() => { if (!customerOption?.value) toast.info('Select your customer') }}
+                                                onFocus={() => { if (!customerOption?.value) toast.info('Select your supplier') }}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => getSearchResults(e.target.value)}
                                             />
                                         </div>
@@ -376,9 +413,12 @@ const SalesOrderForm = () => {
                                                 <tr>
                                                     <td>Grand Total</td>
                                                     <td>$ {
-                                                        (
-                                                            parseFloat((total + calOrdertax + shippment - calDiscount).toFixed(2))
-                                                        )
+                                                        parseFloat(
+                                                            (total
+                                                                + calOrdertax
+                                                                + shippment
+                                                                - calDiscount
+                                                            ).toFixed(2))
                                                     }</td>
                                                 </tr>
                                             </tbody>
@@ -487,14 +527,14 @@ const SalesOrderForm = () => {
                                         <div className="flex-column">
                                             <label>Note </label>
                                         </div>
-                                        <div className={`inputForm h-auto ps-0`}>
+                                        <div>
                                             <Controller
                                                 name="note"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <div className="textarea-wrapper">
+                                                    <div className="textarea-wrapper inputForm h-100 ps-0">
                                                         <TextArea
-                                                            className="adjustable-textarea w-100 h-100"
+                                                            className=" adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
                                                             {...field}
                                                         />
@@ -504,11 +544,19 @@ const SalesOrderForm = () => {
                                         </div>
                                     </Col>
                                 </Row>
-                                <Button
-                                    type='submit'
-                                    className='button-submit w-25'
-                                    text={isSubmitting ? 'Submiting...' : 'Submit'}
-                                />
+                                {
+                                    id
+                                        ? (<Button
+                                            type='submit'
+                                            className='button-submit w-25'
+                                            text={isSubmitting ? 'updating...' : 'Update'}
+                                        />)
+                                        : (<Button
+                                            type='submit'
+                                            className='button-submit w-25'
+                                            text={isSubmitting ? 'Submiting...' : 'Submit'}
+                                        />)
+                                }
                             </form>
                         </div>
                     </div>
@@ -517,5 +565,4 @@ const SalesOrderForm = () => {
         </>
     )
 }
-
-export default SalesOrderForm
+export default UpdateSales
