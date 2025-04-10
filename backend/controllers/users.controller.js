@@ -23,6 +23,7 @@ const users_controllers = {
             return res.json(response)
         } catch (error) {
             if (error.message === 'jwt malformed') return res.json({ error: 'Not Found!' })
+            if (error.message === 'jwt expired') return res.json({ error: 'Your Session Has Been Expried!' })
             console.log('checkUserIsLoggin : ' + error.message)
         }
     },
@@ -44,10 +45,11 @@ const users_controllers = {
             const response = await userModel.findOne({ email })
             if (!response) return res.json({ error: 'Unauthorized!' })
 
-            const checkAuth = bcrypt.compare(password, response.password)
+            const checkAuth = await bcrypt.compare(password, response.password)
             if (!checkAuth) return res.json({ error: 'Unauthorized!' })
+            console.log(checkAuth);
 
-            return res.json({ success: 'Logined Successfully', stockify_auth_token: setUser({ id: response._id }) })
+            return res.json({ success: 'Logined Successfully', stockify_auth_token: setUser({ id: response._id }, { expiresIn: '1m' }) })
         } catch (error) {
             console.log('handleUserLogin : ' + error.message)
         }
@@ -238,10 +240,18 @@ const users_controllers = {
             console.log('deleteSupplierDetails : ' + error.message)
         }
     },
+    getcustomers: async (req, res) => {
+        try {
+            const response = await customerModel.find({}, { _id: 1, name: 1 })
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('getcustomers : ' + error.message)
+        }
+    },
     getAllCustomersDetails: async (req, res) => {
         try {
-            const response = await customerModel.find({})
-            setTimeout(() => res.json(response), delay)
+            const response = (await customerModel.find({ $nor: [{ _id: '67f753b61a99887e802660af' }] })).reverse()
+            setTimeout(() => res.status(200).json(response), delay)
         } catch (error) {
             console.log('getAllCustomersDetails  : ' + error.message)
         }

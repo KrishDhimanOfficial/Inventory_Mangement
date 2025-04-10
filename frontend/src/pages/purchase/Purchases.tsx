@@ -3,6 +3,7 @@ import { Section, Sec_Heading, Loader, Button, Static_Modal } from '../../compon
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Link, useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
 
 const Purchases = () => {
     const navigate = useNavigate()
@@ -11,6 +12,7 @@ const Purchases = () => {
     const [Id, setId] = useState('')
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
+    const { permission } = useSelector((state: any) => state.permission)
 
     const columns = [
         { name: "Date", selector: (row: any) => row.date, sortable: true },
@@ -24,10 +26,18 @@ const Purchases = () => {
             name: "Actions",
             cell: (row: any) => (
                 <div className="d-flex justify-content-between">
-                    <Link to={`/dashboard/purchase/${row.id}`} className='btn btn-success me-2'>
-                        <i className="fa-solid fa-pen-to-square"></i>
-                    </Link>
-                    <Button text='' onclick={() => deleteTableRow(row.id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                    {
+                        permission.purchase.edit && (
+                            <Link to={`/dashboard/purchase/${row.id}`} className='btn btn-success me-2'>
+                                <i className="fa-solid fa-pen-to-square"></i>
+                            </Link>
+                        )
+                    }
+                    {
+                        permission.purchase.delete && (
+                            <Button text='' onclick={() => deleteTableRow(row.id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                        )
+                    }
                 </div>
             )
         },

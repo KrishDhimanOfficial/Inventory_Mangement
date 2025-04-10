@@ -36,16 +36,19 @@ const SalesOrderForm = () => {
     const [abortController, setAbortController] = useState<AbortController | null>(null)
     const [searchtimeout, settimeout] = useState<any>(null)
     const [searchedProducts, setsearchedProducts] = useState<any>([])
+    const [WalkinCustomerRequired, setWalkinCustomer] = useState<Boolean>(false)
 
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
-        resolver: yupResolver(validationSchema)
+        resolver: yupResolver(validationSchema),
+        context: { WalkinCustomerRequired }
     })
+
 
     const fetchSupplier_warehouses = async () => {
         try {
             const [customerRes, warehouseRes] = await Promise.all([
-                DataService.get('/all/customers-details'),
+                DataService.get('/all-customer'),
                 DataService.get('/warehouses', {
                     Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
                 })
@@ -55,6 +58,13 @@ const SalesOrderForm = () => {
         } catch (error) {
             console.error(error)
         }
+    }
+
+    const oncustomerChange = (selectedoption: any) => {
+        if (selectedoption?.label === 'walk-in-customer') setWalkinCustomer(true)
+        else setWalkinCustomer(false)
+        setcustomerOption(selectedoption)
+        resetState()
     }
 
     const getSearchResults = async (searchVal: string) => {
@@ -96,11 +106,12 @@ const SalesOrderForm = () => {
                 }]
             })
 
-            settotal((prev: number) => {
-                return prev += getTaxonProduct(product.cost, product.tax, 1)
-            })
-            // set inital grand total
+            // settotal((prev: number) => {
+            //     return prev += getTaxonProduct(product.cost, product.tax, 1)
+            // })
+            // // set inital grand total
             setsearchResults([])
+            setcount((prev: number) => prev + 1)
         } catch (error) {
             console.error(error)
         }
@@ -140,6 +151,8 @@ const SalesOrderForm = () => {
         let grandTotal = 0;
         searchedProducts.forEach((pro: any) => grandTotal += pro.subtotal)
         settotal(parseFloat(grandTotal.toFixed(2)))
+        setValue('subtotal', total)
+        setValue('total', total + calOrdertax + shippment - calDiscount)
     } // this will set grand total of purchase
 
     const columns = [
@@ -197,13 +210,8 @@ const SalesOrderForm = () => {
         settotal(0), setcalDiscount(0), setcalOrdertax(0), setshippment(0)
         setsearchedProducts([]), setdiscount(0), setordertax(0), setshippment(0)
     }
-    useEffect(() => {
-        setValue('orderItems', searchedProducts),
-            setValue('subtotal', total)
-    }, [searchedProducts?.length, calDiscount, calOrdertax, shippment])
-    useEffect(() => {
-        setValue('total', total + calOrdertax + shippment - calDiscount)
-    }, [discount, ordertax, shippment])
+    useEffect(() => { setValue('orderItems', searchedProducts) }, [searchedProducts?.length, count])
+    useEffect(() => { handleTotal() }, [discount, ordertax, shippment, count])
     useEffect(() => { fetchSupplier_warehouses() }, [])
     useEffect(() => { handleTotal() }, [count]) // Set Grand Total
     useEffect(() => {
@@ -232,7 +240,7 @@ const SalesOrderForm = () => {
                     <div className="card">
                         <div className="card-body pt-1">
                             <form onSubmit={handleSubmit(registeration)} className='form'>
-                                <Row className="mb-4">
+                                <Row className="mb-3">
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
@@ -268,18 +276,25 @@ const SalesOrderForm = () => {
                                                     render={({ field }) => (
                                                         <Select
                                                             {...field}
+                                                            options={customers}
                                                             isClearable
                                                             isSearchable
                                                             className='select'
                                                             isRtl={false}
                                                             placeholder='Select customer'
-                                                            options={customers}
                                                             onChange={(selectedoption: any) => {
                                                                 field.onChange(selectedoption)
-                                                                setcustomerOption(selectedoption)
-                                                                resetState()
+                                                                oncustomerChange(selectedoption)
                                                             }}
-                                                            styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none', }) }}
+                                                            menuPortalTarget={document.body}
+                                                            styles={{
+                                                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                                                control: (base) => ({
+                                                                    ...base,
+                                                                    boxShadow: 'none',
+                                                                    border: 'none',
+                                                                }),
+                                                            }}
                                                         />
                                                     )}
                                                 />
@@ -310,7 +325,14 @@ const SalesOrderForm = () => {
                                                                 setwarehouseOption(selectedoption)
                                                                 resetState()
                                                             }}
-                                                            styles={{ control: (style) => ({ ...style, boxShadow: 'none', border: 'none', }) }}
+                                                            styles={{
+                                                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                                                control: (base) => ({
+                                                                    ...base,
+                                                                    boxShadow: 'none',
+                                                                    border: 'none',
+                                                                }),
+                                                            }}
                                                         />
                                                     )}
                                                 />
@@ -319,6 +341,52 @@ const SalesOrderForm = () => {
                                     </Col>
                                 </Row>
                                 {/* Row 1 End  supplier,warehouse */}
+                                {
+                                    WalkinCustomerRequired && (
+                                        <Row className='mb-4'>
+                                            <Col md='4'>
+                                                <div className="flex-column">
+                                                    <label>Customer Name </label>
+                                                </div>
+                                                <div className={`inputForm ${errors.customer_name?.message ? 'inputError' : ''} `}>
+                                                    <Controller
+                                                        name="customer_name"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Input
+                                                                {...field}
+                                                                type="text"
+                                                                className="input"
+                                                                placeholder="Customer Name"
+                                                                required={true}
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
+                                            </Col>
+                                            <Col md='4'>
+                                                <div className="flex-column">
+                                                    <label>Customer Phone no. </label>
+                                                </div>
+                                                <div className={`inputForm ${errors.customer_phone?.message ? 'inputError' : ''} `}>
+                                                    <Controller
+                                                        name="customer_phone"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Input
+                                                                {...field}
+                                                                type="text"
+                                                                className="input"
+                                                                placeholder="Enter Phone no."
+                                                                required={true}
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    )
+                                }
                                 <Row className="mb-4 flex-column">
                                     <Col>
                                         <div className={`inputForm`}>
@@ -327,7 +395,7 @@ const SalesOrderForm = () => {
                                                 type="text"
                                                 className="input"
                                                 placeholder="Search Product by Code or Name"
-                                                onFocus={() => { if (!customerOption?.value) toast.info('Select your customer') }}
+                                                onFocus={() => { if (!customerOption?.value && !warehouseOption?.value) toast.info('Select your customer') }}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => getSearchResults(e.target.value)}
                                             />
                                         </div>
@@ -425,7 +493,7 @@ const SalesOrderForm = () => {
                                         <div className="flex-column">
                                             <label>Discount (%)</label>
                                         </div>
-                                        <div className={`inputForm ${errors.warehouseId?.message ? 'inputError' : ''} `}>
+                                        <div className={`inputForm ${errors.discount?.message ? 'inputError' : ''} `}>
                                             <Controller
                                                 name="discount"
                                                 control={control}

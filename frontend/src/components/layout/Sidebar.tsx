@@ -6,6 +6,7 @@ import config from '../../config/config';
 import logo1 from '../../assets/Images/close.webp'
 import { useDispatch } from 'react-redux';
 import { setUserPermission } from '../../controller/userPermission';
+import Accordion from 'react-bootstrap/Accordion'
 
 interface UserPermission {
     role: string,
@@ -56,6 +57,39 @@ const Sidebar = () => {
                 </div>
 
                 {/* <!-- Sidebar Menu --> */}
+                <Accordion>
+                    <Accordion.Item eventKey="0">
+                        <Accordion.Header>Product</Accordion.Header>
+                        <Accordion.Body className='bg-dark'>
+                            <ul className="nav nav-treeview">
+                                <li className="nav-item">
+                                    <Link to="/dashboard/products" className="nav-link">
+                                        <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                        <p className="text">All Products</p>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to="/dashboard/product/category" className="nav-link">
+                                        <i className="fa-solid fa-layer-group nav-icon"></i>
+                                        <p className="text">Category</p>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to='/dashboard/product/brand' className="nav-link">
+                                        <i className="fa-solid fa-ring nav-icon"></i>
+                                        <p className="text">Brands</p>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to='/dashboard/product/unit' className="nav-link">
+                                        <i className="fa-brands fa-unity nav-icon"></i>
+                                        <p className="text">Units</p>
+                                    </Link>
+                                </li>
+                            </ul>
+                        </Accordion.Body>
+                    </Accordion.Item>
+                </Accordion>
                 <nav className="mt-2">
                     <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                         <li className="nav-item">

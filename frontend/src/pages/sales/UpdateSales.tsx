@@ -39,9 +39,12 @@ const UpdateSales = () => {
     const [searchtimeout, settimeout] = useState<any>(null)
     const [searchedProducts, setsearchedProducts] = useState<any>([])
     const { apiData, fetchData }: { apiData: any, fetchData: any } = useFetchData({})
+    const [WalkinCustomerRequired, setWalkinCustomer] = useState<Boolean>(false)
+
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
-        resolver: yupResolver(validationSchema)
+        resolver: yupResolver(validationSchema),
+        context: { WalkinCustomerRequired }
     })
 
     const fetchSupplier_warehouse = async () => {
@@ -176,7 +179,7 @@ const UpdateSales = () => {
         )
         setcount((prev: number) => prev - 1)
     }, [count])
-    
+
     const registeration = async (formdata: object) => {
         try {
             const res = await DataService.put(`/sales/${id} `, formdata)
@@ -198,8 +201,6 @@ const UpdateSales = () => {
     useEffect(() => { fetchData(`/sales/${id}`), fetchSupplier_warehouse() }, [])
     useEffect(() => {
         if (apiData?._id) {
-            console.log(apiData);
-
             setValue('selling_date', apiData.selling_date.split('T')[0])
             setValue('orderTax', apiData.orderTax)
             setValue('discount', apiData.discount)
@@ -221,6 +222,7 @@ const UpdateSales = () => {
             setwarehouseOption({ value: apiData.warehouse._id, label: apiData.warehouse.name })
             setcalDiscount(parseFloat(getDiscount(apiData.discount, apiData.subtotal).toFixed(2)))
             setcalOrdertax(parseFloat(getorderTax(apiData.orderTax, apiData.subtotal).toFixed(2)))
+            setWalkinCustomer(apiData.salestype === 0 ? true : false)
             setsearchedProducts(() => {
                 return apiData.orderItems?.map((pro: any) => ({
                     _id: pro.productId,
@@ -232,6 +234,10 @@ const UpdateSales = () => {
                     subtotal: getTaxonProduct(pro.cost, pro.tax, pro.quantity)
                 }))
             })
+            if (apiData.salestype === 0) {
+                setValue('customer_name', apiData.walkInCustomerDetails?.name)
+                setValue('customer_phone', apiData.walkInCustomerDetails?.phone)
+            }
 
         }
     }, [apiData])
@@ -258,7 +264,7 @@ const UpdateSales = () => {
     }, [shippment])
     return (
         <>
-            <Sec_Heading page={"Edit Purchase Details"} subtitle="Purchase" />
+            <Sec_Heading page={"Edit Sales Details"} subtitle="Sales" />
             <Section>
                 <div className="col-12">
                     <div className="card">
@@ -289,7 +295,7 @@ const UpdateSales = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Select Supplier </label>
+                                                <label>Select Customer </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm ${errors.customerId?.message ? 'inputError' : ''} `}>
@@ -356,6 +362,52 @@ const UpdateSales = () => {
                                     </Col>
                                 </Row>
                                 {/* Row 1 End  supplier,warehouse */}
+                                {
+                                    WalkinCustomerRequired && (
+                                        <Row className='mb-4'>
+                                            <Col md='4'>
+                                                <div className="flex-column">
+                                                    <label>Customer Name </label>
+                                                </div>
+                                                <div className={`inputForm ${errors.customer_name?.message ? 'inputError' : ''} `}>
+                                                    <Controller
+                                                        name="customer_name"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Input
+                                                                {...field}
+                                                                type="text"
+                                                                className="input"
+                                                                placeholder="Customer Name"
+                                                                required={true}
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
+                                            </Col>
+                                            <Col md='4'>
+                                                <div className="flex-column">
+                                                    <label>Customer Phone no. </label>
+                                                </div>
+                                                <div className={`inputForm ${errors.customer_phone?.message ? 'inputError' : ''} `}>
+                                                    <Controller
+                                                        name="customer_phone"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Input
+                                                                {...field}
+                                                                type="text"
+                                                                className="input"
+                                                                placeholder="Enter Phone no."
+                                                                required={true}
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    )
+                                }
                                 <Row className="mb-4 flex-column">
                                     <Col>
                                         <div className={`inputForm`}>

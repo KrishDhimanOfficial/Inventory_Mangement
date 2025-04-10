@@ -1,6 +1,7 @@
-import { createBrowserRouter, RouterProvider } from "react-router"
+import { createBrowserRouter, RouterProvider, useNavigate } from "react-router"
 import Login from "./pages/auth/Login"
-import Dashboard from "./pages/dashboard/Dashboard"
+// import Dashboard from "./pages/dashboard/Dashboard"
+import ProtectedRoute from "./pages/auth/ProtectedRoute"
 import Users from "./pages/peoples/user/Users"
 import Warehouses from "./pages/settings/warehouse/Warehouses"
 import Suppliers from "./pages/peoples/suppliers/Suppliers"
@@ -19,6 +20,7 @@ import POS from "./pages/sales/POS"
 import System_Setting from "./pages/settings/system/System_Setting"
 import Update_purchase from "./pages/purchase/Update_purchase"
 import UpdateSales from "./pages/sales/updateSales"
+import Dashboard from "./pages/dashboard/Dashboard"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -28,19 +30,19 @@ const App = () => {
     },
     {
       path: '/dashboard',
-      element: <Dashboard />,
+      element: <ProtectedRoute component={<Dashboard />} />,
       children: [
         {
           path: '/dashboard',
-          element: <Home />,
+          element: <ProtectedRoute component={<Home />} />,
         },
         {
           path: '/dashboard/user/permissions',
-          element: <Users />
+          element: <ProtectedRoute component={<Users />} />
         },
         {
           path: '/dashboard/suppliers',
-          element: <Suppliers />
+          element: <ProtectedRoute component={<Suppliers />} />
         },
         {
           path: '/dashboard/customers',
@@ -109,6 +111,7 @@ const App = () => {
       ],
     }
   ])
+
   return <RouterProvider router={router} />
 }
 

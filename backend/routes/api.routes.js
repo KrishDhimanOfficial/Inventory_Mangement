@@ -23,6 +23,7 @@ router.route('/supplier/:id?')
     .put(users_controllers.updateSupplierDetails)
     .delete(users_controllers.deleteSupplierDetails)
 
+router.get('/all-customer',users_controllers.getcustomers)
 router.get('/all/customers-details', users_controllers.getAllCustomersDetails)
 router.route('/customer/:id?')
     .post(users_controllers.createCustomer)
@@ -30,6 +31,7 @@ router.route('/customer/:id?')
     .put(users_controllers.updateCustomerDetails)
     .delete(users_controllers.deleteCustomerDetails)
 
+router.get('/check-warehouseId-isfound', warehouse_controllers.checkWarehouseIsUsedInOrNot)
 router.get('/warehouses', warehouse_controllers.getAllWarehouses)
 router.route('/warehouse/:id?')
     .post(warehouse_controllers.createWarehouse)
@@ -81,5 +83,5 @@ router.route('/sales/:id?')
     .get(pro_controllers.getSingleProductSales_Details)
     .put(pro_controllers.updateProductSales)
     .delete(pro_controllers.deleteProductSales)
-    
+
 export default router

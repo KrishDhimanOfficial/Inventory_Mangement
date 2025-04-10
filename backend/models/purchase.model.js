@@ -25,24 +25,25 @@ const purchaseSchema = new mongoose.Schema({
     },
     discount: {
         type: mongoose.Schema.Types.Number,
+        match: [/^[0-9]+$/, 'Invalid discount!'],
         default: 0
     },
     subtotal: {
         type: mongoose.Schema.Types.Number,
-        match: [/^[0-9]+$/, 'Invalid SubTotal!'],
-        default: 0
+        match: [/^[0-9]+$/, 'Invalid SubTotal!']
     },
     total: {
         type: mongoose.Schema.Types.Number,
-        match: [/^[0-9]+$/, 'Invalid Grand Total!'],
-        default: 0
-    },
-    shipping: {
-        type: mongoose.Schema.Types.Number,
-        default: 0
+        match: [/^[0-9]+$/, 'Invalid Grand Total!']
     },
     orderTax: {
         type: mongoose.Schema.Types.Number,
+        match: [/^[0-9]+$/, 'Invalid orderTax!'],
+        default: 0
+    },
+    shippment: {
+        type: mongoose.Schema.Types.Number,
+        match: [/^[0-9]+$/, 'Invalid shippment Detail!'],
         default: 0
     },
     orderItems: {
@@ -65,6 +66,7 @@ const purchaseSchema = new mongoose.Schema({
     },
     note: {
         type: mongoose.Schema.Types.String,
+        maxLength: [60, 'customer name must not exceed 60 characters']
     },
     purchase_date: {
         type: mongoose.Schema.Types.Date,

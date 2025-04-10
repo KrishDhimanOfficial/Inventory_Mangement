@@ -5,7 +5,7 @@ import DataService from '../../../hooks/DataService';
 import { useFetchData, downloadCSV, generatePDF } from '../../../hooks/hook'
 const Warehouse_Modal = lazy(() => import('./WareHouse_Modal'))
 
-interface Warehouse { id: string, _id: string; name: string; address: string; city: string; country: string; zipcode: string; }
+interface Warehouse { id: string, _id: string; name: string; address: string; city: string; country: string; zipcode: string; product_warehouseId: number; purchase_warehouseId: number; sales_warehouseId: number; }
 
 const Warehouses = () => {
   const [showmodal, setmodal] = useState(false)
@@ -28,27 +28,33 @@ const Warehouses = () => {
       name: "Actions",
       cell: (row: any) => (
         <div className="d-flex justify-content-between">
-          <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
-          <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+          <Button text='' onclick={() => { handleTableRow(row._id) }} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
+          {
+            (row.product_warehouseId == 0 || row.sales_warehouseId == 0 || row.purchase_warehouseId == 0) && (
+              <Button text='' onclick={() => { deleteTableRow(row._id) }} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+            )
+          }
         </div>
       )
     },
   ]
 
   const pdfColumns = ["S.No", "Name", "Address", "City", "Country", "Zipcode"]
-  const tableBody = data.map((warehouse: Warehouse) => [
-    warehouse.id, warehouse.name, warehouse.address, warehouse.city, warehouse.country, warehouse.zipcode])
+  const tableBody = data.map((warehouse: Warehouse) => [warehouse.id, warehouse.name, warehouse.address, warehouse.city, warehouse.country, warehouse.zipcode])
   const handleTableRow = (id: string) => { fetchSingleWarehouse(`/warehouse/${id}`), setmodal(!showmodal) }
   const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
   const fetch = async () => {
     try {
       setloading(true)
-      const res = await DataService.get('/warehouses')
-      const response = res.map((warehouse: Warehouse, i: number) => ({
+      const warehouseRes = await DataService.get('/check-warehouseId-isfound')
+      const response = warehouseRes?.map((warehouse: Warehouse, i: number) => ({
         id: i + 1, _id: warehouse._id, name: warehouse.name,
         address: warehouse.address, city: warehouse.city,
         country: warehouse.country, zipcode: warehouse.zipcode,
+        product_warehouseId: warehouse.product_warehouseId,
+        sales_warehouseId: warehouse.sales_warehouseId,
+        purchase_warehouseId: warehouse.purchase_warehouseId,
       }))
       setdata(response), setloading(false)
     } catch (error) {

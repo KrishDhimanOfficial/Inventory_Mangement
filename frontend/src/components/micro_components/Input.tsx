@@ -8,9 +8,10 @@ interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
     min?: number | string,
     max?: number | string,
     value?: any
+    required?: boolean
 }
 
-const Input: React.FC<InputProps> = ({ type = 'text', placeholder, value, className, checked, id, min, max, ...props }) => {
+const Input: React.FC<InputProps> = ({ type = 'text', placeholder, value, className, checked, id, min, max, required = false, ...props }) => {
     return (
         <input
             type={type}
@@ -21,6 +22,7 @@ const Input: React.FC<InputProps> = ({ type = 'text', placeholder, value, classN
             min={min ? Number(min) : undefined}  // convert to number
             max={max ? Number(max) : undefined}
             value={value}
+            required={required}
             {...props}
         />
     )

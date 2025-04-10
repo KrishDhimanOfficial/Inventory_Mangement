@@ -23,7 +23,7 @@ const warehouse_controllers = {
     },
     getAllWarehouses: async (req, res) => {
         try {
-            const user = getUser(req.headers['authorization'].split(' ')[1])
+            const user = getUser(req.headers['authorization']?.split(' ')[1])
             let response = await userModel.aggregate([
                 {
                     $match: {
@@ -48,8 +48,7 @@ const warehouse_controllers = {
                     $replaceRoot: { newRoot: '$warehouses' }
                 }
             ])
-
-            if (!response[0]) response = await warehouseModel.find({})
+            if (response.length === 0) response = await warehouseModel.find({})
             setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getAllWarehouses : ' + error.message)
@@ -84,7 +83,67 @@ const warehouse_controllers = {
         } catch (error) {
             console.log('deleteWarehouse : ' + error.message)
         }
-    }
+    },
+    checkWarehouseIsUsedInOrNot: async (req, res) => {
+        try {
+            const response = await warehouseModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'products',
+                        localField: '_id',
+                        foreignField: 'warehouseId',
+                        as: 'product_warehouseId'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'sales',
+                        localField: '_id',
+                        foreignField: 'warehouseId',
+                        as: 'sales_warehouseId'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'purchases',
+                        localField: '_id',
+                        foreignField: 'warehouseId',
+                        as: 'purchase_warehouseId'
+                    }
+                },
+                {
+                    $addFields: {
+                        purchase_warehouseId: {
+                            $size: "$purchase_warehouseId"
+                        },
+                        sales_warehouseId: {
+                            $size: "$sales_warehouseId"
+                        },
+                        product_warehouseId: {
+                            $size: "$product_warehouseId"
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        name: 1,
+                        address: 1,
+                        city: 1,
+                        country: 1,
+                        zipcode: 1,
+                        product_warehouseId: 1,
+                        sales_warehouseId: 1,
+                        purchase_warehouseId: 1
+                    }
+                }
+            ])
+            if (response.length == 0) return res.json({ error: 'No Lookup Found!' })
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('checkWarehouseIsUsedInOrNot : ' + error.message)
+        }
+    },
 }
 
 export default warehouse_controllers

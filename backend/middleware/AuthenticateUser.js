@@ -12,7 +12,9 @@ const AuthenticateUser = async (req, res, next) => {
         next()
     } catch (error) {
         console.log('AuthenticateUser : ', error.message)
-        return res.json({ middlewareError: 'Unauthorized!' })
+        if (error.message === 'jwt malformed') return res.json({ authUser: '/login' })
+        if (error.message === 'jwt expired') return res.json({ authUser: '/login' })
+        return res.json({ authUser: '/login' })
     }
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { Button, Input } from '../../components/component'
 import { useNavigate } from 'react-router'
@@ -14,28 +14,16 @@ const Login = () => {
     const navigate = useNavigate()
     const [passwordtype, setpasswordtype] = useState(false)
     const { register, handleSubmit } = useForm()
-    const [timeout, settimeout] = useState(null)
 
     const handleLogin = async (formData: object) => {
         try {
             const res = await DataService.post('/user/login', formData)
-            Notify(res), handleLogoutAfterLoginIn()
+            Notify(res)
             localStorage.setItem(`${config.token_name}`, res.stockify_auth_token)
-            if (res.success) navigate('/dashboard')
-            else navigate('/login')
+            res.success ? navigate('/dashboard') : navigate('/login')
         } catch (error) {
             console.error(error)
         }
-    }
-
-    const handleLogoutAfterLoginIn = () => {
-        if (timeout) clearTimeout(timeout) // clear previous SetTimeout
-
-        const time: any = setTimeout(() => {
-            localStorage.removeItem(`${config.token_name}`)
-            navigate('/login')
-        }, 1 * 60 * 60 * 1000) // Expire Token after 1 hours
-        settimeout(time)
     }
 
     return (

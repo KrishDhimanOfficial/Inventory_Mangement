@@ -627,6 +627,7 @@ const pro_controllers = {
                 purchase_date: format(parseISO(pruchaseDate), 'yyyy-MM-dd'),
                 supplierId: new ObjectId(supplierId.value),
                 warehouseId: new ObjectId(warehouseId.value),
+                payment_due: total,
                 orderItems: orderItems.map(item => ({
                     productId: new ObjectId(item._id),
                     quantity: item.qty,
@@ -757,6 +758,7 @@ const pro_controllers = {
                 purchase_date: format(parseISO(pruchaseDate), 'yyyy-MM-dd'),
                 supplierId: new ObjectId(supplierId.value),
                 warehouseId: new ObjectId(warehouseId.value),
+                payment_due: total,
                 orderItems: orderItems.map(item => ({
                     productId: new ObjectId(item._id),
                     quantity: item.qty,
@@ -839,7 +841,7 @@ const pro_controllers = {
                 },
                 { $sort: { _id: -1 } }
             ])
-            return res.json(response)
+            return res.status(200).json(response)
         } catch (error) {
             console.log('getAll_sales_Details : ' + error.message)
         }
@@ -848,21 +850,30 @@ const pro_controllers = {
         try {
             let code = '';
             for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
-            const { discount, note, orderItems, subtotal, total, orderTax, selling_date, shipping, customerId, warehouseId } = req.body
-            const response = await salesModel.create({
+            const { discount, note, orderItems, subtotal, total, orderTax, selling_date, shipping, customerId, warehouseId,
+                customer_name, customer_phone } = req.body
+
+            const dataTobeCreate = {
                 salesId: `S_${code}`,
                 discount, note, orderTax, shipping, total, subtotal,
                 selling_date: format(parseISO(selling_date), 'yyyy-MM-dd'),
                 customerId: new ObjectId(customerId.value),
                 warehouseId: new ObjectId(warehouseId.value),
-                salestype: 1,
+                payment_due: total,
+                salestype: customer_name ? 0 : 1,
+                walkInCustomerDetails: {
+                    name: customer_name,
+                    phone: customer_phone
+                },
                 orderItems: orderItems?.map(item => ({
                     productId: new ObjectId(item._id),
                     quantity: item.qty,
                     productTaxPrice: item.subtotal
                 }))
+            }
+            if (customer_name && customer_phone) dataTobeCreate.walkInCustomerDetails = { name: customer_name, phone: customer_phone }
 
-            })
+            const response = await salesModel.create(dataTobeCreate)
             if (!response) return res.json({ error: 'An error occurred. Please try again.' })
             return res.status(200).json({ success: 'Item added successfully.' })
         } catch (error) {
@@ -911,6 +922,8 @@ const pro_controllers = {
                         shipping: { $first: "$shipping" },
                         orderTax: { $first: "$orderTax" },
                         selling_date: { $first: "$selling_date" },
+                        salestype: { $first: "$salestype" },
+                        walkInCustomerDetails: { $first: "$walkInCustomerDetails" },
                     }
                 },
                 {
@@ -974,19 +987,26 @@ const pro_controllers = {
     },
     updateProductSales: async (req, res) => {
         try {
-            const { discount, note, orderItems, subtotal, total, orderTax, selling_date, shipping, customerId, warehouseId } = req.body
-            const response = await salesModel.findByIdAndUpdate({ _id: req.params.id }, {
+            const { discount, note, orderItems, subtotal, total, orderTax, selling_date, shipping, customerId, warehouseId,
+                customer_name, customer_phone
+            } = req.body
+
+            const docTobeUpdate = {
                 discount, note, orderTax, shipping, total, subtotal,
                 selling_date: format(parseISO(selling_date), 'yyyy-MM-dd'),
                 customerId: new ObjectId(customerId.value),
                 warehouseId: new ObjectId(warehouseId.value),
-                salestype: 1,
+                salestype: customer_name ? 0 : 1, // 0 : POS, 1 :Sales
+                payment_due: total,
                 orderItems: orderItems?.map(item => ({
                     productId: new ObjectId(item._id),
                     quantity: item.qty,
                     productTaxPrice: item.subtotal
                 }))
-            }, { new: true, runValidators: true })
+            }
+            if (customer_name && customer_phone) docTobeUpdate.walkInCustomerDetails = { name: customer_name, phone: customer_phone }
+
+            const response = await salesModel.findByIdAndUpdate({ _id: req.params.id }, docTobeUpdate, { new: true, runValidators: true })
             if (!response) return res.json({ error: 'An error occurred. Please try again.' })
             return res.status(200).json({ success: 'Updated successfully!' })
         } catch (error) {

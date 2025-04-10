@@ -21,10 +21,10 @@ const salesSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Please Select Supplier!'],
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
-        ref: 'Supplier'
     },
     discount: {
         type: mongoose.Schema.Types.Number,
+        match: [/^[0-9]+$/, 'Invalid discount!'],
         default: 0
     },
     subtotal: {
@@ -37,10 +37,12 @@ const salesSchema = new mongoose.Schema({
     },
     orderTax: {
         type: mongoose.Schema.Types.Number,
+        match: [/^[0-9]+$/, 'Invalid orderTax!'],
         default: 0
     },
     shippment: {
         type: mongoose.Schema.Types.Number,
+        match: [/^[0-9]+$/, 'Invalid shippment Detail!'],
         default: 0
     },
     salestype: {
@@ -65,9 +67,24 @@ const salesSchema = new mongoose.Schema({
     },
     note: {
         type: mongoose.Schema.Types.String,
+        maxLength: [60, 'customer name must not exceed 60 characters']
     },
     selling_date: {
         type: mongoose.Schema.Types.Date,
+    },
+    walkInCustomerDetails: {
+        type: {
+            name: {
+                type: mongoose.Schema.Types.String,
+                minLength: [3, 'customer name must be at least 3 characters'],
+                maxLength: [15, 'customer name must not exceed 15 characters']
+            },
+            phone: {
+                type: mongoose.Schema.Types.String,
+                match: [/^[0-9]{10}$/, 'Invalid Phone']
+            }
+        },
+        _id: false
     }
 },
     { timestamps: true }
