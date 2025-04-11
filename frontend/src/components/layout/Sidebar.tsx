@@ -5,9 +5,8 @@ import DataService from '../../hooks/DataService';
 import config from '../../config/config';
 import logo1 from '../../assets/Images/close.webp'
 import { useDispatch } from 'react-redux';
-import { setUserPermission } from '../../controller/userPermission';
+import { setUserPermission } from '../../controller/userPermission'
 import Accordion from 'react-bootstrap/Accordion'
-
 interface UserPermission {
     role: string,
     permissions: {
@@ -57,220 +56,193 @@ const Sidebar = () => {
                 </div>
 
                 {/* <!-- Sidebar Menu --> */}
-                <Accordion>
-                    <Accordion.Item eventKey="0">
-                        <Accordion.Header>Product</Accordion.Header>
-                        <Accordion.Body className='bg-dark'>
-                            <ul className="nav nav-treeview">
-                                <li className="nav-item">
-                                    <Link to="/dashboard/products" className="nav-link">
-                                        <i className="fa-solid fa-bag-shopping nav-icon"></i>
-                                        <p className="text">All Products</p>
-                                    </Link>
-                                </li>
-                                <li className="nav-item">
-                                    <Link to="/dashboard/product/category" className="nav-link">
-                                        <i className="fa-solid fa-layer-group nav-icon"></i>
-                                        <p className="text">Category</p>
-                                    </Link>
-                                </li>
-                                <li className="nav-item">
-                                    <Link to='/dashboard/product/brand' className="nav-link">
-                                        <i className="fa-solid fa-ring nav-icon"></i>
-                                        <p className="text">Brands</p>
-                                    </Link>
-                                </li>
-                                <li className="nav-item">
-                                    <Link to='/dashboard/product/unit' className="nav-link">
-                                        <i className="fa-brands fa-unity nav-icon"></i>
-                                        <p className="text">Units</p>
-                                    </Link>
-                                </li>
-                            </ul>
-                        </Accordion.Body>
-                    </Accordion.Item>
-                </Accordion>
                 <nav className="mt-2">
-                    <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li className="nav-item">
-                            <Link to="/dashboard" className="nav-link">
-                                <i className="fa-solid fa-gauge me-2"></i>
-                                <p>Dashboard</p>
-                            </Link>
-                        </li>
-                        {
-                            user.permissions?.product.view && (
-                                <li className="nav-item">
-                                    <Link to="#" className="nav-link">
+                    <Accordion className='border-0 mb-3'>
+                        <Accordion.Item eventKey="5">
+                            <Accordion.Header style={{}}>
+                                <Link to="/dashboard" className="nav-link">
+                                    <i className="fa-solid fa-gauge me-2"></i>
+                                    <p>Dashboard</p>
+                                </Link>
+                            </Accordion.Header>
+                        </Accordion.Item>
+                    </Accordion>
+                    {
+                        user.permissions?.product.view && (
+                            <Accordion className='border-0 mb-3'>
+                                <Accordion.Item eventKey="4">
+                                    <Accordion.Header>
                                         <i className="fa-solid fa-bars me-2"></i>
-                                        <p>
-                                            Product
-                                            <i className="right fas fa-angle-left"></i>
-                                        </p>
-                                    </Link>
-                                    <ul className="nav nav-treeview">
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/products" className="nav-link">
-                                                <i className="fa-solid fa-bag-shopping nav-icon"></i>
-                                                <p className="text">All Products</p>
-                                            </Link>
-                                        </li>
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/product/category" className="nav-link">
-                                                <i className="fa-solid fa-layer-group nav-icon"></i>
-                                                <p className="text">Category</p>
-                                            </Link>
-                                        </li>
-                                        <li className="nav-item">
-                                            <Link to='/dashboard/product/brand' className="nav-link">
-                                                <i className="fa-solid fa-ring nav-icon"></i>
-                                                <p className="text">Brands</p>
-                                            </Link>
-                                        </li>
-                                        <li className="nav-item">
-                                            <Link to='/dashboard/product/unit' className="nav-link">
-                                                <i className="fa-brands fa-unity nav-icon"></i>
-                                                <p className="text">Units</p>
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                            )
-                        }
-                        {
-                            user.permissions?.purchase.view && (
-                                <li className="nav-item">
-                                    <Link to="#" className="nav-link">
+                                        <p> Product  </p>
+                                    </Accordion.Header>
+                                    <Accordion.Body className='ps-0 bg-dark'>
+                                        <ul className="nav nav-treeview">
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/products" className="nav-link">
+                                                    <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                                    <p className="text">All Products</p>
+                                                </Link>
+                                            </li>
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/product/category" className="nav-link">
+                                                    <i className="fa-solid fa-layer-group nav-icon"></i>
+                                                    <p className="text">Category</p>
+                                                </Link>
+                                            </li>
+                                            <li className="nav-item">
+                                                <Link to='/dashboard/product/brand' className="nav-link">
+                                                    <i className="fa-solid fa-ring nav-icon"></i>
+                                                    <p className="text">Brands</p>
+                                                </Link>
+                                            </li>
+                                            <li className="nav-item">
+                                                <Link to='/dashboard/product/unit' className="nav-link">
+                                                    <i className="fa-brands fa-unity nav-icon"></i>
+                                                    <p className="text">Units</p>
+                                                </Link>
+                                            </li>
+                                        </ul>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            </Accordion>
+                        )
+                    }
+                    {
+                        user.permissions?.purchase.view && (
+                            <Accordion className='border-0 mb-3'>
+                                <Accordion.Item eventKey="2">
+                                    <Accordion.Header>
                                         <i className="fa-solid fa-credit-card me-2"></i>
-                                        <p>
-                                            Purchase
-                                            <i className="right fas fa-angle-left"></i>
-                                        </p>
-                                    </Link>
-                                    <ul className="nav nav-treeview">
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/purchases" className="nav-link">
-                                                <i className="fa-solid fa-bag-shopping nav-icon"></i>
-                                                <p className="text">All Purchase</p>
-                                            </Link>
-                                        </li>
-                                        {
-                                            user.permissions?.purchase.create && (
-                                                <li className="nav-item">
-                                                    <Link to="/dashboard/create/purchase" className="nav-link">
-                                                        <i className="fa-solid fa-bag-shopping nav-icon"></i>
-                                                        <p className="text">Create Purchase</p>
-                                                    </Link>
-                                                </li>
-                                            )
-                                        }
-                                    </ul>
-                                </li>
-                            )
-                        }
-                        {
-                            user.permissions?.sales.view && (
-                                <li className="nav-item">
-                                    <Link to="#" className="nav-link">
+                                        <p>Purchase</p>
+                                    </Accordion.Header>
+                                    <Accordion.Body className='ps-0 bg-dark'>
+                                        <ul className="nav nav-treeview">
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/purchases" className="nav-link">
+                                                    <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                                    <p className="text">All Purchase</p>
+                                                </Link>
+                                            </li>
+                                            {
+                                                user.permissions?.purchase.create && (
+                                                    <li className="nav-item">
+                                                        <Link to="/dashboard/create/purchase" className="nav-link">
+                                                            <i className="fa-solid fa-bag-shopping nav-icon"></i>
+                                                            <p className="text">Create Purchase</p>
+                                                        </Link>
+                                                    </li>
+                                                )
+                                            }
+                                        </ul>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            </Accordion>
+                        )
+                    }
+                    {
+                        user.permissions?.sales.view && (
+                            <Accordion className='border-0 mb-3'>
+                                <Accordion.Item eventKey="1">
+                                    <Accordion.Header>
                                         <i className="fa-solid fa-chart-area me-2"></i>
-                                        <p>
-                                            Sales
-                                            <i className="right fas fa-angle-left"></i>
-                                        </p>
-                                    </Link>
-                                    <ul className="nav nav-treeview">
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/sales" className="nav-link">
-                                                <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                                <p className="text">All Sales</p>
-                                            </Link>
-                                        </li>
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/create/sales" className="nav-link">
-                                                <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                                <p className="text">Create Sales</p>
-                                            </Link>
-                                        </li>
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/pos" className="nav-link">
-                                                <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                                <p className="text">POS</p>
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                            )
-                        }
-                        <li className="nav-item">
-                            <Link to="#" className="nav-link">
+                                        <p>Sales </p>
+                                    </Accordion.Header>
+                                    <Accordion.Body className='ps-0 bg-dark'>
+                                        <ul className="nav nav-treeview">
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/sales" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">All Sales</p>
+                                                </Link>
+                                            </li>
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/create/sales" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Create Sales</p>
+                                                </Link>
+                                            </li>
+                                        </ul>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            </Accordion>
+                        )
+                    }
+                    <Accordion className='border-0 mb-3'>
+                        <Accordion.Item eventKey="1">
+                            <Accordion.Header>
                                 <i className="fa-solid fa-users me-2"></i>
-                                <p>
-                                    People
-                                    <i className="right fas fa-angle-left"></i>
-                                </p>
-                            </Link>
-                            <ul className="nav nav-treeview">
-                                {
-                                    user.permissions?.supplier.view && (
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/suppliers" className="nav-link">
-                                                <i className="fa-regular fa-user nav-icon"></i>
-                                                <p className="text">Suppliers</p>
-                                            </Link>
-                                        </li>
-                                    )
-                                }
-                                {
-                                    user.permissions?.customer.view && (
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/customers" className="nav-link">
-                                                <i className="fa-regular fa-user nav-icon"></i>
-                                                <p className="text">Customers</p>
-                                            </Link>
-                                        </li>
-                                    )
-                                }
-                                {
-                                    user.role == 'admin' && (
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/user/permissions" className="nav-link">
-                                                <i className="fa-regular fa-user nav-icon"></i>
-                                                <p className="text">Users</p>
-                                            </Link>
-                                        </li>
-                                    )
-                                }
-                            </ul>
-                        </li>
-                        {/* settings */}
-                        {
-                            user.role === 'admin' && (
-                                <li className="nav-item">
-                                    <Link to="#" className="nav-link">
+                                <p> People </p>
+                            </Accordion.Header>
+                            <Accordion.Body className='ps-0 bg-dark'>
+                                <ul className="nav nav-treeview">
+                                    {
+                                        user.permissions?.supplier.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/suppliers" className="nav-link">
+                                                    <i className="fa-regular fa-user nav-icon"></i>
+                                                    <p className="text">Suppliers</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.permissions?.customer.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/customers" className="nav-link">
+                                                    <i className="fa-regular fa-user nav-icon"></i>
+                                                    <p className="text">Customers</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.role == 'admin' && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/user/permissions" className="nav-link">
+                                                    <i className="fa-regular fa-user nav-icon"></i>
+                                                    <p className="text">Users</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                </ul>
+                            </Accordion.Body>
+                        </Accordion.Item>
+                    </Accordion>
+                    {
+                        user.role === 'admin' && (
+                            <Accordion className='border-0'>
+                                <Accordion.Item eventKey="0">
+                                    <Accordion.Header>
                                         <i className="fa-solid fa-gear me-2"></i>
-                                        <p>
-                                            Settings
-                                            <i className="right fas fa-angle-left"></i>
-                                        </p>
-                                    </Link>
-                                    <ul className="nav nav-treeview">
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/system_setting" className="nav-link">
-                                                <i className="fa-solid fa-gears nav-icon"></i>
-                                                <p className="text ms-2">System Setting</p>
-                                            </Link>
-                                        </li>
-                                        <li className="nav-item">
-                                            <Link to="/dashboard/setting/warehouse" className="nav-link">
-                                                <i className="fa-solid fa-warehouse nav-icon"></i>
-                                                <p className="text ms-2">Warehouse</p>
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                            )
-                        }
-                    </ul>
+                                        <p>Settings</p>
+                                    </Accordion.Header>
+                                    <Accordion.Body className='ps-0 bg-dark'>
+                                        <ul className="nav nav-treeview">
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/system_setting" className="nav-link">
+                                                    <i className="fa-solid fa-gears nav-icon"></i>
+                                                    <p className="text ms-2">System Setting</p>
+                                                </Link>
+                                            </li>
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/setting/warehouse" className="nav-link">
+                                                    <i className="fa-solid fa-warehouse nav-icon"></i>
+                                                    <p className="text ms-2">Warehouse</p>
+                                                </Link>
+                                            </li>
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/setting/payment-method" className="nav-link">
+                                                    <i className="fa-solid fa-money-bill-1 nav-icon"></i>
+                                                    <p className="text ms-2">Payment Method</p>
+                                                </Link>
+                                            </li>
+                                        </ul>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            </Accordion>
+                        )
+                    }
                 </nav>
                 {/* <!-- /.sidebar-menu --> */}
             </div>

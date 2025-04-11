@@ -1,21 +1,18 @@
-import { JSX, useEffect, useState } from "react"
+import React, { JSX, useEffect, useState } from "react"
 import { DataService } from '../../hooks/hook'
 import config from "../../config/config"
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, } from 'react-router-dom'
 
-const ProtectedRoute = ({ component }: { component: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const [authChecked, setAuthChecked] = useState(false)
     const [isAuthenticated, setIsAuth] = useState<Boolean>(false)
-    console.log(isAuthenticated);
-
+    const location = useLocation()
     const verify_Auth = async () => {
         try {
             setAuthChecked(true)
             const res = await DataService.get('/user/auth', {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
-            setAuthChecked(false)
-            console.log(res);
             res.error ? setIsAuth(true) : setIsAuth(false)
         } catch (error) {
             console.error(error)
@@ -26,10 +23,9 @@ const ProtectedRoute = ({ component }: { component: JSX.Element }) => {
     }
 
     useEffect(() => { verify_Auth() }, [])
-    if (authChecked) {
-        return <div>Loading...</div> // Or a spinner
-    }
-    return isAuthenticated ? <Navigate to="/login" replace /> : component;
+
+    if (authChecked) return <div>Loading...</div>
+    return isAuthenticated ? <Navigate to="/login" replace state={{ from: location }} /> : children;
 }
 
 export default ProtectedRoute

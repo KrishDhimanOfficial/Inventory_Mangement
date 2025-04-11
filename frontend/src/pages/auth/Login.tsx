@@ -13,7 +13,7 @@ const fadeOut = { opacity: [0, 1], transition: { duration: 0.8 } }
 const Login = () => {
     const navigate = useNavigate()
     const [passwordtype, setpasswordtype] = useState(false)
-    const { register, handleSubmit } = useForm()
+    const { register, handleSubmit, formState: { isSubmitting } } = useForm()
 
     const handleLogin = async (formData: object) => {
         try {
@@ -31,7 +31,7 @@ const Login = () => {
             <title>Login</title>
             <ToastContainer />
             <div className='min-vh-100 d-flex flex-column align-items-center justify-content-center'>
-                <form onSubmit={handleSubmit(handleLogin)} autoComplete='off' className="form col-md-4 col">
+                <form onSubmit={handleSubmit(handleLogin)} className="form col-md-4 col">
                     <h1>Login</h1>
                     <motion.div animate={animation}>
                         <div className="flex-column mb-2">
@@ -62,7 +62,7 @@ const Login = () => {
                         </div>
                     </motion.div>
                     <motion.div animate={fadeOut}>
-                        <Button type='submit' text='Login' className="button-submit" />
+                        <Button type='submit' text={isSubmitting ? 'Loging...' :'Login'} className="button-submit" />
                     </motion.div>
                 </form>
             </div>

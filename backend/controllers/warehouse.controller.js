@@ -14,7 +14,13 @@ const warehouse_controllers = {
     createWarehouse: async (req, res) => {
         try {
             const response = await warehouseModel.create(req.body)
+            console.log(response);
+
             if (!response) return res.json({ error: 'Unable to handle your request!' })
+            const user = await userModel.findOne({ role: 'admin' })
+            await userModel.findOneAndUpdate({ role: 'admin' }, {
+                warehousesId: [...user.warehousesId, response._id]
+            })
             return res.json({ success: 'Created Successfully!' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
@@ -79,6 +85,11 @@ const warehouse_controllers = {
         try {
             const response = await warehouseModel.findByIdAndDelete({ _id: req.params.id })
             if (!response) return res.json({ error: 'Deleted Unsuccessfull!' })
+            await userModel.findOneAndUpdate({ role: 'admin' }, {
+                $pull: {
+                    warehousesId: new ObjectId(req.params.id)
+                }
+            })
             return res.json({ success: 'Deleted Successfully!' })
         } catch (error) {
             console.log('deleteWarehouse : ' + error.message)

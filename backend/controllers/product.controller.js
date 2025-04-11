@@ -9,6 +9,9 @@ import config from '../config/config.js';
 import deleteImage from '../services/deleteImg.js';
 import purchaseModel from '../models/purchase.model.js';
 import salesModel from '../models/sales.model.js';
+import userModel from '../models/user.model.js';
+import { getUser } from '../services/auth.js';
+import paymentMethodModel from '../models/paymentMethod.model.js';
 const ObjectId = mongoose.Types.ObjectId;
 const delay = 100;
 
@@ -46,8 +49,13 @@ const pro_controllers = {
     },
     create_category: async (req, res) => {
         try {
-            const existence = await categoryModel.find({ name: req.body.name, })
-            if (existence[0]) return res.json({ warning: 'Category Name Already Exists!' })
+            const existence = await categoryModel.findOne({
+                name: {
+                    $regex: req.body.name,
+                    $options: 'i'
+                },
+            })
+            if (existence) return res.json({ warning: 'Category Name Already Exists!' })
 
             const response = await categoryModel.create({
                 name: req.body.name,
@@ -130,8 +138,13 @@ const pro_controllers = {
     createBrand: async (req, res) => {
         try {
             const { name, categoryId } = req.body;
-            const existence = await brandModel.find({ name })
-            if (existence[0]) return res.json({ warning: 'Brand Name Already Exists!' })
+            const existence = await brandModel.findOne({
+                name: {
+                    $regex: name,
+                    $options: 'i'
+                }
+            })
+            if (existence) return res.json({ warning: 'Brand Name Already Exists!' })
 
             const response = await brandModel.create({
                 name,
@@ -211,8 +224,13 @@ const pro_controllers = {
     createUnit: async (req, res) => {
         try {
             const { name, shortName } = req.body;
-            const existence = await unitModel.find({ name, shortName })
-            if (existence[0]) return res.json({ warning: 'Product Unit Already Exists!' })
+            const existence = await unitModel.findOne({
+                $or: [
+                    { name: { $regex: name, $options: 'i' } },
+                    { shortName: { $regex: shortName, $options: 'i' } },
+                ]
+            })
+            if (existence) return res.json({ warning: 'Product Unit Already Exists!' })
 
             const response = await unitModel.create(req.body)
             if (!response) return res.json({ error: 'Not Found!' })
@@ -347,6 +365,8 @@ const pro_controllers = {
     createProductDetails: async (req, res) => {
         try {
             const { title, price, desc, sku, tax, cost, supplierId, categoryId, brandId, unitId } = req.body;
+            if (!req.file.filename) return res.status(400).json({ error: 'No Image Uploaded!' })
+
             const response = await productModel.create({
                 title, price, desc, sku, tax, cost,
                 categoryId: new ObjectId(categoryId),
@@ -563,9 +583,136 @@ const pro_controllers = {
             console.log('searchProductwithWarehouse : ' + error.message)
         }
     },
-    getAll_purchase_Details: async (req, res) => {
+    getPurchaseDetail: async (req, res) => {
         try {
             const response = await purchaseModel.aggregate([
+                {
+                    $match: { purchaseId: req.params.purchaseId }
+                },
+                {
+                    $unwind: '$orderItems'
+                },
+                {
+                    $lookup: {
+                        from: 'products',
+                        localField: 'orderItems.productId',
+                        foreignField: '_id',
+                        as: 'orderItems.product'
+                    }
+                },
+                { $unwind: '$orderItems.product' },
+                {
+                    $lookup: {
+                        from: 'units',
+                        localField: 'orderItems.product.unitId',
+                        foreignField: '_id',
+                        as: 'unit'
+                    }
+                },
+                { $unwind: '$unit' },
+                {
+                    $group: {
+                        _id: '$_id',
+                        orderItems: {
+                            $push: {
+                                productId: "$orderItems.product._id",
+                                name: "$orderItems.product.title",
+                                sku: "$orderItems.product.sku",
+                                tax: "$orderItems.product.tax",
+                                price: "$orderItems.product.price",
+                                qty: "$orderItems.quantity",
+                                subtotal: "$orderItems.productTaxPrice",
+                                stock: "$orderItems.product.stock",
+                                unit: "$unit.shortName",
+                            }
+                        },
+                        supplierId: { $first: "$supplierId" },
+                        warehouseId: { $first: "$warehouseId" },
+                        discount: { $first: "$discount" },
+                        subtotal: { $first: "$subtotal" },
+                        total: { $first: "$total" },
+                        orderTax: { $first: "$orderTax" },
+                        shippment: { $first: "$shippment" },
+                        payment_status: { $first: "$payment_status" },
+                        note: { $first: "$note" },
+                        purchase_date: { $first: "$purchase_date" },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                { $unwind: '$warehouse' },
+                {
+                    $lookup: {
+                        from: 'suppliers',
+                        localField: 'supplierId',
+                        foreignField: '_id',
+                        as: 'supplier'
+                    }
+                },
+                { $unwind: '$supplier' },
+                {
+                    $addFields: {
+                        supplier: { $ifNull: ['$supplier', { name: 'N/A' }] },
+                        warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
+                        date: {
+                            $dateToString: {
+                                format: "%d/%m/%Y",
+                                date: "$purchase_date"
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        date: 1,
+                        'supplier.name': 1,
+                        'supplier.email': 1,
+                        'supplier.phone': 1,
+                        'warehouse.name': 1,
+                        orderItems: 1,
+                        discount: 1,
+                        subtotal: 1,
+                        total: 1,
+                        orderTax: 1,
+                        shippment: 1,
+                        payment_status: 1,
+                        note: 1,
+                        purchase_date: 1
+                    }
+                }
+            ])
+            if (response.length === 0) return res.json({ error: 'Data Not Found.' })
+            return res.status(200).json(response[0])
+        } catch (error) {
+            console.log('getPurchaseDetail : ' + error.message)
+        }
+    },
+    getAll_purchase_Details: async (req, res) => {
+        try {
+            const user = getUser(req.headers['authorization']?.split(' ')[1])
+            const response = await userModel.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(user?.id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'purchases',
+                        localField: 'warehousesId',
+                        foreignField: 'warehouseId',
+                        as: 'purchases'
+                    }
+                },
+                { $unwind: '$purchases' },
+                { $replaceRoot: { newRoot: '$purchases' } },
                 {
                     $lookup: {
                         from: 'suppliers',
@@ -795,7 +942,28 @@ const pro_controllers = {
     },
     getAll_sales_Details: async (req, res) => {
         try {
-            const response = await salesModel.aggregate([
+            const user = getUser(req.headers['authorization']?.split(' ')[1])
+            const response = await userModel.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(user?.id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'sales',
+                        localField: 'warehousesId',
+                        foreignField: 'warehouseId',
+                        as: 'sales'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$sales',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                { $replaceRoot: { newRoot: '$sales' } },
                 {
                     $lookup: {
                         from: 'customers',
@@ -1021,6 +1189,59 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted successfully!' })
         } catch (error) {
             console.log('deleteProductSales : ' + error.message)
+        }
+    },
+    getAllPaymentMethods: async (req, res) => {
+        try {
+            const response = await paymentMethodModel.find({})
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('getAllPaymentMethods : ' + error.message)
+        }
+    },
+    createPaymentMethod: async (req, res) => {
+        try {
+            const existence = await paymentMethodModel.findOne({
+                name: {
+                    $regex: req.body.name,
+                    $options: 'i'
+                }
+            })
+            if (existence) return res.status(200).json({ error: 'This payment method already exists!' })
+
+            const response = await paymentMethodModel.create(req.body)
+            if (!response) return res.json({ error: 'Unable to handle your request.' })
+            return res.status(200).json({ success: 'Created Successfully.' })
+        } catch (error) {
+            console.log('createPaymentMethod : ' + error.message)
+        }
+    },
+    getPaymentMethod: async (req, res) => {
+        try {
+            const response = await paymentMethodModel.findById({ _id: req.params.id })
+            if (!response) return res.json({ error: 'Not Found.' })
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('getPaymentMethod : ' + error.message)
+        }
+    },
+    updatePaymentMethod: async (req, res) => {
+        try {
+            const response = await paymentMethodModel.findByIdAndUpdate({ _id: req.params.id }, req.body, { new: true, runValidators: true })
+            if (!response) return res.json({ error: 'Could Not Process Your Request.' })
+            return res.status(200).json({ success: 'Updated Successfully.' })
+        } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('updatePaymentMethod: async (req, res) => {' + error.message)
+        }
+    },
+    deletePaymentMethod: async (req, res) => {
+        try {
+            const response = await paymentMethodModel.findByIdAndDelete({ _id: req.params.id }, { new: true })
+            if (!response) return res.json({ error: 'Could Not Process Your Request.' })
+            return res.status(200).json({ success: 'Deleted Successfully.' })
+        } catch (error) {
+            console.log('deletePaymentMethod: ' + error.message)
         }
     },
 }

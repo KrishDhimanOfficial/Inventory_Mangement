@@ -16,11 +16,13 @@ import Sales from "./pages/sales/Sales"
 import Purchases from "./pages/purchase/Purchases"
 import Purchase from "./pages/purchase/Purchase"
 import SalesOrderForm from "./pages/sales/SalesOrderForm"
-import POS from "./pages/sales/POS"
 import System_Setting from "./pages/settings/system/System_Setting"
 import Update_purchase from "./pages/purchase/Update_purchase"
-import UpdateSales from "./pages/sales/updateSales"
+import UpdateSales from "./pages/sales/UpdateSales"
 import Dashboard from "./pages/dashboard/Dashboard"
+import NotFound from "./pages/NotFound/NotFound"
+import PaymentMethod from "./pages/settings/payment_methods.tsx/PaymentMethod"
+import Details from "./components/details/Details"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -30,83 +32,175 @@ const App = () => {
     },
     {
       path: '/dashboard',
-      element: <ProtectedRoute component={<Dashboard />} />,
+      element: (
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      ),
       children: [
         {
-          path: '/dashboard',
-          element: <ProtectedRoute component={<Home />} />,
+          index: true,
+          element: (
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          ),
         },
         {
           path: '/dashboard/user/permissions',
-          element: <ProtectedRoute component={<Users />} />
+          element: (
+            <ProtectedRoute>
+              <Users />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/suppliers',
-          element: <ProtectedRoute component={<Suppliers />} />
+          element: (
+            <ProtectedRoute>
+              <Suppliers />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/customers',
-          element: <Customers />
+          element: (
+            <ProtectedRoute>
+              <Customers />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/setting/warehouse',
-          element: <Warehouses />
+          element: (
+            <ProtectedRoute>
+              <Warehouses />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/product/category',
-          element: <Category />
+          element: (
+            <ProtectedRoute>
+              <Category />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/product/brand',
-          element: <Brand />
+          element: (
+            <ProtectedRoute>
+              <Brand />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/product/unit',
-          element: <Units />
+          element: (
+            <ProtectedRoute>
+              <Units />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/products',
-          element: <Products />
+          element: (
+            <ProtectedRoute>
+              <Products />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/add/product',
-          element: <Product />
+          element: (
+            <ProtectedRoute>
+              <Product />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/product/:id',
-          element: <Product />
+          element: (
+            <ProtectedRoute>
+              <Product />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/sales',
-          element: <Sales />
+          element: (
+            <ProtectedRoute>
+              <Sales />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/purchases',
-          element: <Purchases />
+          element: (
+            <ProtectedRoute>
+              <Purchases />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/create/purchase',
-          element: <Purchase />
+          element: (
+            <ProtectedRoute>
+              <Purchase />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/purchase/:id',
-          element: <Update_purchase />
+          element: (
+            <ProtectedRoute>
+              <Update_purchase />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/purchase-Details/:purchaseId',
+          element: (
+            <ProtectedRoute>
+              <Details name="Purchase" info="Supplier" />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/create/sales',
-          element: <SalesOrderForm />
+          element: (
+            <ProtectedRoute>
+              <SalesOrderForm />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/sales/:id',
-          element: <UpdateSales />
-        },
-        {
-          path: '/dashboard/pos',
-          element: <POS />
+          element: (
+            <ProtectedRoute>
+              <UpdateSales />
+            </ProtectedRoute>
+          )
         },
         {
           path: '/dashboard/system_setting',
-          element: <System_Setting />
+          element: (
+            <ProtectedRoute>
+              <System_Setting />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/setting/payment-method',
+          element: (
+            <ProtectedRoute>
+              <PaymentMethod />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/*',
+          element: <NotFound />
         }
       ],
     }

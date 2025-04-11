@@ -101,6 +101,7 @@ const Purchase = () => {
             })
             // set inital grand total
             setsearchResults([])
+            setcount((prev: number) => prev + 1)
         } catch (error) {
             console.error(error)
         }
@@ -140,6 +141,8 @@ const Purchase = () => {
         let grandTotal = 0;
         searchedProducts.forEach((pro: any) => grandTotal += pro.subtotal)
         settotal(parseFloat(grandTotal.toFixed(2)))
+        setValue('subtotal', total)
+        setValue('total', total + calOrdertax + shippment - calDiscount)
     } // this will set grand total of purchase
 
     const columns = [
@@ -197,15 +200,9 @@ const Purchase = () => {
         settotal(0), setcalDiscount(0), setcalOrdertax(0), setshippment(0)
         setsearchedProducts([]), setdiscount(0), setordertax(0), setshippment(0)
     }
-    useEffect(() => {
-        setValue('orderItems', searchedProducts),
-            setValue('subtotal', total)
-    }, [searchedProducts?.length, calDiscount, calOrdertax, shippment])
-    useEffect(() => {
-        setValue('total', total + calOrdertax + shippment - calDiscount)
-    }, [discount, ordertax, shippment])
+    useEffect(() => { setValue('orderItems', searchedProducts) }, [searchedProducts?.length, count])
+    useEffect(() => { handleTotal() }, [discount, ordertax, shippment, count])
     useEffect(() => { fetchSupplier_warehouses() }, [])
-    useEffect(() => { handleTotal() }, [count]) // Set Grand Total
     useEffect(() => {
         const timeout = setTimeout(() => {
             setordertax(ordertax), setValue('orderTax', ordertax!)

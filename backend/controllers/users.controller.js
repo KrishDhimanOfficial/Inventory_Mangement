@@ -19,11 +19,11 @@ const users_controllers = {
             const user = getUser(req.headers['authorization'].split(' ')[1])
             const response = await userModel.findById({ _id: new ObjectId(user?.id) })
 
-            if (!response) return res.json({ error: 'Not Found!' })
+            if (!response) return res.json({ error: 'Unauthorized access. Please authenticate to continue.' })
             return res.json(response)
         } catch (error) {
-            if (error.message === 'jwt malformed') return res.json({ error: 'Not Found!' })
-            if (error.message === 'jwt expired') return res.json({ error: 'Your Session Has Been Expried!' })
+            if (error.message === 'jwt malformed') return res.json({ error: 'Unauthorized access. Please authenticate to continue.' })
+            if (error.message === 'jwt expired') return res.json({ error: 'Unauthorized access. Please authenticate to continue.' })
             console.log('checkUserIsLoggin : ' + error.message)
         }
     },
@@ -35,6 +35,7 @@ const users_controllers = {
             return res.json(response)
         } catch (error) {
             if (error.message === 'jwt malformed') return res.json({ error: 'Not Found!' })
+            if (error.message === 'jwt expired') return res.json({ error: 'Unauthorized access. Please authenticate to continue.' })
             console.log('getUserPermission : ' + error.message)
         }
     },
@@ -47,9 +48,8 @@ const users_controllers = {
 
             const checkAuth = await bcrypt.compare(password, response.password)
             if (!checkAuth) return res.json({ error: 'Unauthorized!' })
-            console.log(checkAuth);
 
-            return res.json({ success: 'Logined Successfully', stockify_auth_token: setUser({ id: response._id }, { expiresIn: '1m' }) })
+            return res.json({ success: 'Logined Successfully', stockify_auth_token: setUser({ id: response._id }, { expiresIn: '4h' }) })
         } catch (error) {
             console.log('handleUserLogin : ' + error.message)
         }

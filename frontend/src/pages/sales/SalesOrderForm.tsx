@@ -206,7 +206,7 @@ const SalesOrderForm = () => {
         }
     } // this handle POST operation
 
-    const resetState = () => {// reset when customer change
+    const resetState = () => { // reset when customer change
         settotal(0), setcalDiscount(0), setcalOrdertax(0), setshippment(0)
         setsearchedProducts([]), setdiscount(0), setordertax(0), setshippment(0)
     }

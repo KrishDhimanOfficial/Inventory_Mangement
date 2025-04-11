@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Section, Sec_Heading, Loader, Button, Static_Modal } from '../../components/component'
+import { Section, Sec_Heading, Loader, Button, Static_Modal, DropDownMenu } from '../../components/component'
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Link, useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
+import config from '../../config/config';
+
 
 const Purchases = () => {
     const navigate = useNavigate()
@@ -28,16 +30,18 @@ const Purchases = () => {
                 <div className="d-flex justify-content-between">
                     {
                         permission.purchase.edit && (
-                            <Link to={`/dashboard/purchase/${row.id}`} className='btn btn-success me-2'>
-                                <i className="fa-solid fa-pen-to-square"></i>
-                            </Link>
+                            <DropDownMenu
+                                editURL={`/dashboard/purchase/${row.id}`}
+                                deletedata={() => deleteTableRow(row.id)}
+                                detailsURL={`/dashboard/purchase-Details/${row.reference}`}
+                            />
                         )
                     }
-                    {
+                    {/* {
                         permission.purchase.delete && (
                             <Button text='' onclick={() => deleteTableRow(row.id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
                         )
-                    }
+                    } */}
                 </div>
             )
         },
@@ -58,7 +62,9 @@ const Purchases = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get('/get-all-purchases-details')
+            const res = await DataService.get('/get-all-purchases-details', {
+                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+            })
             const purchases = res?.map((item: any) => ({
                 id: item._id,
                 date: item.date,

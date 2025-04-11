@@ -33,6 +33,7 @@ const months = [
 const Products = () => {
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
+    const [filterdata, setfilterdata] = useState([])
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
@@ -106,15 +107,16 @@ const Products = () => {
                 // unit: pro.unit?.shortName,
                 // update: `${pro.day} ${months[parseInt(pro.month) - 1]},${pro.year}`,
             }))
-            setdata(response), setloading(false)
+            setdata(response)
+            setloading(false)
         } catch (error) {
             console.error(error)
         }
     }, [])
 
-    useEffect(() => {
-        // setdata(filterData(data, searchTerm))
-    }, [searchTerm])
+    // useEffect(() => {
+    //     // setdata(filterData(data, searchTerm))
+    // }, [searchTerm])
     useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
@@ -134,7 +136,7 @@ const Products = () => {
                             <DataTable
                                 title="Products Details"
                                 columns={columns}
-                                data={data}
+                                data={filterdata.length == 0 ? data : filterdata}
                                 progressPending={loading}
                                 progressComponent={<Loader />}
                                 pagination
@@ -151,7 +153,7 @@ const Products = () => {
                                                             type="text"
                                                             className="searchbar-input"
                                                             autoCapitalize="off"
-                                                            onChange={(e: any) => setsearchTerm(e.target.value.trim())}
+                                                            onChange={(e: any) => setfilterdata(filterData(data, e.target.value.trim()))}
                                                             title="Search" role="combobox" placeholder="Search by name" />
                                                     </div>
                                                 </div>

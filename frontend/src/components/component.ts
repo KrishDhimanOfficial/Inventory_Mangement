@@ -9,6 +9,7 @@ import Sec_Heading from './layout/Sec_Heading'
 import Section from './layout/Section'
 import Loader from './micro_components/Loader'
 import Static_Modal from './modal/Static_Modal'
+import DropDownMenu from './micro_components/DropDown'
 
 export {
     Button,
@@ -21,5 +22,6 @@ export {
     Section,
     Loader,
     Static_Modal,
-    TextArea
+    TextArea,
+    DropDownMenu
 }

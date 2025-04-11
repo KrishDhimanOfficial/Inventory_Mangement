@@ -4,6 +4,7 @@ import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Link, useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
+import config from '../../config/config';
 
 const Sales = () => {
     const navigate = useNavigate()
@@ -58,7 +59,9 @@ const Sales = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get('/get-all-sales-details')
+            const res = await DataService.get('/get-all-sales-details', {
+                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+            })
             const sales = res?.map((item: any) => ({
                 id: item._id,
                 date: item.date,

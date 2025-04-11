@@ -30,7 +30,7 @@ const Warehouses = () => {
         <div className="d-flex justify-content-between">
           <Button text='' onclick={() => { handleTableRow(row._id) }} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
           {
-            (row.product_warehouseId == 0 || row.sales_warehouseId == 0 || row.purchase_warehouseId == 0) && (
+            (row.product_warehouseId == 0 && row.sales_warehouseId == 0 && row.purchase_warehouseId == 0) && (
               <Button text='' onclick={() => { deleteTableRow(row._id) }} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
             )
           }
