@@ -25,7 +25,7 @@ const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable
                 keyboard={false}
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Modal title</Modal.Title>
+                    <Modal.Title>Remove Info</Modal.Title>
                 </Modal.Header>
                 <Modal.Body >
                     Are You Want to Delete?

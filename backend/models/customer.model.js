@@ -20,7 +20,7 @@ const customerSchema = new mongoose.Schema({
         type: String,
         required: [true, 'customer phone number is required'],
         trim: true,
-        match: [/^[0-9]\d{10}$/, 'Invalid Phone Number!'],
+        match: [/^[0-9]{10}$/, 'Invalid Phone Number!'],
         maxLength: [10, 'customer phone number must not exceed 10 characters']
     },
     country: {

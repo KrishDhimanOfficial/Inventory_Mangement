@@ -10,6 +10,7 @@ import Section from './layout/Section'
 import Loader from './micro_components/Loader'
 import Static_Modal from './modal/Static_Modal'
 import DropDownMenu from './micro_components/DropDown'
+import Payment_Modal from './modal/Payment_Modal'
 
 export {
     Button,
@@ -23,5 +24,6 @@ export {
     Loader,
     Static_Modal,
     TextArea,
-    DropDownMenu
+    DropDownMenu,
+    Payment_Modal
 }

@@ -23,6 +23,10 @@ const purchaseSchema = new mongoose.Schema({
         required: [true, 'Please Select Supplier!'],
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
     },
+    paymentmethodId: {
+        type: mongoose.Schema.Types.ObjectId,
+        match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
+    },
     discount: {
         type: mongoose.Schema.Types.Number,
         match: [/^[0-9]+$/, 'Invalid discount!'],

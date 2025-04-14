@@ -619,6 +619,7 @@ const pro_controllers = {
                                 name: "$orderItems.product.title",
                                 sku: "$orderItems.product.sku",
                                 tax: "$orderItems.product.tax",
+                                cost: "$orderItems.product.cost",
                                 price: "$orderItems.product.price",
                                 qty: "$orderItems.quantity",
                                 subtotal: "$orderItems.productTaxPrice",
@@ -799,7 +800,7 @@ const pro_controllers = {
         try {
             const response = await purchaseModel.aggregate([
                 {
-                    $match: { _id: new ObjectId(req.params.id) }
+                    $match: { purchaseId: req.params.id }
                 },
                 {
                     $unwind: "$orderItems" // Flatten the array first
@@ -830,12 +831,30 @@ const pro_controllers = {
                         },
                         supplierId: { $first: "$supplierId" },
                         warehouseId: { $first: "$warehouseId" },
+                        paymentmethodId: { $first: "$paymentmethodId" },
+                        purchaseId: { $first: "$purchaseId" },
+                        payment_paid: { $first: "$payment_paid" },
+                        payment_due: { $first: "$payment_due" },
                         discount: { $first: "$discount" },
                         total: { $first: "$total" },
                         subtotal: { $first: "$subtotal" },
                         shipping: { $first: "$shipping" },
                         orderTax: { $first: "$orderTax" },
                         purchase_date: { $first: "$purchase_date" },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'paymentmethods',
+                        localField: 'paymentmethodId',
+                        foreignField: '_id',
+                        as: 'payment'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$payment',
+                        preserveNullAndEmptyArrays: true
                     }
                 },
                 {
@@ -870,6 +889,12 @@ const pro_controllers = {
                     $addFields: {
                         supplier: { $ifNull: ['$supplier', { name: 'N/A' }] },
                         warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
+                        date: {
+                            $dateToString: {
+                                date: "$purchase_date",
+                                format: "%d-%m-%Y"
+                            }
+                        }
                     }
                 },
                 {
@@ -900,7 +925,9 @@ const pro_controllers = {
     updateProductPurchase: async (req, res) => {
         try {
             const { discount, note, orderItems, subtotal, total, orderTax, pruchaseDate, shipping, supplierId, warehouseId } = req.body;
-            const response = await purchaseModel.findByIdAndUpdate({ _id: req.params.id }, {
+            console.log(req.body);
+
+            const response = await purchaseModel.findOneAndUpdate({ purchaseId: req.params.id }, {
                 discount, note, orderTax, shipping, total, subtotal,
                 purchase_date: format(parseISO(pruchaseDate), 'yyyy-MM-dd'),
                 supplierId: new ObjectId(supplierId.value),
@@ -926,6 +953,30 @@ const pro_controllers = {
             console.log('updateProductPurchase : ' + error.message)
         }
     },
+    updatePurchasePayment: async (req, res) => {
+        try {
+            const { paid, due, paymentId } = req.body;
+            const record = await purchaseModel.findById({ _id: req.params.id })
+            const response = await purchaseModel.findByIdAndUpdate({ _id: req.params.id },
+                {
+                    payment_status: record.payment_paid > 0
+                        ? record.payment_paid === record.total ? 'paid' : 'parital'
+                        : 'unpaid',
+                    $inc: {
+                        payment_paid: paid,
+                        payment_due: -paid
+                    },
+                    paymentmethodId: new ObjectId(paymentId.value)
+                },
+                { new: true, runValidators: true }
+            )
+            if (!response) return res.status(200).json({ error: 'An error occurred. Please try again.' })
+            return res.status(200).json({ success: 'Updated Successfully.' })
+        } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('updatePurchasePayment : ' + error.message)
+        }
+    },
     deleteProductPurchase: async (req, res) => {
         try {
             const response = await purchaseModel.findByIdAndDelete({ _id: req.params.id }, { new: true })
@@ -938,6 +989,118 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted successfully!' })
         } catch (error) {
             console.log('deleteProductPurchase: async (req, res) => {' + error.message)
+        }
+    },
+    getSalesDetail: async (req, res) => {
+        try {
+            const response = await salesModel.aggregate([
+                {
+                    $match: { salesId: req.params.salesId }
+                },
+                {
+                    $unwind: '$orderItems'
+                },
+                {
+                    $lookup: {
+                        from: 'products',
+                        localField: 'orderItems.productId',
+                        foreignField: '_id',
+                        as: 'orderItems.product'
+                    }
+                },
+                { $unwind: '$orderItems.product' },
+                {
+                    $lookup: {
+                        from: 'units',
+                        localField: 'orderItems.product.unitId',
+                        foreignField: '_id',
+                        as: 'unit'
+                    }
+                },
+                { $unwind: '$unit' },
+                {
+                    $group: {
+                        _id: '$_id',
+                        orderItems: {
+                            $push: {
+                                productId: "$orderItems.product._id",
+                                name: "$orderItems.product.title",
+                                sku: "$orderItems.product.sku",
+                                tax: "$orderItems.product.tax",
+                                cost: "$orderItems.product.cost",
+                                price: "$orderItems.product.price",
+                                qty: "$orderItems.quantity",
+                                subtotal: "$orderItems.productTaxPrice",
+                                stock: "$orderItems.product.stock",
+                                unit: "$unit.shortName",
+                            }
+                        },
+                        customerId: { $first: "$customerId" },
+                        warehouseId: { $first: "$warehouseId" },
+                        discount: { $first: "$discount" },
+                        subtotal: { $first: "$subtotal" },
+                        total: { $first: "$total" },
+                        orderTax: { $first: "$orderTax" },
+                        shippment: { $first: "$shippment" },
+                        payment_status: { $first: "$payment_status" },
+                        note: { $first: "$note" },
+                        sales_date: { $first: "$selling_date" },
+                        walkInCustomerDetails: { $first: "$walkInCustomerDetails" },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                { $unwind: '$warehouse' },
+                {
+                    $lookup: {
+                        from: 'customers',
+                        localField: 'customerId',
+                        foreignField: '_id',
+                        as: 'customer'
+                    }
+                },
+                { $unwind: '$customer' },
+                {
+                    $addFields: {
+                        supplier: { $ifNull: ['$customer', { name: 'N/A' }] },
+                        warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
+                        date: {
+                            $dateToString: {
+                                format: "%d/%m/%Y",
+                                date: "$sales_date"
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        date: 1,
+                        'customer.name': 1,
+                        'warehouse.name': 1,
+                        orderItems: 1,
+                        discount: 1,
+                        subtotal: 1,
+                        total: 1,
+                        orderTax: 1,
+                        shippment: 1,
+                        payment_status: 1,
+                        note: 1,
+                        purchase_date: 1,
+                        walkInCustomerDetails: 1
+                    }
+                }
+            ])
+            if (response.length === 0) return res.json({ error: 'No Data Found.' })
+            return res.status(200).json(response[0])
+        } catch (error) {
+            console.log('getSalesDetail : ' + error.message)
         }
     },
     getAll_sales_Details: async (req, res) => {
@@ -1053,7 +1216,7 @@ const pro_controllers = {
         try {
             const response = await salesModel.aggregate([
                 {
-                    $match: { _id: new ObjectId(req.params.id) }
+                    $match: { salesId: req.params.id }
                 },
                 {
                     $unwind: "$orderItems" // Flatten the array first
@@ -1076,14 +1239,18 @@ const pro_controllers = {
                             $push: {
                                 productId: "$orderItems.product._id",
                                 name: "$orderItems.product.title",
-                                cost: "$orderItems.product.cost",
+                                price: "$orderItems.product.price",
                                 tax: "$orderItems.product.tax",
                                 quantity: "$orderItems.quantity",
                                 stock: "$orderItems.product.stock",
                             }
                         },
                         customerId: { $first: "$customerId" },
+                        salesId: { $first: "$salesId" },
                         warehouseId: { $first: "$warehouseId" },
+                        paymentmethodId: { $first: "$paymentmethodId" },
+                        payment_paid: { $first: "$payment_paid" },
+                        payment_due: { $first: "$payment_due" },
                         discount: { $first: "$discount" },
                         total: { $first: "$total" },
                         subtotal: { $first: "$subtotal" },
@@ -1092,6 +1259,20 @@ const pro_controllers = {
                         selling_date: { $first: "$selling_date" },
                         salestype: { $first: "$salestype" },
                         walkInCustomerDetails: { $first: "$walkInCustomerDetails" },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'paymentmethods',
+                        localField: 'paymentmethodId',
+                        foreignField: '_id',
+                        as: 'payment'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$payment',
+                        preserveNullAndEmptyArrays: true
                     }
                 },
                 {
@@ -1126,6 +1307,13 @@ const pro_controllers = {
                     $addFields: {
                         customer: { $ifNull: ['$customer', { name: 'N/A' }] },
                         warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
+                        payment: { $ifNull: ['$payment', { name: 'N/A' }] },
+                        date: {
+                            $dateToString: {
+                                date: "$selling_date",
+                                format: "%Y-%m-%d"
+                            }
+                        }
                     }
                 },
                 {
@@ -1174,12 +1362,35 @@ const pro_controllers = {
             }
             if (customer_name && customer_phone) docTobeUpdate.walkInCustomerDetails = { name: customer_name, phone: customer_phone }
 
-            const response = await salesModel.findByIdAndUpdate({ _id: req.params.id }, docTobeUpdate, { new: true, runValidators: true })
+            const response = await salesModel.findOneAndUpdate({ salesId: req.params.id }, docTobeUpdate, { new: true, runValidators: true })
             if (!response) return res.json({ error: 'An error occurred. Please try again.' })
             return res.status(200).json({ success: 'Updated successfully!' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updateProductSales : ' + error.message)
+        }
+    },
+    updateSalesPayment: async (req, res) => {
+        try {
+            const record = await salesModel.findById({ _id: req.params.id })
+            const response = await salesModel.findByIdAndUpdate({ _id: req.params.id },
+                {
+                    payment_status: record.payment_paid > 0
+                        ? record.payment_paid === record.total ? 'paid' : 'parital'
+                        : 'unpaid',
+                    $inc: {
+                        payment_paid: paid,
+                        payment_due: -paid
+                    },
+                    paymentmethodId: new ObjectId(paymentId.value)
+                },
+                { new: true, runValidators: true }
+            )
+            if (!response) return res.status(200).json({ error: 'An error occurred. Please try again.' })
+            return res.status(200).json({ success: 'Updated Successfully.' })
+        } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('updateSalesPayment : ' + error.message)
         }
     },
     deleteProductSales: async (req, res) => {

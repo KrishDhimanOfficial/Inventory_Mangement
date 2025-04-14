@@ -23,6 +23,9 @@ import Dashboard from "./pages/dashboard/Dashboard"
 import NotFound from "./pages/NotFound/NotFound"
 import PaymentMethod from "./pages/settings/payment_methods.tsx/PaymentMethod"
 import Details from "./components/details/Details"
+import PurchaseReturn from "./pages/purchase/PurchaseReturn"
+import SalesReturn from "./pages/sales/SalesReturn"
+import PurchaseReport from "./pages/reports/PurchaseReport"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -135,6 +138,30 @@ const App = () => {
           )
         },
         {
+          path: '/dashboard/create/sales',
+          element: (
+            <ProtectedRoute>
+              <SalesOrderForm />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/sales/:id',
+          element: (
+            <ProtectedRoute>
+              <UpdateSales />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/sales_details/:salesId',
+          element: (
+            <ProtectedRoute>
+              <Details name="Sales" info="Customer" />
+            </ProtectedRoute>
+          )
+        },
+        {
           path: '/dashboard/purchases',
           element: (
             <ProtectedRoute>
@@ -167,22 +194,6 @@ const App = () => {
           )
         },
         {
-          path: '/dashboard/create/sales',
-          element: (
-            <ProtectedRoute>
-              <SalesOrderForm />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: '/dashboard/sales/:id',
-          element: (
-            <ProtectedRoute>
-              <UpdateSales />
-            </ProtectedRoute>
-          )
-        },
-        {
           path: '/dashboard/system_setting',
           element: (
             <ProtectedRoute>
@@ -195,6 +206,30 @@ const App = () => {
           element: (
             <ProtectedRoute>
               <PaymentMethod />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/purchase/return',
+          element: (
+            <ProtectedRoute>
+              <PurchaseReturn />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/sales/return',
+          element: (
+            <ProtectedRoute>
+              <SalesReturn />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/report/purchases',
+          element: (
+            <ProtectedRoute>
+              <PurchaseReport />
             </ProtectedRoute>
           )
         },

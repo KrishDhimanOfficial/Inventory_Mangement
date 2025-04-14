@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 import { Section, Sec_Heading, Loader, Button, Static_Modal, DropDownMenu } from '../../components/component'
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Link, useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import config from '../../config/config';
-
+const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
 
 const Purchases = () => {
     const navigate = useNavigate()
@@ -13,6 +13,7 @@ const Purchases = () => {
     const [data, setdata] = useState([])
     const [Id, setId] = useState('')
     const [warnModal, setwarnmodal] = useState(false)
+    const [paymentodal, setpaymentodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const { permission } = useSelector((state: any) => state.permission)
 
@@ -24,25 +25,20 @@ const Purchases = () => {
         { name: "Grand Total", selector: (row: any) => row.total, sortable: true },
         { name: "Paid", selector: (row: any) => row.paid, sortable: true },
         { name: "Due", selector: (row: any) => row.due, sortable: true },
+        { name: "Payment Status", selector: (row: any) => row.pstatus, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
-                <div className="d-flex justify-content-between">
-                    {
-                        permission.purchase.edit && (
-                            <DropDownMenu
-                                editURL={`/dashboard/purchase/${row.id}`}
-                                deletedata={() => deleteTableRow(row.id)}
-                                detailsURL={`/dashboard/purchase-Details/${row.reference}`}
-                            />
-                        )
-                    }
-                    {/* {
-                        permission.purchase.delete && (
-                            <Button text='' onclick={() => deleteTableRow(row.id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
-                        )
-                    } */}
-                </div>
+                <DropDownMenu
+                    api={`/purchase/${row.reference}`}
+                    editURL={`/dashboard/purchase/${row.reference}`}
+                    deletedata={() => deleteTableRow(row.id)}
+                    detailsURL={`/dashboard/purchase-Details/${row.reference}`}
+                    updatepermission={permission.purchase?.edit}
+                    deletepermission={permission.purchase?.delete}
+                    paymentbtnShow={row.pstatus}
+                    paymentModal={() => setpaymentodal(!paymentodal)}
+                />
             )
         },
     ]
@@ -54,9 +50,10 @@ const Purchases = () => {
         purchase.warehouse,
         purchase.total,
         purchase.paid,
-        purchase.due
+        purchase.due,
+        purchase.pstatus
     ])
-    const pdfColumns = ["S.No", "Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due"]
+    const pdfColumns = ["S.No", "Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
     const deleteTableRow = (id: string) => { setId(id), setwarnmodal(!warnModal) }
 
     const fetch = async () => {
@@ -73,7 +70,12 @@ const Purchases = () => {
                 warehouse: item.warehouse?.name,
                 total: item.total,
                 paid: item.payment_paid,
-                due: item.payment_due
+                due: item.payment_due,
+                pstatus: <Button className={`badges ${item.payment_status == 'parital'
+                    ? 'blue'
+                    : item.payment_status == 'paid' ? 'green' : 'red'
+                    }`}
+                    text={item.payment_status} />
             }))
             setdata(purchases), setloading(false)
         } catch (error) {
@@ -82,6 +84,7 @@ const Purchases = () => {
             setloading(false)
         }
     }
+
     useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
@@ -89,6 +92,16 @@ const Purchases = () => {
                 handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
+                    setrefreshTable(!refreshTable)
+                    setloading(!loading)
+                }}
+            />
+            <Payment_Modal
+                show={paymentodal}
+                endApi={`/purchase`}
+                handleClose={() => setpaymentodal(!paymentodal)}
+                refreshTable={() => {
+                    setpaymentodal(!paymentodal)
                     setrefreshTable(!refreshTable)
                     setloading(!loading)
                 }}

@@ -40,6 +40,7 @@ const UpdateSales = () => {
     const [searchedProducts, setsearchedProducts] = useState<any>([])
     const { apiData, fetchData }: { apiData: any, fetchData: any } = useFetchData({})
     const [WalkinCustomerRequired, setWalkinCustomer] = useState<Boolean>(false)
+    console.log(apiData);
 
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
@@ -67,20 +68,20 @@ const UpdateSales = () => {
 
     const fetchProduct = async (id: string) => {
         try {
-            const product: any = await DataService.get(`/sales/${id}`)
+            const product: any = await DataService.get(`/product/${id}`)
 
             setsearchedProducts((prev_pro: any) => {
                 const isDuplicate = prev_pro.some((pro: any) => pro._id === id) // Checking duplicate Products
                 if (isDuplicate) return prev_pro // If duplicate, return unchanged array
-                settotal((prev: number) => prev += getTaxonProduct(product.cost, product.tax, 1))
+                settotal((prev: number) => prev += getTaxonProduct(product.price, product.tax, 1))
                 return [...prev_pro, { // Otherwise, add new user
                     _id: product._id,
                     product: product.title,
                     current_stock: 0,
                     qty: 1,
                     tax: product.tax,
-                    cost: product.cost,
-                    subtotal: getTaxonProduct(product.cost, product.tax, 1), // 1 for inital quantity
+                    price: product.price,
+                    subtotal: getTaxonProduct(product.price, product.tax, 1), // 1 for inital quantity
                 }]
             })
             setsearchResults([])
@@ -112,7 +113,7 @@ const UpdateSales = () => {
 
     const columns = [
         { name: "Product", selector: (row: any) => row.product, sortable: true },
-        { name: "Cost", selector: (row: any) => row.cost, sortable: true },
+        { name: "Price", selector: (row: any) => row.price, sortable: true },
         { name: "Current Stock", selector: (row: any) => row.current_stock, sortable: true },
         {
             name: "Qty", cell: (row: any) => (
@@ -131,7 +132,7 @@ const UpdateSales = () => {
         {
             name: "SubTotal",
             selector: (row: any) => row.subtotal, sortable: true,
-            cell: (row: any) => (<span>$ {getTaxonProduct(row.cost, row.tax, row.qty)}</span>)
+            cell: (row: any) => (<span>$ {getTaxonProduct(row.price, row.tax, row.qty)}</span>)
         },
         {
             name: "Actions",
@@ -157,7 +158,7 @@ const UpdateSales = () => {
                     ? {
                         ...product,
                         qty: product.qty + 1,
-                        subtotal: getTaxonProduct(product.cost, product.tax, product.qty + 1),
+                        subtotal: getTaxonProduct(product.price, product.tax, product.qty + 1),
                     }
                     : product
             )
@@ -172,7 +173,7 @@ const UpdateSales = () => {
                     ? {
                         ...product,
                         qty: handleqtytonotbeNegitive(product),
-                        subtotal: getTaxonProduct(product.cost, product.tax, handleqtytonotbeNegitive(product)),
+                        subtotal: getTaxonProduct(product.price, product.tax, handleqtytonotbeNegitive(product)),
                     }
                     : product
             )
@@ -230,8 +231,8 @@ const UpdateSales = () => {
                     current_stock: pro.stock,
                     qty: pro.quantity,
                     tax: pro.tax,
-                    cost: pro.cost,
-                    subtotal: getTaxonProduct(pro.cost, pro.tax, pro.quantity)
+                    price: pro.price,
+                    subtotal: getTaxonProduct(pro.price, pro.tax, pro.quantity)
                 }))
             })
             if (apiData.salestype === 0) {
@@ -586,9 +587,10 @@ const UpdateSales = () => {
                                                 render={({ field }) => (
                                                     <div className="textarea-wrapper inputForm h-100 ps-0">
                                                         <TextArea
+                                                            {...field}
                                                             className=" adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
-                                                            {...field}
+                                                            onChange={(e: any) => { setValue('note', e.target.value.trim()) }}
                                                         />
                                                     </div>
                                                 )}

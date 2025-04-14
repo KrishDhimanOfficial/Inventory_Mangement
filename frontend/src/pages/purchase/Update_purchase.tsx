@@ -533,9 +533,9 @@ const Update_purchase = () => {
                                                 render={({ field }) => (
                                                     <div className="textarea-wrapper inputForm h-100 ps-0">
                                                         <TextArea
+                                                            {...field}
                                                             className=" adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
-                                                            {...field}
                                                         />
                                                     </div>
                                                 )}

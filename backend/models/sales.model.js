@@ -22,6 +22,10 @@ const salesSchema = new mongoose.Schema({
         required: [true, 'Please Select Supplier!'],
         match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
     },
+    paymentmethodId: {
+        type: mongoose.Schema.Types.ObjectId,
+        match: [/[0-9a-z]{1,24}/, 'Invalid ObjectID!'],
+    },
     discount: {
         type: mongoose.Schema.Types.Number,
         match: [/^[0-9]+$/, 'Invalid discount!'],
@@ -76,7 +80,6 @@ const salesSchema = new mongoose.Schema({
         type: {
             name: {
                 type: mongoose.Schema.Types.String,
-                minLength: [3, 'customer name must be at least 3 characters'],
                 maxLength: [15, 'customer name must not exceed 15 characters']
             },
             phone: {

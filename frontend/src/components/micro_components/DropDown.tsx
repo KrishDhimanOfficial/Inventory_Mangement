@@ -1,13 +1,33 @@
-import React from 'react';
-import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
-import { Link } from 'react-router';
+import React from 'react';
+import { Link, Navigate } from 'react-router-dom';
+import Button from './Button';
+import { DataService } from '../../hooks/hook';
+import { useDispatch } from 'react-redux';
+import { setSingleData } from '../../controller/singleData'
+import { useState } from 'react';
 
-const DropDownMenu = ({ editURL, detailsURL, deletedata }: {
+const DropDownMenu = ({ api, editURL, detailsURL, deletedata, updatepermission, paymentbtnShow, deletepermission, paymentModal }: {
+    api: string,
     editURL: string,
     detailsURL: string,
-    deletedata: () => void
+    deletedata: () => void,
+    paymentModal: () => void,
+    updatepermission: Boolean,
+    deletepermission: Boolean,
+    paymentbtnShow: any,
 }) => {
+    const dispatch = useDispatch()
+
+    const handlePaymentModalOpen = async () => {
+        try {
+            const res = await DataService.get(api)
+            paymentModal()
+            dispatch(setSingleData(res))
+        } catch (error) {
+            console.error(error)
+        }
+    }
     return (
         <>
             <DropdownButton
@@ -15,20 +35,39 @@ const DropDownMenu = ({ editURL, detailsURL, deletedata }: {
                 id={`dropdown-button-drop-start`}
                 drop='start'
                 variant="white"
-                title={<i className="fa-solid fa-ellipsis-vertical"></i>}
-                className='me-2'
-            >
-                <Dropdown.Item eventKey="1">
-                    <Link to={editURL} className='text-dark text-decoration-none'> Edit </Link>
-                </Dropdown.Item>
-                <Dropdown.Item eventKey="2">Create Payment</Dropdown.Item>
-                <Dropdown.Item eventKey="3">
-                    <Link to={detailsURL} className='text-dark text-decoration-none'> Sales Details </Link></Dropdown.Item>
-                <Dropdown.Item eventKey="4">
-                    <span onClick={() => deletedata()}> Delete </span>
-                </Dropdown.Item>
+                flip
+                title={<i className="fa-solid fa-ellipsis-vertical"></i>}>
+
+                {
+                    updatepermission && (
+                        <>
+                            <Link to={`${editURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'> Edit </Link>
+                            {
+                                (paymentbtnShow.props?.text === 'unpaid' || paymentbtnShow.props?.text === 'parital') && (
+                                    <Button
+                                        type='button'
+                                        className='px-3 py-1 d-inline-block w-100 bg-transparent border-0 text-start'
+                                        text='Create Payment'
+                                        onclick={() => handlePaymentModalOpen()}
+                                    />
+                                )
+                            }
+                        </>
+                    )
+                }
+                <Link to={`${detailsURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'> Details </Link>
+                {
+                    deletepermission && (
+                        <Button
+                            type='button'
+                            className='px-3 py-1 d-inline-block w-100 bg-transparent border-0 text-start'
+                            text='Delete'
+                            onclick={deletedata}
+                        />
+                    )
+                }
             </DropdownButton>
         </>
     )
 }
-export default DropDownMenu
+export default React.memo(DropDownMenu)

@@ -5,6 +5,7 @@ import warehouse_controllers from '../controllers/warehouse.controller.js'
 import pro_controllers from '../controllers/product.controller.js'
 import handlemulterError from '../middleware/handleMulterError.js'
 import { product } from '../middleware/multer.middleware.js'
+import reportController from '../controllers/reports.controller.js'
 
 router.post('/user/login', users_controllers.handleUserLogin)
 router.get('/all/users', users_controllers.getAllUsersDetails)
@@ -76,13 +77,16 @@ router.route('/purchase/:id?')
     .post(pro_controllers.createProductPruchase)
     .get(pro_controllers.getSingleProductPruchase_Details)
     .put(pro_controllers.updateProductPurchase)
+    .patch(pro_controllers.updatePurchasePayment)
     .delete(pro_controllers.deleteProductPurchase)
 
+router.get('/get/sales_details/:salesId', pro_controllers.getSalesDetail)
 router.get('/get-all-sales-details', pro_controllers.getAll_sales_Details)
 router.route('/sales/:id?')
     .post(pro_controllers.createProductSales)
     .get(pro_controllers.getSingleProductSales_Details)
     .put(pro_controllers.updateProductSales)
+    .patch(pro_controllers.updateSalesPayment)
     .delete(pro_controllers.deleteProductSales)
 
 router.get('/get-all-payment-methods', pro_controllers.getAllPaymentMethods)
@@ -91,5 +95,8 @@ router.route('/payment-method/:id?')
     .get(pro_controllers.getPaymentMethod)
     .put(pro_controllers.updatePaymentMethod)
     .delete(pro_controllers.deletePaymentMethod)
+
+
+router.get('/get/purchase/reports', reportController.getPurchaseReport)
 
 export default router

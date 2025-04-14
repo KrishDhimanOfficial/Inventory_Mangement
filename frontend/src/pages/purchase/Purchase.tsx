@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Section, Sec_Heading, Input, Button, TextArea } from '../../components/component'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate } from 'react-router'
 import Select from 'react-select'
 import Big from "big.js"
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -20,9 +20,9 @@ import { toast } from 'react-toastify'
 import { validationSchema, defaultValues, Searches, Option } from './info'
 
 const Purchase = () => {
-    const { id } = useParams()
     const navigate = useNavigate()
     const [searchResults, setsearchResults] = useState<Searches[]>([])
+    const [note, setnote] = useState('')
     const [suppliers, setsuppliers] = useState([])
     const [warehouses, setWarehouses] = useState<any>([])
     const [shippment, setshippment] = useState<number>(0)
@@ -188,9 +188,11 @@ const Purchase = () => {
 
     const registeration = async (formdata: object) => {
         try {
-            const res: any = await DataService.post('/purchase', formdata)
-            if (res.success) navigate('/dashboard/purchases')
-            Notify(res) // Show API Response
+            console.log(formdata);
+
+            // const res: any = await DataService.post('/purchase', formdata)
+            // if (res.success) navigate('/dashboard/purchases')
+            // Notify(res) // Show API Response
         } catch (error) {
             console.error(error)
         }
@@ -203,6 +205,7 @@ const Purchase = () => {
     useEffect(() => { setValue('orderItems', searchedProducts) }, [searchedProducts?.length, count])
     useEffect(() => { handleTotal() }, [discount, ordertax, shippment, count])
     useEffect(() => { fetchSupplier_warehouses() }, [])
+    useEffect(() => setValue('note', note), [setnote])
     useEffect(() => {
         const timeout = setTimeout(() => {
             setordertax(ordertax), setValue('orderTax', ordertax!)
@@ -424,7 +427,7 @@ const Purchase = () => {
                                         <div className="flex-column">
                                             <label>Discount (%)</label>
                                         </div>
-                                        <div className={`inputForm ${errors.warehouseId?.message ? 'inputError' : ''} `}>
+                                        <div className={`inputForm`}>
                                             <Controller
                                                 name="discount"
                                                 control={control}
@@ -493,9 +496,14 @@ const Purchase = () => {
                                                 render={({ field }) => (
                                                     <div className="textarea-wrapper">
                                                         <TextArea
+                                                            {...field}
                                                             className="adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
-                                                            {...field}
+                                                            // onChange={(e: any) => { 
+                                                            //     field.onChange(e.target.value)
+                                                            //     setnote(e.target.value)
+                                                            //     console.log(e.target.value);
+                                                            //  }}
                                                         />
                                                     </div>
                                                 )}

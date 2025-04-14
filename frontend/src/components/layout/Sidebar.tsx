@@ -51,7 +51,7 @@ const Sidebar = () => {
                         <Image path={logo1} className="img-circle object-fit-cover h-100" />
                     </div>
                     <div className="info">
-                        <Link to="#" className="d-block fs-3 link-underline-dark">Stockify</Link>
+                        <Link to="#" className="d-block fs-3 text-decoration-none">Stockify</Link>
                     </div>
                 </div>
 
@@ -61,7 +61,7 @@ const Sidebar = () => {
                         <Accordion.Item eventKey="5">
                             <Accordion.Header style={{}}>
                                 <Link to="/dashboard" className="nav-link">
-                                    <i className="fa-solid fa-gauge me-2"></i>
+                                    <i className="fa-solid fa-gauge"></i>
                                     <p>Dashboard</p>
                                 </Link>
                             </Accordion.Header>
@@ -158,7 +158,7 @@ const Sidebar = () => {
                                             <li className="nav-item">
                                                 <Link to="/dashboard/create/sales" className="nav-link">
                                                     <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                                    <p className="text">Create Sales</p>
+                                                    <p className="text">Create Sales / POS</p>
                                                 </Link>
                                             </li>
                                         </ul>
@@ -167,6 +167,26 @@ const Sidebar = () => {
                             </Accordion>
                         )
                     }
+                    <Accordion className='border-0 mb-3'>
+                        <Accordion.Item eventKey="5">
+                            <Accordion.Header >
+                                <Link to="/dashboard/purchase/return" className="nav-link">
+                                    <i className="fa-solid fa-arrow-left"></i>
+                                    <p>Purchase Return</p>
+                                </Link>
+                            </Accordion.Header>
+                        </Accordion.Item>
+                    </Accordion>
+                    <Accordion className='border-0 mb-3'>
+                        <Accordion.Item eventKey="5">
+                            <Accordion.Header >
+                                <Link to="/dashboard/sales/return" className="nav-link">
+                                    <i className="fa-solid fa-arrow-right"></i>
+                                    <p>Sales Return</p>
+                                </Link>
+                            </Accordion.Header>
+                        </Accordion.Item>
+                    </Accordion>
                     <Accordion className='border-0 mb-3'>
                         <Accordion.Item eventKey="1">
                             <Accordion.Header>
@@ -205,6 +225,24 @@ const Sidebar = () => {
                                             </li>
                                         )
                                     }
+                                </ul>
+                            </Accordion.Body>
+                        </Accordion.Item>
+                    </Accordion>
+                    <Accordion className='border-0 mb-3'>
+                        <Accordion.Item eventKey="1">
+                            <Accordion.Header>
+                                <i className="fa-solid fa-chart-area me-2"></i>
+                                <p>Reports</p>
+                            </Accordion.Header>
+                            <Accordion.Body className='ps-0 bg-dark'>
+                                <ul className="nav nav-treeview">
+                                    <li className="nav-item">
+                                        <Link to="/dashboard/report/purchases" className="nav-link">
+                                            <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                            <p className="text">Purchase Report</p>
+                                        </Link>
+                                    </li>
                                 </ul>
                             </Accordion.Body>
                         </Accordion.Item>

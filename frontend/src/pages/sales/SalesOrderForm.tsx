@@ -26,10 +26,10 @@ const SalesOrderForm = () => {
     const [warehouses, setWarehouses] = useState<any>([])
     const [shippment, setshippment] = useState<number>(0)
     const [discount, setdiscount] = useState<number>(0)
-    const [calDiscount, setcalDiscount] = useState<number | any>(null)
+    const [calDiscount, setcalDiscount] = useState<number>(0)
     const [ordertax, setordertax] = useState<number>(0)
-    const [calOrdertax, setcalOrdertax] = useState<number | any>(null)
-    const [total, settotal] = useState<number | any>(0)
+    const [calOrdertax, setcalOrdertax] = useState<number>(0)
+    const [total, settotal] = useState<number>(0)
     const [count, setcount] = useState<number>(0)
     const [customerOption, setcustomerOption] = useState<Option | null>(null)
     const [warehouseOption, setwarehouseOption] = useState<Option | null>(null)
@@ -37,6 +37,7 @@ const SalesOrderForm = () => {
     const [searchtimeout, settimeout] = useState<any>(null)
     const [searchedProducts, setsearchedProducts] = useState<any>([])
     const [WalkinCustomerRequired, setWalkinCustomer] = useState<Boolean>(false)
+    console.log(searchedProducts);
 
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
@@ -91,7 +92,6 @@ const SalesOrderForm = () => {
     const fetchProduct = async (id: string) => {
         try {
             const product: any = await DataService.get(`/product/${id}`)
-
             setsearchedProducts((prev_pro: any) => {
                 const isDuplicate = prev_pro.some((pro: any) => pro._id === id) // Checking duplicate Products
                 if (isDuplicate) return prev_pro // If duplicate, return unchanged array
@@ -101,14 +101,10 @@ const SalesOrderForm = () => {
                     current_stock: product.stock,
                     qty: 1,
                     tax: product.tax,
-                    cost: product.cost,
-                    subtotal: getTaxonProduct(product.cost, product.tax, 1), // 1 for inital quantity
+                    price: product.price,
+                    subtotal: getTaxonProduct(product.price, product.tax, 1), // 1 for inital quantity
                 }]
             })
-
-            // settotal((prev: number) => {
-            //     return prev += getTaxonProduct(product.cost, product.tax, 1)
-            // })
             // // set inital grand total
             setsearchResults([])
             setcount((prev: number) => prev + 1)
@@ -124,7 +120,7 @@ const SalesOrderForm = () => {
                     ? {
                         ...product,
                         qty: product.qty + 1,
-                        subtotal: getTaxonProduct(product.cost, product.tax, product.qty + 1),
+                        subtotal: getTaxonProduct(product.price, product.tax, product.qty + 1),
                     }
                     : product
             )
@@ -139,7 +135,7 @@ const SalesOrderForm = () => {
                     ? {
                         ...product,
                         qty: handleqtytonotbeNegitive(product),
-                        subtotal: getTaxonProduct(product.cost, product.tax, handleqtytonotbeNegitive(product)),
+                        subtotal: getTaxonProduct(product.price, product.tax, handleqtytonotbeNegitive(product)),
                     }
                     : product
             )
@@ -151,13 +147,13 @@ const SalesOrderForm = () => {
         let grandTotal = 0;
         searchedProducts.forEach((pro: any) => grandTotal += pro.subtotal)
         settotal(parseFloat(grandTotal.toFixed(2)))
-        setValue('subtotal', total)
-        setValue('total', total + calOrdertax + shippment - calDiscount)
+        setValue('subtotal', parseFloat(grandTotal.toFixed(2)))
+        setValue('total', parseFloat(Big(grandTotal).plus(calOrdertax).plus(shippment).minus(calDiscount).toFixed(2)))
     } // this will set grand total of purchase
 
     const columns = [
         { name: "Product", selector: (row: any) => row.product, sortable: true },
-        { name: "Cost", selector: (row: any) => row.cost, sortable: true },
+        { name: "price", selector: (row: any) => row.price, sortable: true },
         { name: "Current Stock", selector: (row: any) => row.current_stock, sortable: true },
         {
             name: "Qty", cell: (row: any) => (
@@ -176,7 +172,7 @@ const SalesOrderForm = () => {
         {
             name: "SubTotal",
             selector: (row: any) => row.subtotal, sortable: true,
-            cell: (row: any) => (<span>$ {getTaxonProduct(row.cost, row.tax, row.qty)}</span>)
+            cell: (row: any) => (<span>$ {getTaxonProduct(row.price, row.tax, row.qty)}</span>)
         },
         {
             name: "Actions",
@@ -188,7 +184,6 @@ const SalesOrderForm = () => {
                         onclick={() => {
                             setsearchedProducts(searchedProducts.filter((item: any) => item._id != row._id))
                             settotal((prev: number) => parseFloat(Big(prev).minus(row.subtotal).toFixed(2)))
-                            // setordertax(0), setdiscount(0), settotal(0)
                         }}
                     />
                 </div>
