@@ -30,6 +30,7 @@ const Purchases = () => {
             name: "Actions",
             cell: (row: any) => (
                 <DropDownMenu
+                    name='Purchase'
                     api={`/purchase/${row.reference}`}
                     editURL={`/dashboard/purchase/${row.reference}`}
                     deletedata={() => deleteTableRow(row.id)}
@@ -71,11 +72,7 @@ const Purchases = () => {
                 total: item.total,
                 paid: item.payment_paid,
                 due: item.payment_due,
-                pstatus: <Button className={`badges ${item.payment_status == 'parital'
-                    ? 'blue'
-                    : item.payment_status == 'paid' ? 'green' : 'red'
-                    }`}
-                    text={item.payment_status} />
+                pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />
             }))
             setdata(purchases), setloading(false)
         } catch (error) {

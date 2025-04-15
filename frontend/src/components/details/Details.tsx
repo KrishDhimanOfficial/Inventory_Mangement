@@ -4,13 +4,14 @@ import { generatePDF, DataService, getDiscount, getorderTax, getTaxonProduct } f
 import { DropdownDivider, ListGroup, Row, Table, Col, Alert, Badge } from 'react-bootstrap'
 import { useParams } from 'react-router';
 import DataTable from 'react-data-table-component';
-
+import { useSelector } from 'react-redux';
 interface Details {
     name: string,
     info: string
 }
 
 const Details: React.FC<Details> = ({ name, info }) => {
+    const { settings } = useSelector((state: any) => state.singleData)
     const { salesId, purchaseId } = useParams()
     const [orders, setorders] = useState([])
     const [calDiscount, setcalDiscount] = useState<number | any>(null)
@@ -93,10 +94,10 @@ const Details: React.FC<Details> = ({ name, info }) => {
                             <Col md='4'>
                                 <h5 className='mb-2'>Company Info</h5>
                                 <ListGroup>
-                                    <ListGroup.Item className='border-0 p-0'>Stockify</ListGroup.Item>
-                                    <ListGroup.Item className='border-0 p-0'>stockify@gmail.com</ListGroup.Item>
-                                    <ListGroup.Item className='border-0 p-0'>1234567890</ListGroup.Item>
-                                    <ListGroup.Item className='border-0 p-0'>#24 torento, USa</ListGroup.Item>
+                                    <ListGroup.Item className='border-0 p-0'>{settings.name}</ListGroup.Item>
+                                    <ListGroup.Item className='border-0 p-0'>{settings.email}</ListGroup.Item>
+                                    <ListGroup.Item className='border-0 p-0'>{settings.phone}</ListGroup.Item>
+                                    <ListGroup.Item className='border-0 p-0'>{settings.address}</ListGroup.Item>
                                 </ListGroup>
                             </Col>
                             <Col md='4'>
@@ -127,7 +128,7 @@ const Details: React.FC<Details> = ({ name, info }) => {
                                     <tbody>
                                         <tr>
                                             <td>Order Tax</td>
-                                            <td>$ {
+                                            <td>{settings.currency?.value} {
                                                 calOrdertax == 0
                                                     ? 0
                                                     : parseFloat(ordersInfo.subtotal + calOrdertax).toFixed(2)} ({parseFloat(calOrdertax).toFixed(2)}%)
@@ -136,7 +137,7 @@ const Details: React.FC<Details> = ({ name, info }) => {
                                         </tr>
                                         <tr>
                                             <td>Discount</td>
-                                            <td>$ {
+                                            <td>{settings.currency?.value} {
                                                 calDiscount == 0
                                                     ? 0
                                                     : (ordersInfo.subtotal - calDiscount).toFixed(2)} ({parseFloat(calDiscount).toFixed(2)}%)
@@ -144,11 +145,11 @@ const Details: React.FC<Details> = ({ name, info }) => {
                                         </tr>
                                         <tr>
                                             <td>Shipping</td>
-                                            <td>$ {ordersInfo.shippment}</td>
+                                            <td>{settings.currency?.value} {ordersInfo.shippment}</td>
                                         </tr>
                                         <tr>
                                             <td>Grand Total</td>
-                                            <td>$ {ordersInfo.total}</td>
+                                            <td>{settings.currency?.value} {ordersInfo.total}</td>
                                         </tr>
                                     </tbody>
                                 </Table>

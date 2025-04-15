@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit"
 
 const initialState = {
     data: {},
+    sidemenu: true,
+    settings: {}
 }
 
 const getsingleDataSlice = createSlice({
@@ -11,8 +13,14 @@ const getsingleDataSlice = createSlice({
         setSingleData: (state, action) => {
             state.data = action.payload
         },
+        setSideMenu: (state, action) => {
+            state.sidemenu = action.payload
+        },
+        setSettings: (state, action) => {
+            state.settings = action.payload
+        }
     }
 })
 
-export const { setSingleData } = getsingleDataSlice.actions;
+export const { setSingleData, setSideMenu, setSettings } = getsingleDataSlice.actions;
 export const getSingleRecordSliceReducer = getsingleDataSlice.reducer;

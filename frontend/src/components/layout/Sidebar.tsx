@@ -3,8 +3,8 @@ import { Image } from '../component'
 import { Link } from 'react-router';
 import DataService from '../../hooks/DataService';
 import config from '../../config/config';
-import logo1 from '../../assets/Images/close.webp'
-import { useDispatch } from 'react-redux';
+import logo from '../../assets/Images/close.webp'
+import { useDispatch, useSelector } from 'react-redux';
 import { setUserPermission } from '../../controller/userPermission'
 import Accordion from 'react-bootstrap/Accordion'
 interface UserPermission {
@@ -20,6 +20,10 @@ interface UserPermission {
 
 const Sidebar = () => {
     const dispatch = useDispatch()
+    const { settings } = useSelector((state: any) => state.singleData)
+    const r = useSelector((state: any) => state.singleData.sidemenu)
+    // console.log(settings.logo);
+
     const [user, setuser] = useState<UserPermission>({
         role: '', permissions: {
             customer: { view: null },
@@ -48,10 +52,10 @@ const Sidebar = () => {
             <div className="sidebar">
                 <div className="user-panel mt-3 mb-3 d-flex border-0 align-items-center">
                     <div className="image">
-                        <Image path={logo1} className="img-circle object-fit-cover h-100" />
+                        <Image path={`${settings.logo}` || logo} className="img-circle object-fit-cover h-100" />
                     </div>
                     <div className="info">
-                        <Link to="#" className="d-block fs-3 text-decoration-none">Stockify</Link>
+                        <Link to="#" className="d-block fs-3 text-decoration-none">{settings.name}</Link>
                     </div>
                 </div>
 
@@ -241,6 +245,12 @@ const Sidebar = () => {
                                         <Link to="/dashboard/report/purchases" className="nav-link">
                                             <i className="fa-solid fa-file-invoice nav-icon"></i>
                                             <p className="text">Purchase Report</p>
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item">
+                                        <Link to="/dashboard/report/sales" className="nav-link">
+                                            <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                            <p className="text">Sales Report</p>
                                         </Link>
                                     </li>
                                 </ul>

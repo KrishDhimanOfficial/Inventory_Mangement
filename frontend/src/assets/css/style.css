@@ -516,7 +516,7 @@ input[type="number"] {
     outline: none;
 }
 
-.badges.blue {
+.badges.parital {
     background-color: rgba(59, 130, 246, 0.10);
     color: rgb(59 130 246);
     padding: 4px .5rem;
@@ -525,14 +525,14 @@ input[type="number"] {
 
 
 
-.badges.green {
+.badges.paid {
     background-color: rgba(34, 197, 94, 0.10);
     color: rgb(34 197 94);
     padding: 4px .5rem;
     border: 1px rgb(34 197 94) solid;
 }
 
-.badges.red {
+.badges.unpaid {
     background-color: rgba(239, 68, 68, 0.10);
     color: rgb(239 68 68);
     padding: 4px .5rem;

@@ -26,6 +26,7 @@ import Details from "./components/details/Details"
 import PurchaseReturn from "./pages/purchase/PurchaseReturn"
 import SalesReturn from "./pages/sales/SalesReturn"
 import PurchaseReport from "./pages/reports/PurchaseReport"
+import SalesReport from "./pages/reports/SalesReport"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -230,6 +231,14 @@ const App = () => {
           element: (
             <ProtectedRoute>
               <PurchaseReport />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/report/sales',
+          element: (
+            <ProtectedRoute>
+              <SalesReport />
             </ProtectedRoute>
           )
         },

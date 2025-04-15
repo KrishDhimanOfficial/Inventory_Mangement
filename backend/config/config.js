@@ -11,7 +11,8 @@ const config = {
     emailPass: process.env.EMAIL_APP_PASSWORD,
     security_key: process.env.SECURITY_KEY,
     productImgPath: process.env.PRODUCT_IMAGE_PATH,
-    client_url: process.env.CLIENT_URL
+    client_url: process.env.CLIENT_URL,
+    logoImgPath: process.env.LOGO_PATH
 }
 
 export default config

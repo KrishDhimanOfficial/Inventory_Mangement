@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken'
 import config from '../config/config.js'
 
-const setUser = (user, expriesToken) => {
-    return jwt.sign(user, config.security_key, expriesToken)
+const setUser = (user) => {
+    return jwt.sign(user, config.security_key, { expiresIn: '4h' })
 }
 
 const getUser = (token) => {

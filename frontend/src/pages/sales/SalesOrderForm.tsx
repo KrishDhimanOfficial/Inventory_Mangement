@@ -18,9 +18,11 @@ import {
 import config from '../../config/config'
 import { toast } from 'react-toastify'
 import { validationSchema, defaultValues, Searches, Option } from './info'
+import { useSelector } from 'react-redux'
 
 const SalesOrderForm = () => {
     const navigate = useNavigate()
+    const { settings } = useSelector((state: any) => state.singleData)
     const [searchResults, setsearchResults] = useState<Searches[]>([])
     const [customers, setcustomers] = useState([])
     const [warehouses, setWarehouses] = useState<any>([])
@@ -37,7 +39,6 @@ const SalesOrderForm = () => {
     const [searchtimeout, settimeout] = useState<any>(null)
     const [searchedProducts, setsearchedProducts] = useState<any>([])
     const [WalkinCustomerRequired, setWalkinCustomer] = useState<Boolean>(false)
-    console.log(searchedProducts);
 
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
@@ -172,7 +173,7 @@ const SalesOrderForm = () => {
         {
             name: "SubTotal",
             selector: (row: any) => row.subtotal, sortable: true,
-            cell: (row: any) => (<span>$ {getTaxonProduct(row.price, row.tax, row.qty)}</span>)
+            cell: (row: any) => (<span>{settings.currency?.value} {getTaxonProduct(row.price, row.tax, row.qty)}</span>)
         },
         {
             name: "Actions",
@@ -426,19 +427,19 @@ const SalesOrderForm = () => {
                                             <tbody>
                                                 <tr>
                                                     <td>Order Tax</td>
-                                                    <td>$ {calOrdertax || 0} ({ordertax || 0}%)</td>
+                                                    <td>{settings.currency?.value}  {calOrdertax || 0} ({ordertax || 0}%)</td>
                                                 </tr>
                                                 <tr>
                                                     <td>Discount</td>
-                                                    <td>$ {calDiscount || 0} ({discount || 0}%) </td>
+                                                    <td>{settings.currency?.value}  {calDiscount || 0} ({discount || 0}%) </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Shipping</td>
-                                                    <td>$ {shippment || 0}</td>
+                                                    <td>{settings.currency?.value}  {shippment || 0}</td>
                                                 </tr>
                                                 <tr>
                                                     <td>Grand Total</td>
-                                                    <td>$ {
+                                                    <td>{settings.currency?.value}  {
                                                         (
                                                             parseFloat((total + calOrdertax + shippment - calDiscount).toFixed(2))
                                                         )

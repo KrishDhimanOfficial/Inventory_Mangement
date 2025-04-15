@@ -4,8 +4,9 @@ import users_controllers from '../controllers/users.controller.js'
 import warehouse_controllers from '../controllers/warehouse.controller.js'
 import pro_controllers from '../controllers/product.controller.js'
 import handlemulterError from '../middleware/handleMulterError.js'
-import { product } from '../middleware/multer.middleware.js'
+import { logo, product } from '../middleware/multer.middleware.js'
 import reportController from '../controllers/reports.controller.js'
+import setting_controller from '../controllers/setting.controllers.js'
 
 router.post('/user/login', users_controllers.handleUserLogin)
 router.get('/all/users', users_controllers.getAllUsersDetails)
@@ -96,7 +97,10 @@ router.route('/payment-method/:id?')
     .put(pro_controllers.updatePaymentMethod)
     .delete(pro_controllers.deletePaymentMethod)
 
+router.get('/system-setting', setting_controller.getsystemDetails)
+router.put('/system-setting', logo.single('logo'), handlemulterError, setting_controller.saveSystemSetting)
 
 router.get('/get/purchase/reports', reportController.getPurchaseReport)
+router.get('/get/sales/reports', reportController.getSalesReport)
 
 export default router

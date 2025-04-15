@@ -18,8 +18,10 @@ import {
 import config from '../../config/config'
 import { toast } from 'react-toastify'
 import { validationSchema, defaultValues, Searches, Option } from './info'
+import { useSelector } from 'react-redux'
 
 const Purchase = () => {
+    const { settings } = useSelector((state: any) => state.singleData)
     const navigate = useNavigate()
     const [searchResults, setsearchResults] = useState<Searches[]>([])
     const [note, setnote] = useState('')
@@ -166,7 +168,7 @@ const Purchase = () => {
         {
             name: "SubTotal",
             selector: (row: any) => row.subtotal, sortable: true,
-            cell: (row: any) => (<span>$ {getTaxonProduct(row.cost, row.tax, row.qty)}</span>)
+            cell: (row: any) => (<span>{settings.currency?.value} {getTaxonProduct(row.cost, row.tax, row.qty)}</span>)
         },
         {
             name: "Actions",
@@ -188,11 +190,9 @@ const Purchase = () => {
 
     const registeration = async (formdata: object) => {
         try {
-            console.log(formdata);
-
-            // const res: any = await DataService.post('/purchase', formdata)
-            // if (res.success) navigate('/dashboard/purchases')
-            // Notify(res) // Show API Response
+            const res: any = await DataService.post('/purchase', formdata)
+            if (res.success) navigate('/dashboard/purchases')
+            Notify(res) // Show API Response
         } catch (error) {
             console.error(error)
         }
@@ -365,19 +365,19 @@ const Purchase = () => {
                                             <tbody>
                                                 <tr>
                                                     <td>Order Tax</td>
-                                                    <td>$ {calOrdertax || 0} ({ordertax || 0}%)</td>
+                                                    <td>{settings.currency?.value} {calOrdertax || 0} ({ordertax || 0}%)</td>
                                                 </tr>
                                                 <tr>
                                                     <td>Discount</td>
-                                                    <td>$ {calDiscount || 0} ({discount || 0}%) </td>
+                                                    <td>{settings.currency?.value} {calDiscount || 0} ({discount || 0}%) </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Shipping</td>
-                                                    <td>$ {shippment || 0}</td>
+                                                    <td>{settings.currency?.value} {shippment || 0}</td>
                                                 </tr>
                                                 <tr>
                                                     <td>Grand Total</td>
-                                                    <td>$ {
+                                                    <td>{settings.currency?.value} {
                                                         (
                                                             parseFloat((total + calOrdertax + shippment - calDiscount).toFixed(2))
                                                         )
@@ -499,11 +499,8 @@ const Purchase = () => {
                                                             {...field}
                                                             className="adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
-                                                            // onChange={(e: any) => { 
-                                                            //     field.onChange(e.target.value)
-                                                            //     setnote(e.target.value)
-                                                            //     console.log(e.target.value);
-                                                            //  }}
+                                                            onChange={(e: any) => { field.onChange(e) }}
+                                                            value={field.value}
                                                         />
                                                     </div>
                                                 )}

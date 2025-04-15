@@ -1,16 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Sec_Heading, Section, Button, Loader, Input } from '../../components/component';
 import DataTable from 'react-data-table-component';
-import { generatePDF, downloadCSV, DataService, filterData } from '../../hooks/hook';
+import { generatePDF, downloadCSV, DataService } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 
-const PurchaseReport = () => {
+const SalesReport = () => {
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
-    const [filterdata, setfilterdata] = useState([])
     const [abortController, setAbortController] = useState<AbortController | null>(null)
     const [searchtimeout, settimeout] = useState<any>(null)
     const [state, setState] = useState([
@@ -20,11 +19,10 @@ const PurchaseReport = () => {
             key: 'selection'
         }
     ])
-
     const columns = [
         { name: "Date", selector: (row: any) => row.date, sortable: true },
         { name: "Reference", selector: (row: any) => row.reference, sortable: true },
-        { name: "Supplier", selector: (row: any) => row.supplier, sortable: true },
+        { name: "Customer", selector: (row: any) => row.customer, sortable: true },
         { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
         { name: "Grand Total", selector: (row: any) => row.total, sortable: true },
         { name: "Paid", selector: (row: any) => row.paid, sortable: true },
@@ -35,14 +33,14 @@ const PurchaseReport = () => {
         i + 1,
         purchase.date,
         purchase.reference,
-        purchase.supplier,
+        purchase.customer,
         purchase.warehouse,
         purchase.total,
         purchase.paid,
         purchase.due,
         purchase.pstatus
     ])
-    const pdfColumns = ["S.No", "Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
+    const pdfColumns = ["S.No", "Date", "Reference", "Customer", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
 
     const getReport = async () => {
         try {
@@ -51,18 +49,17 @@ const PurchaseReport = () => {
 
             const timeout = setTimeout(async () => {
                 setloading(true)
-                const res = await DataService.get(`/get/purchase/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {}, controller.signal)
-                const data = res?.map((item: any) => ({
+                const res = await DataService.get(`/get/sales/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {}, controller.signal)
+                setdata(res?.map((item: any) => ({
                     date: item.date,
-                    reference: item.purchaseId,
-                    supplier: item.supplier?.name,
+                    reference: item.salesId,
+                    customer: item.customer?.name,
                     warehouse: item.warehouse?.name,
                     total: item.total,
                     paid: item.payment_paid,
                     due: item.payment_due,
                     pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
-                }))
-                setdata(data), setfilterdata(data)
+                })))
                 setloading(false)
             }, 800)
 
@@ -78,7 +75,7 @@ const PurchaseReport = () => {
     useEffect(() => { getReport() }, [state, setState])
     return (
         <>
-            <Sec_Heading page={"Purchase Report"} subtitle="Report" />
+            <Sec_Heading page={"Sales Report"} subtitle="Report" />
             <Section>
                 <div className="col-12">
                     <div className="card">
@@ -132,4 +129,4 @@ const PurchaseReport = () => {
         </>
     )
 }
-export default PurchaseReport
+export default SalesReport

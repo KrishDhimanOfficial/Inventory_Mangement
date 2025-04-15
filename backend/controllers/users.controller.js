@@ -10,10 +10,6 @@ import { getUser, setUser } from '../services/auth.js'
 // /** @type {Object.<string, (req: import('express').Request, res: import('express').Response) => Promise<any>>} */
 const delay = 100;
 const users_controllers = {
-    /**
-  * @param {import('express').Request} req
-  * @param {import('express').Response} res
- */
     checkUserIsLoggin: async (req, res) => {
         try {
             const user = getUser(req.headers['authorization'].split(' ')[1])
@@ -49,7 +45,7 @@ const users_controllers = {
             const checkAuth = await bcrypt.compare(password, response.password)
             if (!checkAuth) return res.json({ error: 'Unauthorized!' })
 
-            return res.json({ success: 'Logined Successfully', stockify_auth_token: setUser({ id: response._id }, { expiresIn: '4h' }) })
+            return res.json({ success: 'Logined Successfully', stockify_auth_token: setUser({ id: response._id }) })
         } catch (error) {
             console.log('handleUserLogin : ' + error.message)
         }

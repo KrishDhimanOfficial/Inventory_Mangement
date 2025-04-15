@@ -31,3 +31,9 @@ export const product = multer({
     limits: { fileSize: MAX_SIZE },
     fileFilter: fileFilter
 })
+
+export const logo = multer({
+    storage: createStorage('logo'),
+    limits: { fileSize: MAX_SIZE },
+    fileFilter: fileFilter
+})

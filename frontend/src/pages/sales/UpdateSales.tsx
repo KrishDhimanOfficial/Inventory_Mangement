@@ -19,10 +19,12 @@ import {
 import config from '../../config/config'
 import { toast } from 'react-toastify'
 import { validationSchema, defaultValues, Searches, Option } from './info'
+import { useSelector } from 'react-redux'
 
 const UpdateSales = () => {
     const { id } = useParams()
     const navigate = useNavigate()
+    const { settings } = useSelector((state: any) => state.singleData)
     const [searchResults, setsearchResults] = useState<Searches[]>([])
     const [suppliers, setsuppliers] = useState([])
     const [warehouses, setWarehouses] = useState<any>([])
@@ -453,19 +455,19 @@ const UpdateSales = () => {
                                             <tbody>
                                                 <tr>
                                                     <td>Order Tax</td>
-                                                    <td>$ {calOrdertax || 0} ({ordertax || 0}%)</td>
+                                                    <td>{settings.currency?.value} {calOrdertax || 0} ({ordertax || 0}%)</td>
                                                 </tr>
                                                 <tr>
                                                     <td>Discount</td>
-                                                    <td>$ {calDiscount || 0} ({discount || 0}%) </td>
+                                                    <td>{settings.currency?.value} {calDiscount || 0} ({discount || 0}%) </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Shipping</td>
-                                                    <td>$ {shippment || 0}</td>
+                                                    <td>{settings.currency?.value} {shippment || 0}</td>
                                                 </tr>
                                                 <tr>
                                                     <td>Grand Total</td>
-                                                    <td>$ {
+                                                    <td>{settings.currency?.value} {
                                                         parseFloat(
                                                             (total
                                                                 + calOrdertax

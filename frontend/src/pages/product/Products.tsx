@@ -37,7 +37,6 @@ const Products = () => {
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
-    const [searchTerm, setsearchTerm] = useState('')
     const { permission } = useSelector((state: any) => state.permission)
 
     const columns = [
@@ -46,10 +45,6 @@ const Products = () => {
         { name: "Name", selector: (row: any) => row.name, sortable: true },
         { name: "Category", selector: (row: any) => row.category, sortable: true },
         { name: "Brand", selector: (row: any) => row.brand, sortable: true },
-        // { name: "Cost", selector: (row: any) => row.cost, sortable: true },
-        // { name: "Price", selector: (row: any) => row.price, sortable: true },
-        // { name: "Unit", selector: (row: any) => row.unit, sortable: true },
-        // { name: "Last update", selector: (row: any) => row.update, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
@@ -78,15 +73,10 @@ const Products = () => {
         product.id,
         product.sku,
         product.name,
-        // product.cost,
-        // product.price,
-        // `${product.tax} %`,
         product.category,
         product.brand,
-        // product.unit,
-        // product.update,
     ])
-    // const pdfColumns = ["S.No", "Title", "SKU", "Cost", "Price", "Tax", "Category", "Brand", "Unit", "Date"]
+    
     const pdfColumns = ["S.No", "SKU", "Title", "Category", "Brand"]
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
     const fetch = useCallback(async () => {
@@ -94,18 +84,12 @@ const Products = () => {
             setloading(true)
             const res = await DataService.get('/all/products')
             const response = res?.map((pro: ProductSchema, i: number) => ({
-                id: i + 1, _id: pro._id,
-                // product: <Image path={pro.image} className='w-100 h-100 my-1 object-fit-container' />,
+                id: i + 1,
+                _id: pro._id,
                 code: pro.sku,
-                // tax: pro.tax,
                 name: pro.title,
                 brand: pro.brand?.name,
-                // code: pro.sku,
                 category: pro.category?.name,
-                // cost: pro.cost,
-                // price: pro.price,
-                // unit: pro.unit?.shortName,
-                // update: `${pro.day} ${months[parseInt(pro.month) - 1]},${pro.year}`,
             }))
             setdata(response)
             setloading(false)
@@ -114,9 +98,6 @@ const Products = () => {
         }
     }, [])
 
-    // useEffect(() => {
-    //     // setdata(filterData(data, searchTerm))
-    // }, [searchTerm])
     useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>

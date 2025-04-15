@@ -1101,6 +1101,7 @@ const pro_controllers = {
             return res.status(200).json(response[0])
         } catch (error) {
             console.log('getSalesDetail : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getAll_sales_Details: async (req, res) => {
@@ -1175,6 +1176,7 @@ const pro_controllers = {
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAll_sales_Details : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     createProductSales: async (req, res) => {
@@ -1210,6 +1212,7 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('createProductSales : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getSingleProductSales_Details: async (req, res) => {
@@ -1339,6 +1342,7 @@ const pro_controllers = {
             return res.status(200).json(response[0])
         } catch (error) {
             console.log('getSingleProductSales_Details : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updateProductSales: async (req, res) => {
@@ -1368,6 +1372,7 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updateProductSales : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updateSalesPayment: async (req, res) => {
@@ -1391,6 +1396,7 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updateSalesPayment : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     deleteProductSales: async (req, res) => {
@@ -1400,6 +1406,7 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted successfully!' })
         } catch (error) {
             console.log('deleteProductSales : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getAllPaymentMethods: async (req, res) => {
@@ -1408,6 +1415,7 @@ const pro_controllers = {
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAllPaymentMethods : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     createPaymentMethod: async (req, res) => {
@@ -1425,6 +1433,7 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Created Successfully.' })
         } catch (error) {
             console.log('createPaymentMethod : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getPaymentMethod: async (req, res) => {
@@ -1434,6 +1443,7 @@ const pro_controllers = {
             return res.status(200).json(response)
         } catch (error) {
             console.log('getPaymentMethod : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updatePaymentMethod: async (req, res) => {
@@ -1444,6 +1454,7 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updatePaymentMethod: async (req, res) => {' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     deletePaymentMethod: async (req, res) => {
@@ -1453,6 +1464,7 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted Successfully.' })
         } catch (error) {
             console.log('deletePaymentMethod: ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
 }

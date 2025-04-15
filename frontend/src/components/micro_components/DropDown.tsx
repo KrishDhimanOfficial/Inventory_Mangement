@@ -7,8 +7,9 @@ import { useDispatch } from 'react-redux';
 import { setSingleData } from '../../controller/singleData'
 import { useState } from 'react';
 
-const DropDownMenu = ({ api, editURL, detailsURL, deletedata, updatepermission, paymentbtnShow, deletepermission, paymentModal }: {
+const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermission, paymentbtnShow, deletepermission, paymentModal }: {
     api: string,
+    name: string,
     editURL: string,
     detailsURL: string,
     deletedata: () => void,
@@ -55,7 +56,8 @@ const DropDownMenu = ({ api, editURL, detailsURL, deletedata, updatepermission, 
                         </>
                     )
                 }
-                <Link to={`${detailsURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'> Details </Link>
+                <Link to={`${editURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'>{name} Return </Link>
+                <Link to={`${detailsURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'>{name} Details </Link>
                 {
                     deletepermission && (
                         <Button
