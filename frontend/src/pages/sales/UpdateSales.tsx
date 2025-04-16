@@ -212,11 +212,7 @@ const UpdateSales = () => {
             setValue('customerId', { value: apiData.customer?._id, label: apiData.customer?.name })
             setValue('warehouseId', { value: apiData.warehouse?._id, label: apiData.warehouse?.name })
             setValue('subtotal', parseFloat(apiData.subtotal.toFixed(2)))
-            setValue('total', parseFloat((apiData.subtotal
-                + getorderTax(apiData.orderTax, apiData.subtotal)
-                + shippment
-                - getDiscount(apiData.discount, apiData.subtotal)).toFixed(2))
-            )
+            setValue('total', apiData.total)
             settotal(apiData.subtotal)
             setdiscount(apiData.discount)
             setordertax(apiData.orderTax)

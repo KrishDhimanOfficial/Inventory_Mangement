@@ -1,21 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Sec_Heading, Section, Button, Loader, Input } from '../../components/component';
+import { Sec_Heading, Section, Button, Loader, Input, Canvas } from '../../components/component';
 import DataTable from 'react-data-table-component';
 import { generatePDF, downloadCSV, DataService, filterData } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
-import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { DropdownButton, Dropdown, } from 'react-bootstrap';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
+import config from '../../config/config';
 
 const PurchaseReport = () => {
     const [loading, setloading] = useState(false)
+    const [canvasopen, setcanvasopen] = useState(false)
     const [data, setdata] = useState([])
-    const [filterdata, setfilterdata] = useState([])
     const [abortController, setAbortController] = useState<AbortController | null>(null)
     const [searchtimeout, settimeout] = useState<any>(null)
     const [state, setState] = useState([
         {
-            startDate: new Date(),
+            startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
             endDate: new Date(),
             key: 'selection'
         }
@@ -51,7 +52,9 @@ const PurchaseReport = () => {
 
             const timeout = setTimeout(async () => {
                 setloading(true)
-                const res = await DataService.get(`/get/purchase/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {}, controller.signal)
+                const res = await DataService.get(`/get/purchase/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
+                    Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+                }, controller.signal)
                 const data = res?.map((item: any) => ({
                     date: item.date,
                     reference: item.purchaseId,
@@ -62,8 +65,8 @@ const PurchaseReport = () => {
                     due: item.payment_due,
                     pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
                 }))
-                setdata(data), setfilterdata(data)
                 setloading(false)
+                setdata(data)
             }, 800)
 
             setAbortController(controller)
@@ -78,6 +81,14 @@ const PurchaseReport = () => {
     useEffect(() => { getReport() }, [state, setState])
     return (
         <>
+            <Canvas
+                name='Supplier'
+                data={data}
+                show={canvasopen}
+                setData={setdata}
+                handleClose={() => setcanvasopen(!canvasopen)}
+                selectBoxApi1='/all/supplier-details'
+                selectBoxApi2='/warehouses' />
             <Sec_Heading page={"Purchase Report"} subtitle="Report" />
             <Section>
                 <div className="col-12">
@@ -93,6 +104,11 @@ const PurchaseReport = () => {
                                 subHeader
                                 subHeaderComponent={
                                     <div className="d-flex gap-3 justify-content-end">
+                                        <Button
+                                            text='Filters'
+                                            className='btn btn-dark'
+                                            onclick={() => setcanvasopen(!canvasopen)}
+                                        />
                                         <Button
                                             text='Generate PDF'
                                             className='btn btn-danger'

@@ -1,6 +1,5 @@
 import mongoose from "../config/DB.js"
 
-
 const purchaseOrderSchema = new mongoose.Schema({
     quantity: { type: mongoose.Schema.Types.Number },
     productId: { type: mongoose.Schema.Types.ObjectId },

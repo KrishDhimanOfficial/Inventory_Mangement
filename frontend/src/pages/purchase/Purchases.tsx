@@ -35,6 +35,7 @@ const Purchases = () => {
                     editURL={`/dashboard/purchase/${row.reference}`}
                     deletedata={() => deleteTableRow(row.id)}
                     detailsURL={`/dashboard/purchase-Details/${row.reference}`}
+                    returnURL={`/dashboard/purchase-return/${row.reference}`}
                     updatepermission={permission.purchase?.edit}
                     deletepermission={permission.purchase?.delete}
                     paymentbtnShow={row.pstatus}

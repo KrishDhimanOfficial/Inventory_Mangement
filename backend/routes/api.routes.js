@@ -81,6 +81,9 @@ router.route('/purchase/:id?')
     .patch(pro_controllers.updatePurchasePayment)
     .delete(pro_controllers.deleteProductPurchase)
 
+router.route('/purchase-return/:id?')
+    .post(pro_controllers.createProductReturn)
+
 router.get('/get/sales_details/:salesId', pro_controllers.getSalesDetail)
 router.get('/get-all-sales-details', pro_controllers.getAll_sales_Details)
 router.route('/sales/:id?')

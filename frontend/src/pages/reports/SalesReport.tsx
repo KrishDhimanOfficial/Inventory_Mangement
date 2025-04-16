@@ -1,20 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Sec_Heading, Section, Button, Loader, Input } from '../../components/component';
+import { Sec_Heading, Section, Button, Loader, Input, Canvas } from '../../components/component';
 import DataTable from 'react-data-table-component';
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
+import config from '../../config/config';
 
 const SalesReport = () => {
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
+    const [canvasopen, setcanvasopen] = useState(false)
     const [abortController, setAbortController] = useState<AbortController | null>(null)
     const [searchtimeout, settimeout] = useState<any>(null)
     const [state, setState] = useState([
         {
-            startDate: new Date(),
+            startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
             endDate: new Date(),
             key: 'selection'
         }
@@ -48,9 +50,10 @@ const SalesReport = () => {
             const controller = new AbortController()
 
             const timeout = setTimeout(async () => {
-                setloading(true)
-                const res = await DataService.get(`/get/sales/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {}, controller.signal)
-                setdata(res?.map((item: any) => ({
+                const res = await DataService.get(`/get/sales/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
+                    Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+                }, controller.signal)
+                const data = res?.map((item: any) => ({
                     date: item.date,
                     reference: item.salesId,
                     customer: item.customer?.name,
@@ -59,8 +62,9 @@ const SalesReport = () => {
                     paid: item.payment_paid,
                     due: item.payment_due,
                     pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
-                })))
+                }))
                 setloading(false)
+                setdata(data)
             }, 800)
 
             setAbortController(controller)
@@ -75,6 +79,14 @@ const SalesReport = () => {
     useEffect(() => { getReport() }, [state, setState])
     return (
         <>
+            <Canvas
+                name='Customer'
+                data={data}
+                show={canvasopen}
+                setData={setdata}
+                handleClose={() => setcanvasopen(!canvasopen)}
+                selectBoxApi1='/all-customer'
+                selectBoxApi2='/warehouses' />
             <Sec_Heading page={"Sales Report"} subtitle="Report" />
             <Section>
                 <div className="col-12">
@@ -90,6 +102,11 @@ const SalesReport = () => {
                                 subHeader
                                 subHeaderComponent={
                                     <div className="d-flex gap-3 justify-content-end">
+                                        <Button
+                                            text='Filters'
+                                            className='btn btn-dark'
+                                            onclick={() => setcanvasopen(!canvasopen)}
+                                        />
                                         <Button
                                             text='Generate PDF'
                                             className='btn btn-danger'

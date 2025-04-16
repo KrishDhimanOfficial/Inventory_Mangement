@@ -817,11 +817,26 @@ const pro_controllers = {
                     $unwind: "$orderItems.product"
                 },
                 {
+                    $lookup: {
+                        from: "units",
+                        localField: "orderItems.product.unitId",
+                        foreignField: "_id",
+                        as: "unit"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$unit',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
                     $group: {
                         _id: "$_id",
                         orderItems: {
                             $push: {
                                 productId: "$orderItems.product._id",
+                                unit: "$unit.shortName",
                                 name: "$orderItems.product.title",
                                 cost: "$orderItems.product.cost",
                                 tax: "$orderItems.product.tax",
@@ -838,7 +853,7 @@ const pro_controllers = {
                         discount: { $first: "$discount" },
                         total: { $first: "$total" },
                         subtotal: { $first: "$subtotal" },
-                        shipping: { $first: "$shipping" },
+                        shipping: { $first: "$shippment" },
                         orderTax: { $first: "$orderTax" },
                         purchase_date: { $first: "$purchase_date" },
                     }
@@ -887,6 +902,7 @@ const pro_controllers = {
                 },
                 {
                     $addFields: {
+                        unit: { $ifNull: ['$unit', { name: 'N/A' }] },
                         supplier: { $ifNull: ['$supplier', { name: 'N/A' }] },
                         warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
                         date: {
@@ -1464,6 +1480,17 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted Successfully.' })
         } catch (error) {
             console.log('deletePaymentMethod: ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
+        }
+    },
+    createProductReturn: async (req, res) => {
+        try {
+            const response = await model;
+            if (!response) return res.json({ error: 'Could Not Process Your Request.' })
+            return res.status(200).json({ success: 'Added Purchase Return.' })
+        } catch (error) {
+            if (error.name === 'ValidationError') validate(res, error.errors)
+            console.log('createProductReturn : ' + error.message)
             return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },

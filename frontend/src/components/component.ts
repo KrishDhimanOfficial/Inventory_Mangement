@@ -11,6 +11,7 @@ import Loader from './micro_components/Loader'
 import Static_Modal from './modal/Static_Modal'
 import DropDownMenu from './micro_components/DropDown'
 import Payment_Modal from './modal/Payment_Modal'
+import Canvas from './micro_components/Canvas'
 
 export {
     Button,
@@ -25,5 +26,6 @@ export {
     Static_Modal,
     TextArea,
     DropDownMenu,
-    Payment_Modal
+    Payment_Modal,
+    Canvas
 }

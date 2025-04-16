@@ -211,7 +211,7 @@ const App = () => {
           )
         },
         {
-          path: '/dashboard/purchase/return',
+          path: '/dashboard/purchase-return/:purchaseId',
           element: (
             <ProtectedRoute>
               <PurchaseReturn />
@@ -219,7 +219,7 @@ const App = () => {
           )
         },
         {
-          path: '/dashboard/sales/return',
+          path: '/dashboard/sales-return/salesId',
           element: (
             <ProtectedRoute>
               <SalesReturn />

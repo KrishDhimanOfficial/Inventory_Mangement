@@ -1,13 +1,32 @@
 import purchaseModel from '../models/purchase.model.js';
 import salesModel from '../models/sales.model.js';
-
+import userModel from '../models/user.model.js';
+import { getUser } from '../services/auth.js';
+import mongoose from 'mongoose';
+const ObjectId = mongoose.Types.ObjectId;
 const delay = 100;
 
 const reportController = {
     getPurchaseReport: async (req, res) => {
         try {
+            const user = getUser(req.headers['authorization']?.split(' ')[1])
             const { startDate, endDate } = req.query;
-            const response = await purchaseModel.aggregate([
+            const response = await userModel.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(user?.id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'purchases',
+                        localField: 'warehousesId',
+                        foreignField: 'warehouseId',
+                        as: 'purchases'
+                    }
+                },
+                { $unwind: '$purchases' },
+                { $replaceRoot: { newRoot: '$purchases' } },
                 {
                     $match: {
                         purchase_date: {
@@ -71,8 +90,24 @@ const reportController = {
     },
     getSalesReport: async (req, res) => {
         try {
+            const user = getUser(req.headers['authorization']?.split(' ')[1])
             const { startDate, endDate } = req.query;
-            const response = await salesModel.aggregate([
+            const response = await userModel.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(user?.id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'sales',
+                        localField: 'warehousesId',
+                        foreignField: 'warehouseId',
+                        as: 'sales'
+                    }
+                },
+                { $unwind: '$sales' },
+                { $replaceRoot: { newRoot: '$sales' } },
                 {
                     $match: {
                         selling_date: {

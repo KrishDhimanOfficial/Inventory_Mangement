@@ -71,10 +71,10 @@ const Sidebar = () => {
                             </Accordion.Header>
                         </Accordion.Item>
                     </Accordion>
-                    {
-                        user.permissions?.product.view && (
-                            <Accordion className='border-0 mb-3'>
-                                <Accordion.Item eventKey="4">
+                    <Accordion className='border-0 mb-3'>
+                        {
+                            user.permissions?.product.view && (
+                                <Accordion.Item eventKey="6">
                                     <Accordion.Header>
                                         <i className="fa-solid fa-bars me-2"></i>
                                         <p> Product  </p>
@@ -108,13 +108,11 @@ const Sidebar = () => {
                                         </ul>
                                     </Accordion.Body>
                                 </Accordion.Item>
-                            </Accordion>
-                        )
-                    }
-                    {
-                        user.permissions?.purchase.view && (
-                            <Accordion className='border-0 mb-3'>
-                                <Accordion.Item eventKey="2">
+                            )
+                        }
+                        {
+                            user.permissions?.purchase.view && (
+                                <Accordion.Item eventKey="5">
                                     <Accordion.Header>
                                         <i className="fa-solid fa-credit-card me-2"></i>
                                         <p>Purchase</p>
@@ -140,13 +138,11 @@ const Sidebar = () => {
                                         </ul>
                                     </Accordion.Body>
                                 </Accordion.Item>
-                            </Accordion>
-                        )
-                    }
-                    {
-                        user.permissions?.sales.view && (
-                            <Accordion className='border-0 mb-3'>
-                                <Accordion.Item eventKey="1">
+                            )
+                        }
+                        {
+                            user.permissions?.sales.view && (
+                                <Accordion.Item eventKey="4">
                                     <Accordion.Header>
                                         <i className="fa-solid fa-chart-area me-2"></i>
                                         <p>Sales </p>
@@ -168,72 +164,32 @@ const Sidebar = () => {
                                         </ul>
                                     </Accordion.Body>
                                 </Accordion.Item>
-                            </Accordion>
-                        )
-                    }
-                    <Accordion className='border-0 mb-3'>
-                        <Accordion.Item eventKey="5">
-                            <Accordion.Header >
-                                <Link to="/dashboard/purchase/return" className="nav-link">
-                                    <i className="fa-solid fa-arrow-left"></i>
-                                    <p>Purchase Return</p>
-                                </Link>
-                            </Accordion.Header>
-                        </Accordion.Item>
-                    </Accordion>
-                    <Accordion className='border-0 mb-3'>
-                        <Accordion.Item eventKey="5">
-                            <Accordion.Header >
-                                <Link to="/dashboard/sales/return" className="nav-link">
-                                    <i className="fa-solid fa-arrow-right"></i>
-                                    <p>Sales Return</p>
-                                </Link>
-                            </Accordion.Header>
-                        </Accordion.Item>
-                    </Accordion>
-                    <Accordion className='border-0 mb-3'>
-                        <Accordion.Item eventKey="1">
-                            <Accordion.Header>
-                                <i className="fa-solid fa-users me-2"></i>
-                                <p> People </p>
-                            </Accordion.Header>
-                            <Accordion.Body className='ps-0 bg-dark'>
-                                <ul className="nav nav-treeview">
-                                    {
-                                        user.permissions?.supplier.view && (
-                                            <li className="nav-item">
-                                                <Link to="/dashboard/suppliers" className="nav-link">
-                                                    <i className="fa-regular fa-user nav-icon"></i>
-                                                    <p className="text">Suppliers</p>
-                                                </Link>
-                                            </li>
-                                        )
-                                    }
-                                    {
-                                        user.permissions?.customer.view && (
-                                            <li className="nav-item">
-                                                <Link to="/dashboard/customers" className="nav-link">
-                                                    <i className="fa-regular fa-user nav-icon"></i>
-                                                    <p className="text">Customers</p>
-                                                </Link>
-                                            </li>
-                                        )
-                                    }
-                                    {
-                                        user.role == 'admin' && (
-                                            <li className="nav-item">
-                                                <Link to="/dashboard/user/permissions" className="nav-link">
-                                                    <i className="fa-regular fa-user nav-icon"></i>
-                                                    <p className="text">Users</p>
-                                                </Link>
-                                            </li>
-                                        )
-                                    }
-                                </ul>
-                            </Accordion.Body>
-                        </Accordion.Item>
-                    </Accordion>
-                    <Accordion className='border-0 mb-3'>
+                            )
+                        }
+                        {
+                            user.permissions?.purchase.view && (
+                                <Accordion.Item eventKey="3">
+                                    <Accordion.Header >
+                                        <Link to="#" className="nav-link">
+                                            <i className="fa-solid fa-arrow-left"></i>
+                                            <p>Purchase Return</p>
+                                        </Link>
+                                    </Accordion.Header>
+                                </Accordion.Item>
+                            )
+                        }
+                        {
+                            user.permissions?.sales.view && (
+                                <Accordion.Item eventKey="2">
+                                    <Accordion.Header >
+                                        <Link to="#" className="nav-link">
+                                            <i className="fa-solid fa-arrow-right"></i>
+                                            <p>Sales Return</p>
+                                        </Link>
+                                    </Accordion.Header>
+                                </Accordion.Item>
+                            )
+                        }
                         <Accordion.Item eventKey="1">
                             <Accordion.Header>
                                 <i className="fa-solid fa-chart-area me-2"></i>
@@ -241,25 +197,31 @@ const Sidebar = () => {
                             </Accordion.Header>
                             <Accordion.Body className='ps-0 bg-dark'>
                                 <ul className="nav nav-treeview">
-                                    <li className="nav-item">
-                                        <Link to="/dashboard/report/purchases" className="nav-link">
-                                            <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                            <p className="text">Purchase Report</p>
-                                        </Link>
-                                    </li>
-                                    <li className="nav-item">
-                                        <Link to="/dashboard/report/sales" className="nav-link">
-                                            <i className="fa-solid fa-file-invoice nav-icon"></i>
-                                            <p className="text">Sales Report</p>
-                                        </Link>
-                                    </li>
+                                    {
+                                        user.permissions?.purchase.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/report/purchases" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Purchase Report</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.permissions?.sales.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/report/sales" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Sales Report</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
                                 </ul>
                             </Accordion.Body>
                         </Accordion.Item>
-                    </Accordion>
-                    {
-                        user.role === 'admin' && (
-                            <Accordion className='border-0'>
+                        {
+                            user.role === 'admin' && (
                                 <Accordion.Item eventKey="0">
                                     <Accordion.Header>
                                         <i className="fa-solid fa-gear me-2"></i>
@@ -288,9 +250,9 @@ const Sidebar = () => {
                                         </ul>
                                     </Accordion.Body>
                                 </Accordion.Item>
-                            </Accordion>
-                        )
-                    }
+                            )
+                        }
+                    </Accordion>
                 </nav>
                 {/* <!-- /.sidebar-menu --> */}
             </div>

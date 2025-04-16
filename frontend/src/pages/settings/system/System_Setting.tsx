@@ -37,7 +37,7 @@ const System_Setting = () => {
     const [selectedOption, setselectedOption] = useState({})
     const [currencies, setcurrencies] = useState([{ label: '', value: '' }])
 
-    const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+    const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues, resolver: yupResolver(validationSchema)
     })
 
