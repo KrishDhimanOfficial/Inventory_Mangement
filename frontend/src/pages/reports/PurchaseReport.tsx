@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Sec_Heading, Section, Button, Loader, Input, Canvas } from '../../components/component';
+import React, { useCallback, useEffect, useState, lazy } from 'react';
+import { Sec_Heading, Section, Button, Loader, Input } from '../../components/component';
 import DataTable from 'react-data-table-component';
 import { generatePDF, downloadCSV, DataService, filterData } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
@@ -7,13 +7,11 @@ import { DropdownButton, Dropdown, } from 'react-bootstrap';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import config from '../../config/config';
-
+const Canvas = lazy(() => import('../../components/micro_components/Canvas'))
 const PurchaseReport = () => {
     const [loading, setloading] = useState(false)
     const [canvasopen, setcanvasopen] = useState(false)
     const [data, setdata] = useState([])
-    const [abortController, setAbortController] = useState<AbortController | null>(null)
-    const [searchtimeout, settimeout] = useState<any>(null)
     const [state, setState] = useState([
         {
             startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
@@ -47,30 +45,22 @@ const PurchaseReport = () => {
 
     const getReport = async () => {
         try {
-            if (searchtimeout && abortController) clearTimeout(searchtimeout), abortController.abort()
-            const controller = new AbortController()
-
-            const timeout = setTimeout(async () => {
-                setloading(true)
-                const res = await DataService.get(`/get/purchase/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
-                    Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-                }, controller.signal)
-                const data = res?.map((item: any) => ({
-                    date: item.date,
-                    reference: item.purchaseId,
-                    supplier: item.supplier?.name,
-                    warehouse: item.warehouse?.name,
-                    total: item.total,
-                    paid: item.payment_paid,
-                    due: item.payment_due,
-                    pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
-                }))
-                setloading(false)
-                setdata(data)
-            }, 800)
-
-            setAbortController(controller)
-            settimeout(timeout)
+            setloading(true)
+            const res = await DataService.get(`/get/purchase/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
+                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+            })
+            const data = res?.map((item: any) => ({
+                date: item.date,
+                reference: item.purchaseId,
+                supplier: item.supplier?.name,
+                warehouse: item.warehouse?.name,
+                total: item.total,
+                paid: item.payment_paid,
+                due: item.payment_due,
+                pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
+            }))
+            setloading(false)
+            setdata(data)
         } catch (error) {
             console.error(error)
         } finally {

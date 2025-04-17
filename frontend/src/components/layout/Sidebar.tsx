@@ -170,7 +170,7 @@ const Sidebar = () => {
                             user.permissions?.purchase.view && (
                                 <Accordion.Item eventKey="3">
                                     <Accordion.Header >
-                                        <Link to="#" className="nav-link">
+                                        <Link to="/dashboard/purchase/returns" className="nav-link">
                                             <i className="fa-solid fa-arrow-left"></i>
                                             <p>Purchase Return</p>
                                         </Link>

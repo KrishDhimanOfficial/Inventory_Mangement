@@ -12,7 +12,6 @@ interface Modal {
 
 const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable }) => {
     const { isloading, apiResponse: res, deleteData } = useDeleteData()
-
     useEffect(() => {
         if (res?.success) refreshTable()
     }, [res])

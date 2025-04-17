@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Offcanvas, Button } from 'react-bootstrap';
 import { Input } from '../component'
-import { Controller, useForm } from 'react-hook-form'
 import Select from 'react-select'
 import DataService from '../../hooks/DataService';
 import config from '../../config/config';
@@ -35,27 +34,23 @@ const Canvas: React.FC<Canvas> = ({ name, data, show, handleClose, selectBoxApi1
                     Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
                 }),
             ])
-            setselect1(res1?.map((item: any) => ({ value: item._id, label: item.name })))
-            setselect2(res2?.map((item: any) => ({ value: item._id, label: item.name })))
+            setselect1(res1?.map((item: any) => ({ value: item.name, label: item.name })))
+            setselect2(res2?.map((item: any) => ({ value: item.name, label: item.name })))
         } catch (error) {
             console.error(error)
         }
     }
 
     const handleFiltering = () => {
-        console.log(selectedStatus);
-        
-
         const filterdata = data.filter((item: any) => {
-console.log(item)
-            return item.supplier && item.supplier.toLowerCase().includes(selectedoption1.label.toLowerCase()) &&
-                // item?.customer && item?.customer.toLowerCase().includes(selectedoption1.label.toLowerCase()) &&
-                item.warehouse && item.warehouse.toLowerCase().includes(selectedoption2.label.toLowerCase())
-                // item.pstatus.props?.text && item.pstatus.props?.text.toLowerCase().includes(selectedStatus.label.toLowerCase()) &&
-                // item.reference && item.reference.toLowerCase().includes(ref.toLowerCase())
+            return item.supplier
+                ? item.supplier && item.supplier.toLowerCase().includes(selectedoption1.value.toLowerCase())
+                : item.customer && item.customer.toLowerCase().includes(selectedoption1.value.toLowerCase())
+                &&
+                item.warehouse && item.warehouse.toLowerCase().includes(selectedoption2.value.toLowerCase()) &&
+                item.pstatus.props?.text && item.pstatus.props?.text.toLowerCase().includes(selectedStatus.value.toLowerCase()) &&
+                item.reference && item.reference.toLowerCase().includes(ref.toLowerCase())
         })
-        console.log(filterdata);
-
         setData(filterdata)
         handleClose()
     }

@@ -82,6 +82,7 @@ const Update_purchase = () => {
                     subtotal: getTaxonProduct(product.cost, product.tax, 1), // 1 for inital quantity
                 }]
             })
+            setcount((prev: number) => prev + 1)
             setsearchResults([])
         } catch (error) {
             console.error(error)
@@ -90,6 +91,7 @@ const Update_purchase = () => {
 
     const getSearchResults = useCallback(async (searchVal: string) => {
         try {
+
             if (!searchVal) setsearchResults([]) // clear searchResults, previous Timeout & Abort signal
             if (searchtimeout && abortController) clearTimeout(searchtimeout), abortController.abort()
             const controller = new AbortController()
@@ -107,7 +109,7 @@ const Update_purchase = () => {
             if (error.name === "AbortError") console.log("Fetch request was aborted")
             console.error(error)
         }
-    }, [])
+    }, [supplierOption])
 
     const columns = [
         { name: "Product", selector: (row: any) => row.product, sortable: true },
@@ -179,8 +181,6 @@ const Update_purchase = () => {
     }, [count])
     const registeration = async (formdata: object) => {
         try {
-            // console.log(formdata);
-
             const res = await DataService.put(`/purchase/${id} `, formdata)
             if (res.success) navigate('/dashboard/purchases')
             Notify(res) // Show API Response
@@ -203,7 +203,7 @@ const Update_purchase = () => {
             setValue('pruchaseDate', apiData.purchase_date.split('T')[0])
             setValue('orderTax', apiData.orderTax)
             setValue('discount', apiData.discount)
-            setValue('shipping', apiData.shipping)
+            setValue('shipping', apiData.shippment)
             setValue('note', apiData.note)
             setValue('supplierId', { value: apiData.supplier?._id, label: apiData.supplier?.name })
             setValue('warehouseId', { value: apiData.warehouse?._id, label: apiData.warehouse?.name })
@@ -212,7 +212,7 @@ const Update_purchase = () => {
             settotal(apiData.subtotal)
             setdiscount(apiData.discount)
             setordertax(apiData.orderTax)
-            setshippment(apiData.shipping)
+            setshippment(apiData.shippment)
             setsupplierOption({ value: apiData.supplier._id, label: apiData.supplier.name })
             setwarehouseOption({ value: apiData.warehouse._id, label: apiData.warehouse.name })
             setcalDiscount(parseFloat(getDiscount(apiData.discount, apiData.subtotal).toFixed(2)))

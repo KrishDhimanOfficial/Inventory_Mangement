@@ -27,6 +27,8 @@ import PurchaseReturn from "./pages/purchase/PurchaseReturn"
 import SalesReturn from "./pages/sales/SalesReturn"
 import PurchaseReport from "./pages/reports/PurchaseReport"
 import SalesReport from "./pages/reports/SalesReport"
+import PReturns from "./pages/purchase/PReturns"
+import UpdatePurchaseReturn from "./pages/purchase/UpdatePurchaseReturn"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -187,6 +189,38 @@ const App = () => {
           )
         },
         {
+          path: '/dashboard/purchase/returns',
+          element: (
+            <ProtectedRoute>
+              <PReturns />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/purchase-return/:purchaseId',
+          element: (
+            <ProtectedRoute>
+              <PurchaseReturn />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/update-purchase-return/:purchaseReturnId',
+          element: (
+            <ProtectedRoute>
+              <UpdatePurchaseReturn />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/sales-return/salesId',
+          element: (
+            <ProtectedRoute>
+              <SalesReturn />
+            </ProtectedRoute>
+          )
+        },
+        {
           path: '/dashboard/purchase-Details/:purchaseId',
           element: (
             <ProtectedRoute>
@@ -207,22 +241,6 @@ const App = () => {
           element: (
             <ProtectedRoute>
               <PaymentMethod />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: '/dashboard/purchase-return/:purchaseId',
-          element: (
-            <ProtectedRoute>
-              <PurchaseReturn />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: '/dashboard/sales-return/salesId',
-          element: (
-            <ProtectedRoute>
-              <SalesReturn />
             </ProtectedRoute>
           )
         },

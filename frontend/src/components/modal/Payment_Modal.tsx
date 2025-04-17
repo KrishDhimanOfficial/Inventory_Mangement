@@ -45,9 +45,9 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
 
     const handlepay = (amount: number) => {
         if (amount > data.payment_due) toast.warning('Amount is greater than due amount')
-        setbalanceamount(data.payment_due - amount)
-        setValue('paid', amount)
-        setValue('due', data.payment_due)
+        setbalanceamount(parseFloat(Big(data.payment_due).minus(amount).toFixed(2)))
+        setValue('paid', parseFloat(Big(amount).toFixed(2)))
+        setValue('due', parseFloat(Big(data.payment_due).toFixed(2)))
     }
 
     const updatePatchRequest = async (formdata: any) => {
@@ -70,13 +70,12 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
             const payment = { value: data.payment?._id, label: data.payment?.name }
             setmethod(payment)
             setValue('paid', data.payment_paid)
-            setValue('due', data.payment_due)
-            setValue('paymentId', payment || [])
+            setValue('due', parseFloat(Big(data.payment_due).toFixed(2)))
+            setValue('paymentId', payment || { value: 0, label: 'Select' })
             setbalanceamount(parseFloat((data.total - data.payment_paid).toFixed(2)))
         } else {
             // Reset when adding new
-            reset(defaultValues)
-            setmethod({ value: 0, label: '' })
+            setmethod({ value: 0, label: 'Select' })
         }
     }, [data, setValue, reset])
     return (
@@ -159,10 +158,10 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
                                     control={control}
                                     render={({ field }) => (
                                         <Input
+                                            {...field}
                                             type="number"
                                             className="input"
-                                            placeholder='0'
-                                            {...field}
+                                            onFocus={() => setValue('paid', parseInt(''))}
                                             onChange={(e: any) => handlepay(e.target.value)}
                                         />
                                     )}

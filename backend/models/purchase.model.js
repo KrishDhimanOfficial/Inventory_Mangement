@@ -62,6 +62,10 @@ const purchaseSchema = new mongoose.Schema({
         match: [/^[0-9]+$/, 'Invalid Due Payment!'],
         default: 0
     },
+    return_status: {
+        type: mongoose.Schema.Types.Boolean,
+        default: false
+    },
     payment_status: {
         type: mongoose.Schema.Types.String,
         enum: ['paid', 'unpaid', 'parital'],

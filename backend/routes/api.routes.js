@@ -4,7 +4,7 @@ import users_controllers from '../controllers/users.controller.js'
 import warehouse_controllers from '../controllers/warehouse.controller.js'
 import pro_controllers from '../controllers/product.controller.js'
 import handlemulterError from '../middleware/handleMulterError.js'
-import { logo, product } from '../middleware/multer.middleware.js'
+import { logo, product, upload } from '../middleware/multer.middleware.js'
 import reportController from '../controllers/reports.controller.js'
 import setting_controller from '../controllers/setting.controllers.js'
 
@@ -26,7 +26,7 @@ router.route('/supplier/:id?')
     .delete(users_controllers.deleteSupplierDetails)
 
 router.get('/all-customer', users_controllers.getcustomers)
-router.get('/all/customers-details', users_controllers.getAllCustomersDetails)
+router.get('/all/customers-details', users_controllers.getAllCustomersDetails) // that's not include walik-in-customer
 router.route('/customer/:id?')
     .post(users_controllers.createCustomer)
     .get(users_controllers.getSingleCustomer)
@@ -81,8 +81,13 @@ router.route('/purchase/:id?')
     .patch(pro_controllers.updatePurchasePayment)
     .delete(pro_controllers.deleteProductPurchase)
 
+router.get('/all-purchase-return-details', pro_controllers.getAllPurchaseReturnDetails)
 router.route('/purchase-return/:id?')
-    .post(pro_controllers.createProductReturn)
+    .all(upload.none())
+    .post(pro_controllers.createPurchaseReturn)
+    .get(pro_controllers.getSinglePurchaseReturnDetail)
+    .put(pro_controllers.updateProductPurchase)
+    .delete(pro_controllers.deletePurchaseReturn)
 
 router.get('/get/sales_details/:salesId', pro_controllers.getSalesDetail)
 router.get('/get-all-sales-details', pro_controllers.getAll_sales_Details)

@@ -8,11 +8,10 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router';
 import Big from 'big.js';
 
+const defaultValues = { purchaseReturn: [] }
 
-const defaultValues = { pruchaseDate: new Date(), orderTax: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
-
-const PurchaseReturn = () => {
-    const { purchaseId } = useParams()
+const UpdatePurchaseReturn = () => {
+    const { purchaseReturnId } = useParams()
     const navigate = useNavigate()
     const [count, setcount] = useState<number>(0)
     const [total, settotal] = useState<number>(0)
@@ -102,7 +101,7 @@ const PurchaseReturn = () => {
 
     const registeration = async (formdata: object) => {
         try {
-            const res = await DataService.post(`/purchase-return/${purchaseId}`, formdata)
+            const res = await DataService.post('/purchase-return', formdata)
             Notify(res)
             if (res.success) navigate('/dashboard/purchase/returns')
         } catch (error) {
@@ -110,38 +109,7 @@ const PurchaseReturn = () => {
         }
     }
 
-    useEffect(() => {
-        setValue('purchaseReturn', purchases)
-        setValue('purchaseId', purchaseId as string)
-        setValue('id', apiData?._id)
-    }, [purchases.length, count])
-    useEffect(() => { handleTotal() }, [count])
-    useEffect(() => { fetchData(`/purchase/${purchaseId}`) }, [])
-    useEffect(() => {
-        if (apiData?._id) {
-            setValue('orderTax', apiData.orderTax)
-            setValue('discount', apiData.discount)
-            setValue('shipping', apiData.shippment)
-            setorderTax(apiData.orderTax)
-            setdiscount(apiData.discount)
-            setshipping(apiData.shippment)
-            settotal(apiData.total)
-            setcaldiscount(parseFloat(getDiscount(apiData.discount, apiData.subtotal).toFixed(2)))
-            setcalorderTax(parseFloat(getorderTax(apiData.orderTax, apiData.subtotal).toFixed(2)))
-            setValue('pruchaseDate', apiData.purchase_date.split('T')[0])
-            setpurchases(apiData.orderItems?.map((pro: any) => ({
-                _id: pro.productId,
-                product: pro.name,
-                qtypurchased: `${pro.quantity} ${pro.unit}`,
-                stock: `${pro.stock} ${pro.unit}`,
-                qtyp: pro.quantity,
-                tax: pro.tax,
-                cost: pro.cost,
-                qtyreturn: 1, // Set Intial Product Qty Return
-                subtotal: getTaxonProduct(pro.cost, pro.tax, pro.quantity)
-            })))
-        }
-    }, [setValue, apiData])
+    useEffect(() => { fetchData(`/purchase-return/${purchaseReturnId}`) }, [])
     return (
         <>
             <Sec_Heading page={"All Purchase Return"} subtitle="Purchase Return" />
@@ -157,18 +125,11 @@ const PurchaseReturn = () => {
                                                 <label>Purchase Date </label>
                                                 <span className='importantField'>*</span>
                                             </div>
-                                            <div className={`inputForm${errors.pruchaseDate?.message ? 'inputError' : ''}`}>
-                                                <Controller
-                                                    name="pruchaseDate"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            type="date"
-                                                            className="input"
-                                                            disabled
-                                                        />
-                                                    )}
+                                            <div className={`inputForm`}>
+                                                <Input
+                                                    type="date"
+                                                    className="input"
+                                                    disabled
                                                 />
                                             </div>
                                         </div>
@@ -176,7 +137,7 @@ const PurchaseReturn = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Purchase </label>
+                                                <label>Purchase Return </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm`}>
@@ -184,7 +145,7 @@ const PurchaseReturn = () => {
                                                     type="text"
                                                     className="input"
                                                     disabled={true}
-                                                    value={purchaseId}
+                                                    value={purchaseReturnId}
                                                 />
                                             </div>
                                         </div>
@@ -234,19 +195,12 @@ const PurchaseReturn = () => {
                                         <div className="flex-column">
                                             <label>Order Tax (%)</label>
                                         </div>
-                                        <div className={`inputForm ${errors.orderTax?.message ? 'inputError' : ''} `}>
-                                            <Controller
-                                                name="orderTax"
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Input
-                                                        {...field}
-                                                        type="number"
-                                                        className="input"
-                                                        disabled
-                                                        value={orderTax}
-                                                    />
-                                                )}
+                                        <div className={`inputForm`}>
+                                            <Input
+                                                type="number"
+                                                className="input"
+                                                disabled
+                                                value={orderTax}
                                             />
                                         </div>
                                     </Col>
@@ -254,19 +208,12 @@ const PurchaseReturn = () => {
                                         <div className="flex-column">
                                             <label>Discount (%)</label>
                                         </div>
-                                        <div className={`inputForm ${errors.discount?.message ? 'inputError' : ''} `}>
-                                            <Controller
-                                                name="discount"
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Input
-                                                        {...field}
-                                                        type="number"
-                                                        className="input"
-                                                        disabled
-                                                        value={discount}
-                                                    />
-                                                )}
+                                        <div className={`inputForm`}>
+                                            <Input
+                                                type="number"
+                                                className="input"
+                                                disabled
+                                                value={discount}
                                             />
                                         </div>
                                     </Col>
@@ -274,19 +221,12 @@ const PurchaseReturn = () => {
                                         <div className="flex-column">
                                             <label>Shipping cost </label>
                                         </div>
-                                        <div className={`inputForm ${errors.shipping?.message ? 'inputError' : ''} `}>
-                                            <Controller
-                                                name="shipping"
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Input
-                                                        {...field}
-                                                        type="number"
-                                                        className="input"
-                                                        disabled
-                                                        value={shipping}
-                                                    />
-                                                )}
+                                        <div className={`inputForm`}>
+                                            <Input
+                                                type="number"
+                                                className="input"
+                                                disabled
+                                                value={shipping}
                                             />
                                         </div>
                                     </Col>
@@ -306,4 +246,4 @@ const PurchaseReturn = () => {
     )
 }
 
-export default PurchaseReturn
+export default UpdatePurchaseReturn

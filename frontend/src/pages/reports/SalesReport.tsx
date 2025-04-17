@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Sec_Heading, Section, Button, Loader, Input, Canvas } from '../../components/component';
+import React, { lazy, useCallback, useEffect, useState } from 'react';
+import { Sec_Heading, Section, Button, Loader, Input } from '../../components/component';
 import DataTable from 'react-data-table-component';
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
@@ -7,6 +7,8 @@ import { DropdownButton, Dropdown } from 'react-bootstrap';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import config from '../../config/config';
+
+const Canvas = lazy(() => import('../../components/micro_components/Canvas'))
 
 const SalesReport = () => {
     const [loading, setloading] = useState(false)
@@ -46,29 +48,23 @@ const SalesReport = () => {
 
     const getReport = async () => {
         try {
-            if (searchtimeout && abortController) clearTimeout(searchtimeout), abortController.abort()
-            const controller = new AbortController()
+            setloading(true)
+            const res = await DataService.get(`/get/sales/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
+                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+            })
+            const data = res?.map((item: any) => ({
+                date: item.date,
+                reference: item.salesId,
+                customer: item.customer?.name,
+                warehouse: item.warehouse?.name,
+                total: item.total,
+                paid: item.payment_paid,
+                due: item.payment_due,
+                pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
+            }))
+            setloading(false)
+            setdata(data)
 
-            const timeout = setTimeout(async () => {
-                const res = await DataService.get(`/get/sales/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
-                    Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-                }, controller.signal)
-                const data = res?.map((item: any) => ({
-                    date: item.date,
-                    reference: item.salesId,
-                    customer: item.customer?.name,
-                    warehouse: item.warehouse?.name,
-                    total: item.total,
-                    paid: item.payment_paid,
-                    due: item.payment_due,
-                    pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
-                }))
-                setloading(false)
-                setdata(data)
-            }, 800)
-
-            setAbortController(controller)
-            settimeout(timeout)
         } catch (error) {
             console.error(error)
         } finally {
@@ -146,4 +142,4 @@ const SalesReport = () => {
         </>
     )
 }
-export default SalesReport
+export default React.memo(SalesReport)
