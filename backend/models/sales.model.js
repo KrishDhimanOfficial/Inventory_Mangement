@@ -76,6 +76,10 @@ const salesSchema = new mongoose.Schema({
     selling_date: {
         type: mongoose.Schema.Types.Date,
     },
+    return_status: {
+        type: mongoose.Schema.Types.Boolean,
+        default: false
+    },
     walkInCustomerDetails: {
         type: {
             name: {

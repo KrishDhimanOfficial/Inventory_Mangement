@@ -3,12 +3,13 @@ import { Section, Sec_Heading, Button, Input } from '../../components/component'
 import { DataService, useFetchData, getTaxonProduct, handleqtytonotbeNegitive, getorderTax, getDiscount, Notify } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
 import { Row, Col, Table } from 'react-bootstrap'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, } from 'react-hook-form'
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router';
 import Big from 'big.js';
+import { toast } from 'react-toastify';
 
-const defaultValues = { purchaseReturn: [] }
+const defaultValues = { purchaseReturn: [], total: 0 }
 
 const UpdatePurchaseReturn = () => {
     const { purchaseReturnId } = useParams()
@@ -37,9 +38,23 @@ const UpdatePurchaseReturn = () => {
             selector: (row: any) => row.qtyreturn, sortable: true,
             cell: (row: any) => (
                 <div className="counter">
-                    <Button text='-' onclick={() => handleQuantityMinus(row._id)} />
+                    <Button text='-' onclick={() => {
+                        if (row.stock.split(' ')[0] == 0 || row.qtyreturn - 1 === 0) {
+                            toast.warn('Return Qty 0 will not be returned.')
+                        } else {
+                            handleQuantityMinus(row._id)
+                        }
+                    }} />
                     <div className="count">{row.qtyreturn}</div>
-                    <Button text='+' onclick={() => { handleQuantityPlus(row._id) }} />
+                    <Button text='+' onclick={() => {
+                        if (row.qtyreturn + 1 >= row.qtyp) {
+                            toast.warn('You cannot return more than the current stock')
+                        } else if (row.stock.split(' ')[0] == 0) {
+                            toast.warn('Return Qty 0 will not be returned.')
+                        } else {
+                            handleQuantityPlus(row._id)
+                        }
+                    }} />
                 </div>
             )
         },
@@ -97,11 +112,18 @@ const UpdatePurchaseReturn = () => {
                 .minus(caldiscount)
                 .toFixed(2)
         ))
+        setValue('total', parseFloat(
+            Big(grandTotal)
+                .plus(calorderTax)
+                .plus(shipping)
+                .minus(caldiscount)
+                .toFixed(2)
+        ))
     } // this will set sub total of purchase
 
     const registeration = async (formdata: object) => {
         try {
-            const res = await DataService.post('/purchase-return', formdata)
+            const res = await DataService.put(`/purchase-return/${purchaseReturnId}`, formdata)
             Notify(res)
             if (res.success) navigate('/dashboard/purchase/returns')
         } catch (error) {
@@ -109,7 +131,26 @@ const UpdatePurchaseReturn = () => {
         }
     }
 
+    useEffect(() => {
+        setValue('purchaseReturn', purchases)
+    }, [purchases.length, count])
+    useEffect(() => { handleTotal() }, [purchases.length, count])
     useEffect(() => { fetchData(`/purchase-return/${purchaseReturnId}`) }, [])
+    useEffect(() => {
+        if (apiData?._id) {
+            setpurchases(apiData.returnItems?.map((pro: any) => ({
+                _id: pro.productId,
+                product: pro.name,
+                qtypurchased: `${pro.quantity} ${pro.unit}`,
+                stock: `${pro.stock} ${pro.unit}`,
+                qtyp: pro.quantity,
+                tax: pro.tax,
+                cost: pro.cost,
+                qtyreturn: pro.returnqty, // Set Intial Product Qty Return
+                subtotal: getTaxonProduct(pro.cost, pro.tax, pro.quantity)
+            })))
+        }
+    }, [apiData])
     return (
         <>
             <Sec_Heading page={"All Purchase Return"} subtitle="Purchase Return" />

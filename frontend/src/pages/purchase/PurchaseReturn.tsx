@@ -7,9 +7,10 @@ import { useForm, Controller } from 'react-hook-form'
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router';
 import Big from 'big.js';
+import { toast } from 'react-toastify';
 
 
-const defaultValues = { pruchaseDate: new Date(), orderTax: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
+const defaultValues = { pruchaseDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
 
 const PurchaseReturn = () => {
     const { purchaseId } = useParams()
@@ -38,9 +39,21 @@ const PurchaseReturn = () => {
             selector: (row: any) => row.qtyreturn, sortable: true,
             cell: (row: any) => (
                 <div className="counter">
-                    <Button text='-' onclick={() => handleQuantityMinus(row._id)} />
+                    <Button text='-' onclick={() => {
+                        if (row.stock.split(' ')[0] == 0 || row.qtyreturn - 1 === 0) {
+                            toast.warn('Return Qty 0 will not be returned.')
+                        } else {
+                            handleQuantityMinus(row._id)
+                        }
+                    }} />
                     <div className="count">{row.qtyreturn}</div>
-                    <Button text='+' onclick={() => { handleQuantityPlus(row._id) }} />
+                    <Button text='+' onclick={() => {
+                        if (row.qtyreturn + 1 >= row.qtyp) {
+                            toast.warn('You cannot return more than the current stock')
+                        } else {
+                            handleQuantityPlus(row._id)
+                        }
+                    }} />
                 </div>
             )
         },
@@ -98,12 +111,23 @@ const PurchaseReturn = () => {
                 .minus(caldiscount)
                 .toFixed(2)
         ))
+        setValue('total', parseFloat(
+            Big(grandTotal)
+                .plus(calorderTax)
+                .plus(shipping)
+                .minus(caldiscount)
+                .toFixed(2)
+        ))
     } // this will set sub total of purchase
 
     const registeration = async (formdata: object) => {
         try {
             const res = await DataService.post(`/purchase-return/${purchaseId}`, formdata)
             Notify(res)
+            if (res.purchaseReturnId) {
+                toast.info('You Are Redirected to Edit Purchase Return.')
+                navigate(`/dashboard/update-purchase-return/${res.purchaseReturnId}`)
+            }
             if (res.success) navigate('/dashboard/purchase/returns')
         } catch (error) {
             console.error(error)
@@ -115,7 +139,7 @@ const PurchaseReturn = () => {
         setValue('purchaseId', purchaseId as string)
         setValue('id', apiData?._id)
     }, [purchases.length, count])
-    useEffect(() => { handleTotal() }, [count])
+    useEffect(() => { handleTotal() }, [purchases.length, count])
     useEffect(() => { fetchData(`/purchase/${purchaseId}`) }, [])
     useEffect(() => {
         if (apiData?._id) {
@@ -295,6 +319,7 @@ const PurchaseReturn = () => {
                                 <Button
                                     type='submit'
                                     className='button-submit w-25'
+                                    disabled={isSubmitting}
                                     text={isSubmitting ? 'Submiting...' : 'Submit'}
                                 />
                             </form>

@@ -29,6 +29,7 @@ import PurchaseReport from "./pages/reports/PurchaseReport"
 import SalesReport from "./pages/reports/SalesReport"
 import PReturns from "./pages/purchase/PReturns"
 import UpdatePurchaseReturn from "./pages/purchase/UpdatePurchaseReturn"
+import SReturns from "./pages/sales/SReturns"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -157,10 +158,26 @@ const App = () => {
           )
         },
         {
+          path: '/dashboard/sales-return/:salesId',
+          element: (
+            <ProtectedRoute>
+              <SalesReturn />
+            </ProtectedRoute>
+          )
+        },
+        {
           path: '/dashboard/sales_details/:salesId',
           element: (
             <ProtectedRoute>
               <Details name="Sales" info="Customer" />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/sales/returns',
+          element: (
+            <ProtectedRoute>
+              <SReturns />
             </ProtectedRoute>
           )
         },
@@ -189,6 +206,14 @@ const App = () => {
           )
         },
         {
+          path: '/dashboard/purchase-Details/:purchaseId',
+          element: (
+            <ProtectedRoute>
+              <Details name="Purchase" info="Supplier" />
+            </ProtectedRoute>
+          )
+        },
+        {
           path: '/dashboard/purchase/returns',
           element: (
             <ProtectedRoute>
@@ -209,22 +234,6 @@ const App = () => {
           element: (
             <ProtectedRoute>
               <UpdatePurchaseReturn />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: '/dashboard/sales-return/salesId',
-          element: (
-            <ProtectedRoute>
-              <SalesReturn />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: '/dashboard/purchase-Details/:purchaseId',
-          element: (
-            <ProtectedRoute>
-              <Details name="Purchase" info="Supplier" />
             </ProtectedRoute>
           )
         },

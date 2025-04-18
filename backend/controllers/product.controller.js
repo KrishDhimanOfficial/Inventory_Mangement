@@ -13,6 +13,7 @@ import userModel from '../models/user.model.js';
 import { getUser } from '../services/auth.js';
 import paymentMethodModel from '../models/paymentMethod.model.js';
 import purchasereturnModel from '../models/purchasereturn.model.js';
+import salesreturnModel from '../models/salesreturn.model.js';
 const ObjectId = mongoose.Types.ObjectId;
 const delay = 100;
 
@@ -851,6 +852,7 @@ const pro_controllers = {
                         paymentmethodId: { $first: "$paymentmethodId" },
                         purchaseId: { $first: "$purchaseId" },
                         payment_paid: { $first: "$payment_paid" },
+                        payment_status: { $first: "$payment_status" },
                         payment_due: { $first: "$payment_due" },
                         discount: { $first: "$discount" },
                         total: { $first: "$total" },
@@ -972,15 +974,12 @@ const pro_controllers = {
     },
     updatePurchasePayment: async (req, res) => {
         try {
-            const { paid, due, paymentId } = req.body;
+            const { paid, due, paymentId, pStatus } = req.body;
             const record = await purchaseModel.findById({ _id: req.params.id })
-            console.log(parseFloat((record.payment_due - paid).toFixed(2)));
 
             const response = await purchaseModel.findByIdAndUpdate({ _id: req.params.id },
                 {
-                    payment_status: record.payment_paid > 0
-                        ? record.payment_due === 0 ? 'paid' : 'parital'
-                        : 'unpaid',
+                    payment_status: pStatus.value,
                     $inc: { payment_paid: paid },
                     payment_due: parseFloat((record.payment_due - paid).toFixed(2)),
                     paymentmethodId: new ObjectId(paymentId.value)
@@ -1227,17 +1226,7 @@ const pro_controllers = {
 
             const response = await salesModel.create(dataTobeCreate)
             if (!response) return res.json({ error: 'An error occurred. Please try again.' })
-            // await productModel.findByIdAndUpdate({ _id: pro.productId }, {
-            //     $set: { // set product stock 
-            //         stock: {
-            //             $cond: {
-            //                 if: { $gte: ["$stock", 0] },
-            //                 then: { $subtract: ["$stock", item.quantity] },
-            //                 else: "$stock"
-            //             }
-            //         }
-            //     }
-            // })
+
             return res.status(200).json({ success: 'Item added successfully.' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
@@ -1266,6 +1255,15 @@ const pro_controllers = {
                     $unwind: "$orderItems.product"
                 },
                 {
+                    $lookup: {
+                        from: "units",
+                        localField: "orderItems.product.unitId",
+                        foreignField: "_id",
+                        as: "unit"
+                    }
+                },
+                { $unwind: '$unit' },
+                {
                     $group: {
                         _id: "$_id",
                         orderItems: {
@@ -1276,6 +1274,7 @@ const pro_controllers = {
                                 tax: "$orderItems.product.tax",
                                 quantity: "$orderItems.quantity",
                                 stock: "$orderItems.product.stock",
+                                unit: "$unit.shortName",
                             }
                         },
                         customerId: { $first: "$customerId" },
@@ -1284,6 +1283,7 @@ const pro_controllers = {
                         paymentmethodId: { $first: "$paymentmethodId" },
                         payment_paid: { $first: "$payment_paid" },
                         payment_due: { $first: "$payment_due" },
+                        payment_status: { $first: "$payment_status" },
                         discount: { $first: "$discount" },
                         total: { $first: "$total" },
                         subtotal: { $first: "$subtotal" },
@@ -1406,16 +1406,15 @@ const pro_controllers = {
     },
     updateSalesPayment: async (req, res) => {
         try {
+            const { paid, due, paymentId, pStatus } = req.body;
+
             const record = await salesModel.findById({ _id: req.params.id })
+
             const response = await salesModel.findByIdAndUpdate({ _id: req.params.id },
                 {
-                    payment_status: record.payment_paid > 0
-                        ? record.payment_paid === record.total ? 'paid' : 'parital'
-                        : 'unpaid',
-                    $inc: {
-                        payment_paid: paid,
-                        payment_due: -paid
-                    },
+                    payment_status: pStatus.value,
+                    $inc: { payment_paid: paid },
+                    payment_due: parseFloat((record.payment_due - paid).toFixed(2)),
                     paymentmethodId: new ObjectId(paymentId.value)
                 },
                 { new: true, runValidators: true }
@@ -1569,8 +1568,6 @@ const pro_controllers = {
                 },
                 { $sort: { createdAt: -1 } }
             ])
-            console.log(response);
-
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAllPurchaseReturnDetails : ' + error.message)
@@ -1579,40 +1576,31 @@ const pro_controllers = {
     createPurchaseReturn: async (req, res) => {
         try {
             let code = '';
-            let response;
             for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
-            const { purchaseId, purchaseReturn, id } = req.body;
+            const { purchaseId, purchaseReturn, id, total } = req.body;
             const transformedPurchaseReturn = purchaseReturn.map(pro => ({ id: new ObjectId(pro._id), returnqty: pro.qtyreturn }))
 
             const checkExistence = await purchasereturnModel.findOne({ purchaseId })
-            if (checkExistence) {
-                response = await purchasereturnModel.findOneAndUpdate(
-                    { purchaseId }, {
-                    purchaseReturn: purchaseReturn.map(pro => ({
-                        productId: new ObjectId(pro._id),
-                        returnqty: pro.qtyreturn,
-                    }))
-                })
-            } else {
-                response = await purchasereturnModel.create({
-                    purchaseReturnId: `PR_${code}`,
-                    purchaseId,
-                    purchaseobjectId: new ObjectId(id),
-                    purchaseReturn: purchaseReturn.map(pro => ({
-                        productId: new ObjectId(pro._id),
-                        returnqty: pro.qtyreturn,
-                    }))
-                })
-            }
+            if (checkExistence?._id) return res.status(200).json({ purchaseReturnId: `${checkExistence.purchaseReturnId}` })
 
-            response
-                ? transformedPurchaseReturn.map(async (pro) => {
-                    await productModel.findByIdAndUpdate(
-                        { _id: pro.id },
-                        { $inc: { stock: -pro.returnqty } }
-                    )
-                })
-                : res.json({ error: 'Could Not Process Your Request.' })
+            const response = await purchasereturnModel.create({
+                purchaseReturnId: `PR_${code}`,
+                purchaseId, total,
+                purchaseobjectId: new ObjectId(id),
+                purchaseReturn: purchaseReturn.map(pro => ({
+                    productId: new ObjectId(pro._id),
+                    returnqty: pro.qtyreturn,
+                    qty: pro.qtyp
+                }))
+            })
+
+            if (!response) return res.json({ error: 'Could Not Process Your Request.' })
+            else transformedPurchaseReturn.map(async (pro) => {
+                await productModel.findByIdAndUpdate(
+                    { _id: pro.id },
+                    { $inc: { stock: -pro.returnqty } },
+                )
+            })
 
             await purchaseModel.findByIdAndUpdate({ _id: id }, { return_status: true })
             return res.status(200).json({ success: 'Added Purchase Return.' })
@@ -1634,18 +1622,41 @@ const pro_controllers = {
                         from: 'products',
                         localField: 'purchaseReturn.productId',
                         foreignField: '_id',
-                        as: 'product'
+                        as: 'purchaseReturn.product'
                     }
                 },
-
-                // {
-                //     $lookup: {
-                //         from: 'purchases',
-                //         localField: 'purchaseobjectId',
-                //         foreignField: '_id',
-                //         as: 'purchase'
-                //     }
-                // }
+                { $unwind: '$purchaseReturn.product' },
+                {
+                    $lookup: {
+                        from: "units",
+                        localField: "purchaseReturn.product.unitId",
+                        foreignField: "_id",
+                        as: "unit"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$unit',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        returnItems: {
+                            $push: {
+                                productId: "$purchaseReturn.product._id",
+                                unit: "$unit.shortName",
+                                name: "$purchaseReturn.product.title",
+                                cost: "$purchaseReturn.product.cost",
+                                tax: "$purchaseReturn.product.tax",
+                                quantity: "$purchaseReturn.qty",
+                                stock: "$purchaseReturn.product.stock",
+                                returnqty: "$purchaseReturn.returnqty",
+                            }
+                        },
+                    }
+                }
             ])
             return res.status(200).json(response[0])
         } catch (error) {
@@ -1654,9 +1665,42 @@ const pro_controllers = {
     },
     updatePurchaseReturn: async (req, res) => {
         try {
-            const response = await model;
-            if (!response) return res.json({ error: 'message!' })
-            return res.status(200).json({ success: 'message' })
+            const { purchaseReturn, total } = req.body;
+            const prevObject = await purchasereturnModel.findOne({ purchaseReturnId: req.params.id })
+            const response = await purchasereturnModel.findOneAndUpdate({ purchaseReturnId: req.params.id },
+                {
+                    total,
+                    purchaseReturn: purchaseReturn.map(pro => ({
+                        productId: new ObjectId(pro._id),
+                        returnqty: pro.qtyreturn,
+                        qty: pro.qtyp
+                    }))
+                }, { runValidators: true }
+            )
+
+            if (!response) return res.json({ error: 'Could Not Process Your Request.' })
+            else purchaseReturn.forEach(async (currentItem) => {
+                const matchingPrev = prevObject.purchaseReturn.find(
+                    item => item.productId.toString() === currentItem._id.toString()
+                )
+
+                if (matchingPrev) {
+                    const diff = Math.abs(matchingPrev.returnqty - currentItem.qtyreturn);
+                    const comparsion = matchingPrev.returnqty < currentItem.qtyreturn;
+                    if (comparsion) {
+                        await productModel.findByIdAndUpdate(
+                            { _id: currentItem._id },
+                            { $inc: { stock: -diff } },
+                        )
+                    } else {
+                        await productModel.findByIdAndUpdate(
+                            { _id: currentItem._id },
+                            { $inc: { stock: diff } },
+                        )
+                    }
+                }
+            })
+            return res.status(200).json({ success: 'Updated Successfully.' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updatePurchaseReturn : ' + error.message)
@@ -1679,6 +1723,170 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted Successfully.' })
         } catch (error) {
             console.log('deleteProductReturn : ' + error.message)
+        }
+    },
+    getAllSalesReturnDetails: async (req, res) => {
+        try {
+            const user = getUser(req.headers['authorization'].split(' ')[1])
+            const response = await userModel.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(user?.id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'sales',
+                        localField: 'warehousesId',
+                        foreignField: 'warehouseId',
+                        as: 'sales'
+                    }
+                },
+                { $unwind: '$sales' },
+                {
+                    $lookup: {
+                        from: 'salesreturns',
+                        localField: 'sales._id',
+                        foreignField: 'salesobjectId',
+                        as: 'salesreturns'
+                    }
+                },
+                { $unwind: '$salesreturns' },
+                {
+                    $lookup: {
+                        from: 'customers',
+                        localField: 'sales.customerId',
+                        foreignField: '_id',
+                        as: 'customer'
+                    }
+                },
+                { $unwind: '$customer' },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'sales.warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                { $unwind: '$warehouse' },
+                {
+                    $addFields: {
+                        date: {
+                            $dateToString: {
+                                format: "%Y-%m-%d",
+                                date: "$salesreturns.createdAt"
+                            }
+                        },
+
+                    }
+                },
+                {
+                    $project: {
+                        'customer.name': 1,
+                        'warehouse.name': 1,
+                        "sales.payment_paid": 1,
+                        "sales.purchaseId": 1,
+                        "sales.payment_due": 1,
+                        "sales.payment_status": 1,
+                        "sales.total": 1,
+                        date: 1,
+                        salesId: 1,
+                        'salesreturns.salesReturnId': 1,
+                        'salesreturns._id': 1,
+                    }
+                },
+                { $sort: { createdAt: -1 } }
+            ])
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('getAllSalesReturnDetails : ' + error.message)
+        }
+    },
+    createSalesReturn: async (req, res) => {
+        try {
+            let code = '';
+            for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
+            const { salesId, salesReturn, id, total } = req.body;
+            const transformedSalesReturn = salesReturn.map(pro => ({ id: new ObjectId(pro._id), returnqty: pro.qtyreturn }))
+
+            const checkExistence = await salesreturnModel.findOne({ salesId })
+            if (checkExistence?._id) return res.status(200).json({ salesReturnId: `${checkExistence.salesReturnId}` })
+
+            const response = await salesreturnModel.create({
+                salesReturnId: `SR_${code}`,
+                salesId, total,
+                salesobjectId: new ObjectId(id),
+                salesReturn: salesReturn.map(pro => ({
+                    productId: new ObjectId(pro._id),
+                    returnqty: pro.qtyreturn,
+                    qty: pro.qtys
+                }))
+            })
+
+            if (!response) return res.json({ error: 'unable to handle your request.' })
+            else transformedSalesReturn.map(async (pro) => {
+                await productModel.findByIdAndUpdate(
+                    { _id: pro.id },
+                    { $inc: { stock: pro.returnqty } },
+                )
+            })
+
+            await salesModel.findByIdAndUpdate({ _id: id }, { return_status: true })
+            return res.status(200).json({ success: 'Added Successfully.' })
+        } catch (error) {
+            console.log('createSalesReturn : ' + error.message)
+        }
+    },
+    getSingleSalesReturnDetail: async (req, res) => {
+        try {
+            const response = await salesreturnModel.aggregate([
+                { $match: { salesReturnId: req.params.id } },
+                { $unwind: '$salesReturn' },
+                {
+                    $lookup: {
+                        from: 'products',
+                        localField: 'salesReturn.productId',
+                        foreignField: '_id',
+                        as: 'salesReturn.product'
+                    }
+                },
+                { $unwind: '$salesReturn.product' },
+                {
+                    $lookup: {
+                        from: "units",
+                        localField: "salesReturn.product.unitId",
+                        foreignField: "_id",
+                        as: "unit"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$unit',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        returnItems: {
+                            $push: {
+                                productId: "$salesReturn.product._id",
+                                unit: "$unit.shortName",
+                                name: "$salesReturn.product.title",
+                                cost: "$salesReturn.product.cost",
+                                tax: "$salesReturn.product.tax",
+                                quantity: "$salesReturn.qty",
+                                stock: "$salesReturn.product.stock",
+                                returnqty: "$salesReturn.returnqty",
+                            }
+                        },
+                    }
+                }
+            ])
+            return res.status(200).json(response[0])
+        } catch (error) {
+            console.log('getSingleSalesReturnDetail : ' + error.message)
         }
     },
 }

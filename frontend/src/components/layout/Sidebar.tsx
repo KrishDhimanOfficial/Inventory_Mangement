@@ -182,7 +182,7 @@ const Sidebar = () => {
                             user.permissions?.sales.view && (
                                 <Accordion.Item eventKey="2">
                                     <Accordion.Header >
-                                        <Link to="#" className="nav-link">
+                                        <Link to="/dashboard/sales/returns" className="nav-link">
                                             <i className="fa-solid fa-arrow-right"></i>
                                             <p>Sales Return</p>
                                         </Link>

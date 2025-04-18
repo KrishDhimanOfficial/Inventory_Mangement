@@ -1,17 +1,19 @@
 import mongoose from "../config/DB.js"
 
-const purchaseReturnSchema = new mongoose.Schema({
-    purchaseReturnId: { type: String, required: true },
-    purchaseId: {
-        type: mongoose.Schema.Types.String,
+const salesReturnSchema = new mongoose.Schema({
+    salesReturnId: {
+        type: String, required: true
     },
-    purchaseobjectId: {
+    salesId: {
+        type: mongoose.Schema.Types.String
+    },
+    salesobjectId: {
         type: mongoose.Schema.Types.ObjectId,
     },
     total: {
         type: mongoose.Schema.Types.Number
     },
-    purchaseReturn: {
+    salesReturn: {
         type: [
             {
                 returnqty: { type: mongoose.Schema.Types.Number },
@@ -26,4 +28,4 @@ const purchaseReturnSchema = new mongoose.Schema({
 })
 
 
-export default mongoose.model('purchasereturn', purchaseReturnSchema)
+export default mongoose.model('salesreturn', salesReturnSchema)

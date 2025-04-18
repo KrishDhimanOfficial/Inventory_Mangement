@@ -20,13 +20,16 @@ interface Modal {
 const validationSchema = yup.object().shape({
     paid: yup.number().required('required.'),
     paymentId: yup.object().required('required.'),
-    due: yup.number()
+    due: yup.number(),
+    pStatus: yup.object().required('required!')
 })
-const defaultValues = { paid: 0, due: 0, paymentId: '' }
+const pStatus = [{ label: 'paid', value: 'paid' }, { label: 'parital', value: 'parital' }, { label: 'unpaid', value: 'unpaid' }]
+const defaultValues = { paid: 0, due: 0, paymentId: '', pStatus: '' }
 
 const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable }) => {
     const [payment_methods, setpayment_methods] = useState([])
     const [balanceamount, setbalanceamount] = useState(0)
+    const [statusOption, setstatusOption] = useState({ label: 'Select ', value: 0 })
     const [method, setmethod] = useState({ label: 'Select ', value: 0 })
     const { data }: { data: any } = useSelector((state: any) => state.singleData)
     const { control, reset, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
@@ -57,7 +60,7 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
             } else {
                 const res = await DataService.patch(`${endApi}/${data._id}`, formdata)
                 Notify(res) // Show API Response
-                if (res.success) refreshTable(), handleClose()
+                if (res.success) reset(), refreshTable(), handleClose()
             }
         } catch (error) {
             console.error(error)
@@ -69,13 +72,11 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
         if (data?._id) {
             const payment = { value: data.payment?._id, label: data.payment?.name }
             setmethod(payment)
-            setValue('paid', data.payment_paid)
-            setValue('due', parseFloat(Big(data.payment_due).toFixed(2)))
+            setValue('due', parseFloat(Big(data.payment_due).plus(0).toFixed(2)))
             setValue('paymentId', payment || { value: 0, label: 'Select' })
+            setValue('pStatus', { label: data.payment_status, value: data.payment_status })
+            setstatusOption({ label: data.payment_status, value: data.payment_status })
             setbalanceamount(parseFloat((data.total - data.payment_paid).toFixed(2)))
-        } else {
-            // Reset when adding new
-            setmethod({ value: 0, label: 'Select' })
         }
     }, [data, setValue, reset])
     return (
@@ -149,7 +150,7 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
                     <Row className='mb-3'>
                         <Col md='4'>
                             <div className="flex-column">
-                                <label>Received Amount </label>
+                                <label>Enter Amount </label>
                                 <span className='importantField'>*</span>
                             </div>
                             <div className={`inputForm ${errors.paid?.message ? 'inputError' : ''}`}>
@@ -161,7 +162,7 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
                                             {...field}
                                             type="number"
                                             className="input"
-                                            onFocus={() => setValue('paid', parseInt(''))}
+                                            onFocus={() => setValue('paid', 0)}
                                             onChange={(e: any) => handlepay(e.target.value)}
                                         />
                                     )}
@@ -170,7 +171,7 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
                         </Col>
                         <Col md='4'>
                             <div className="flex-column">
-                                <label>Paying Amount </label>
+                                <label>Due Amount</label>
                             </div>
                             <div className={`inputForm`}>
                                 {data.payment_due}
@@ -182,6 +183,45 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
                             </div>
                             <div className={`inputForm`}>
                                 {balanceamount}
+                            </div>
+                        </Col>
+                    </Row>
+                    <Row className='mb-3'>
+                        <Col md='4'>
+                            <div className="flex-column">
+                                <label>Payment Status </label>
+                                <span className='importantField'>*</span>
+                            </div>
+                            <div className={`inputForm ${errors.pStatus?.message ? 'inputError' : ''}`}>
+                                <Controller
+                                    name="pStatus"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            {...field}
+                                            options={pStatus}
+                                            value={field.value || statusOption}
+                                            isClearable
+                                            isSearchable
+                                            className='select'
+                                            isRtl={false}
+                                            placeholder='Select payment'
+                                            onChange={(selectedoption: any) => {
+                                                field.onChange(selectedoption)
+                                                setstatusOption(selectedoption)
+                                            }}
+                                            menuPortalTarget={document.body}
+                                            styles={{
+                                                menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+                                                control: (base: any) => ({
+                                                    ...base,
+                                                    boxShadow: 'none',
+                                                    border: 'none',
+                                                }),
+                                            }}
+                                        />
+                                    )}
+                                />
                             </div>
                         </Col>
                     </Row>

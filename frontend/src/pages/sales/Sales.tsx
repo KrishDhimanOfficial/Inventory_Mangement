@@ -38,7 +38,8 @@ const Sales = () => {
                     detailsURL={`/dashboard/sales_details/${row.reference}`}
                     updatepermission={permission.sales?.edit}
                     deletepermission={permission.sales?.delete}
-                    paymentbtnShow={row.pstatus === 'paid' ? false : true}
+                    returnURL={`/dashboard/sales-return/${row.reference}`}
+                    paymentbtnShow={row.pstatus}
                     paymentModal={() => setpaymentodal(!paymentodal)}
                 />
             )
