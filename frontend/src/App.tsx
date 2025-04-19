@@ -30,6 +30,8 @@ import SalesReport from "./pages/reports/SalesReport"
 import PReturns from "./pages/purchase/PReturns"
 import UpdatePurchaseReturn from "./pages/purchase/UpdatePurchaseReturn"
 import SReturns from "./pages/sales/SReturns"
+import UpdateSalesReturn from "./pages/sales/updateSalesReturn"
+import Error from "./components/layout/Error"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -139,7 +141,8 @@ const App = () => {
             <ProtectedRoute>
               <Sales />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/create/sales',
@@ -147,7 +150,8 @@ const App = () => {
             <ProtectedRoute>
               <SalesOrderForm />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/sales/:id',
@@ -155,7 +159,8 @@ const App = () => {
             <ProtectedRoute>
               <UpdateSales />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/sales-return/:salesId',
@@ -163,7 +168,8 @@ const App = () => {
             <ProtectedRoute>
               <SalesReturn />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/sales_details/:salesId',
@@ -179,7 +185,17 @@ const App = () => {
             <ProtectedRoute>
               <SReturns />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
+        },
+        {
+          path: '/dashboard/update-sales-return/:salesReturnId',
+          element: (
+            <ProtectedRoute>
+              <UpdateSalesReturn />
+            </ProtectedRoute>
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/purchases',
@@ -187,7 +203,8 @@ const App = () => {
             <ProtectedRoute>
               <Purchases />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/create/purchase',
@@ -195,7 +212,8 @@ const App = () => {
             <ProtectedRoute>
               <Purchase />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/purchase/:id',
@@ -203,7 +221,8 @@ const App = () => {
             <ProtectedRoute>
               <Update_purchase />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/purchase-Details/:purchaseId',
@@ -211,7 +230,7 @@ const App = () => {
             <ProtectedRoute>
               <Details name="Purchase" info="Supplier" />
             </ProtectedRoute>
-          )
+          ),
         },
         {
           path: '/dashboard/purchase/returns',
@@ -219,7 +238,8 @@ const App = () => {
             <ProtectedRoute>
               <PReturns />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/purchase-return/:purchaseId',
@@ -227,7 +247,8 @@ const App = () => {
             <ProtectedRoute>
               <PurchaseReturn />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/update-purchase-return/:purchaseReturnId',
@@ -235,7 +256,8 @@ const App = () => {
             <ProtectedRoute>
               <UpdatePurchaseReturn />
             </ProtectedRoute>
-          )
+          ),
+          errorElement: <Error />// error page
         },
         {
           path: '/dashboard/system_setting',

@@ -159,9 +159,16 @@ const SalesOrderForm = () => {
         {
             name: "Qty", cell: (row: any) => (
                 <div className="counter">
-                    <Button text='-' onclick={() => handleQuantityMinus(row._id)} />
+                    <Button text='-' onclick={() => {
+                        if (row.qty > 0) handleQuantityMinus(row._id)
+                        else toast.warn('Qty Less than Current Stock.')
+                    }} />
+
                     <div className="count">{row.qty}</div>
-                    <Button text='+' onclick={() => handleQuantityPlus(row._id)} />
+                    <Button text='+' onclick={() => {
+                        if (row.qty > row.current_stock - 1) toast.warn('Qty greater than Current Stock.')
+                        else handleQuantityPlus(row._id)
+                    }} />
                 </div>
             )
         },

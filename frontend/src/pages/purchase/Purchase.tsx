@@ -143,8 +143,14 @@ const Purchase = () => {
         let grandTotal = 0;
         searchedProducts.forEach((pro: any) => grandTotal += pro.subtotal)
         settotal(parseFloat(grandTotal.toFixed(2)))
-        setValue('subtotal', total)
-        setValue('total', total + calOrdertax + shippment - calDiscount)
+        setValue('subtotal', parseFloat(Big(total).toFixed(2)))
+        setValue('total', parseFloat(
+            Big(total || 0)
+                .plus(calOrdertax || 0)
+                .plus(shippment || 0)
+                .minus(calDiscount || 0)
+                .toFixed(2)
+        ))
     } // this will set grand total of purchase
 
     const columns = [
@@ -152,11 +158,20 @@ const Purchase = () => {
         { name: "Cost", selector: (row: any) => row.cost, sortable: true },
         { name: "Current Stock", selector: (row: any) => row.current_stock, sortable: true },
         {
-            name: "Qty", cell: (row: any) => (
+            name: "Qty",
+            selector: (row: any) => row.qty,
+            cell: (row: any) => (
                 <div className="counter">
-                    <Button text='-' onclick={() => handleQuantityMinus(row._id)} />
+                    <Button text='-' onclick={() => {
+                        if (row.qty - 1 > 0) handleQuantityMinus(row._id)
+                        else toast.warn('Qty Less than Current Stock.')
+                    }} />
+
                     <div className="count">{row.qty}</div>
-                    <Button text='+' onclick={() => handleQuantityPlus(row._id)} />
+                    <Button text='+' onclick={() => {
+                        if (row.qty > row.current_stock - 1) toast.warn('Qty greater than Current Stock.')
+                        else handleQuantityPlus(row._id)
+                    }} />
                 </div>
             )
         },
@@ -180,7 +195,6 @@ const Purchase = () => {
                         onclick={() => {
                             setsearchedProducts(searchedProducts.filter((item: any) => item._id != row._id))
                             settotal((prev: number) => parseFloat(Big(prev).minus(row.subtotal).toFixed(2)))
-                            // setordertax(0), setdiscount(0), settotal(0)
                         }}
                     />
                 </div>

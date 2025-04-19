@@ -2,7 +2,7 @@ import { lazy, useEffect, useState } from 'react'
 import { Section, Sec_Heading, Loader, Button, Static_Modal, DropDownMenu } from '../../components/component'
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import config from '../../config/config';
 const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
@@ -39,6 +39,7 @@ const Purchases = () => {
                     updatepermission={permission.purchase?.edit}
                     deletepermission={permission.purchase?.delete}
                     paymentbtnShow={row.pstatus}
+                    return_status={row.return_status}
                     paymentModal={() => setpaymentodal(!paymentodal)}
                 />
             )
@@ -73,6 +74,7 @@ const Purchases = () => {
                 total: item.total,
                 paid: item.payment_paid,
                 due: item.payment_due,
+                return_status: item.return_status,
                 pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />
             }))
             setdata(purchases), setloading(false)

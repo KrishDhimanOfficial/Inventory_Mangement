@@ -27,21 +27,19 @@ const SalesReturn = () => {
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
     })
-    console.log(apiData);
 
     const columns = [
         { name: "Product", selector: (row: any) => row.product, sortable: true },
         { name: "Net Unit Price", selector: (row: any) => row.price, sortable: true },
         { name: "Qty Sold", selector: (row: any) => row.qtysold, sortable: true },
-        { name: "Current Stock", selector: (row: any) => row.stock, sortable: true },
         {
             name: "Qty Return",
             selector: (row: any) => row.qtyreturn, sortable: true,
             cell: (row: any) => (
                 <div className="counter">
                     <Button text='-' onclick={() => {
-                        if (row.stock.split(' ')[0] == 0 || row.qtyreturn - 1 === 0) {
-                            toast.warn('Return Qty 0 will not be returned.')
+                        if (row.qtys == 0 || row.qtyreturn - 1 === 0) {
+                            toast.warn('Return Qty 0 will not be Backed.')
                         } else {
                             handleQuantityMinus(row._id)
                         }
@@ -49,7 +47,7 @@ const SalesReturn = () => {
                     <div className="count">{row.qtyreturn}</div>
                     <Button text='+' onclick={() => {
                         if (row.qtyreturn + 1 >= row.qtys) {
-                            toast.warn('You cannot return more than the current stock')
+                            toast.warn('You cannot return more than the Sold Quantity.')
                         } else {
                             handleQuantityPlus(row._id)
                         }
@@ -118,7 +116,7 @@ const SalesReturn = () => {
                 .minus(caldiscount)
                 .toFixed(2)
         ))
-    } // this will set sub total of purchase
+    } // this will set sub total of sales
 
     const registeration = async (formdata: object) => {
         try {
@@ -142,9 +140,6 @@ const SalesReturn = () => {
     useEffect(() => { fetchData(`/sales/${salesId}`) }, [])
     useEffect(() => {
         if (apiData?._id) {
-            setValue('orderTax', apiData.orderTax)
-            setValue('discount', apiData.discount)
-            setValue('shipping', apiData.shippment)
             setorderTax(apiData.orderTax)
             setdiscount(apiData.discount)
             setshipping(apiData.shippment)
@@ -156,7 +151,6 @@ const SalesReturn = () => {
                 _id: pro.productId,
                 product: pro.name,
                 qtysold: `${pro.quantity} ${pro.unit}`,
-                stock: `${pro.stock} ${pro.unit}`,
                 qtys: pro.quantity,
                 tax: pro.tax,
                 price: pro.price,
@@ -167,7 +161,7 @@ const SalesReturn = () => {
     }, [apiData])
     return (
         <>
-            <Sec_Heading page={"All Sales Return"} subtitle="Sales Return" />
+            <Sec_Heading page={"Sales Return"} subtitle="Sales Return" />
             <Section>
                 <div className="col-12">
                     <div className="card">

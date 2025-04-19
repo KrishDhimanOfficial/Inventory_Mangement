@@ -1,19 +1,20 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Section, Sec_Heading, Button, Input } from '../../components/component'
-import { DataService, useFetchData, getTaxonProduct, handleqtytonotbeNegitive, getorderTax, getDiscount, Notify } from '../../hooks/hook'
-import DataTable from 'react-data-table-component'
-import { Row, Col, Table } from 'react-bootstrap'
-import { useForm, Controller } from 'react-hook-form'
-import { useSelector } from 'react-redux';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Sec_Heading, Section, Input, Button } from '../../components/component'
+import { Row, Col, Table } from 'react-bootstrap';
+import { Controller, useForm } from 'react-hook-form';
+import { useFetchData, DataService, Notify, getTaxonProduct, handleqtytonotbeNegitive, getorderTax, getDiscount } from '../../hooks/hook';
 import { useNavigate, useParams } from 'react-router';
+import { useSelector } from 'react-redux';
+import DataTable from 'react-data-table-component';
 import Big from 'big.js';
 import { toast } from 'react-toastify';
 
-const defaultValues = { pruchaseDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
+const defaultValues = { salesDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, salesReturn: [], salesId: '', id: '' }
 
-const UpdatePurchaseReturn = () => {
-    const { purchaseReturnId } = useParams()
+const UpdateSalesReturn = () => {
+    const { salesReturnId } = useParams()
     const navigate = useNavigate()
+    const [sales, setsales] = useState([])
     const [count, setcount] = useState<number>(0)
     const [total, settotal] = useState<number>(0)
     const [orderTax, setorderTax] = useState<number>(0)
@@ -21,36 +22,32 @@ const UpdatePurchaseReturn = () => {
     const [shipping, setshipping] = useState<number>(0)
     const [calorderTax, setcalorderTax] = useState<number>(0)
     const [caldiscount, setcaldiscount] = useState<number>(0)
-    const [purchases, setpurchases] = useState([])
     const { settings } = useSelector((state: any) => state.singleData)
     const { apiData, fetchData }: { apiData: any, fetchData: any } = useFetchData({})
-    const { control, setValue, handleSubmit, formState: { isSubmitting } } = useForm({
+    const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,
     })
 
     const columns = [
         { name: "Product", selector: (row: any) => row.product, sortable: true },
-        { name: "Net Unit Cost", selector: (row: any) => row.cost, sortable: true },
-        { name: "Qty Purchased", selector: (row: any) => row.qtypurchased, sortable: true },
-        { name: "Current Stock", selector: (row: any) => row.stock, sortable: true },
+        { name: "Net Unit Price", selector: (row: any) => row.price, sortable: true },
+        { name: "Qty Sold", selector: (row: any) => row.qtysold, sortable: true },
         {
             name: "Qty Return",
             selector: (row: any) => row.qtyreturn, sortable: true,
             cell: (row: any) => (
                 <div className="counter">
                     <Button text='-' onclick={() => {
-                        if (row.stock.split(' ')[0] == 0 || row.qtyreturn - 1 <= 0) {
-                            toast.warn('Return Qty 0 will not be returned.')
+                        if (row.qtys == 0 || row.qtyreturn - 1 === 0) {
+                            toast.warn('Return Qty 0 will not be Backed.')
                         } else {
                             handleQuantityMinus(row._id)
                         }
                     }} />
                     <div className="count">{row.qtyreturn}</div>
                     <Button text='+' onclick={() => {
-                        if (row.qtyreturn + 1 >= row.qtyp) {
-                            toast.warn('You cannot return more than the current stock')
-                        } else if (row.stock.split(' ')[0] == 0) {
-                            toast.warn('Return Qty 0 will not be returned.')
+                        if (row.qtyreturn + 1 >= row.qtys) {
+                            toast.warn('You cannot return more than the Sold Quantity.')
                         } else {
                             handleQuantityPlus(row._id)
                         }
@@ -73,7 +70,7 @@ const UpdatePurchaseReturn = () => {
     }
 
     const handleQuantityPlus = useCallback((id: string) => {
-        setpurchases((prevProducts: any) =>
+        setsales((prevProducts: any) =>
             prevProducts.map((product: any) =>
                 product._id === id
                     ? {
@@ -88,7 +85,7 @@ const UpdatePurchaseReturn = () => {
     }, [count])
 
     const handleQuantityMinus = useCallback((id: string) => {
-        setpurchases((prevProducts: any) =>
+        setsales((prevProducts: any) =>
             prevProducts.map((product: any) =>
                 product._id === id
                     ? {
@@ -104,7 +101,7 @@ const UpdatePurchaseReturn = () => {
 
     const handleTotal = () => {
         let grandTotal = 0;
-        purchases.forEach((pro: any) => grandTotal += pro.subtotal)
+        sales.forEach((pro: any) => grandTotal += pro.subtotal)
         settotal(parseFloat(
             Big(grandTotal)
                 .plus(calorderTax)
@@ -119,48 +116,47 @@ const UpdatePurchaseReturn = () => {
                 .minus(caldiscount)
                 .toFixed(2)
         ))
-    } // this will set sub total of purchase
+    } // this will set sub total of sales
 
     const registeration = async (formdata: object) => {
         try {
-            const res = await DataService.put(`/purchase-return/${purchaseReturnId}`, formdata)
+            console.log(formdata);
+
+            const res = await DataService.put(`/sales-return/${salesReturnId}`, formdata)
             Notify(res)
-            if (res.success) navigate('/dashboard/purchase/returns')
+            if (res.success) navigate('/dashboard/sales/returns')
         } catch (error) {
             console.error(error)
         }
     }
 
-    useEffect(() => {
-        setValue('purchaseReturn', purchases)
-    }, [purchases.length, count])
-    useEffect(() => { handleTotal() }, [purchases.length, count])
-    useEffect(() => { fetchData(`/purchase-return/${purchaseReturnId}`) }, [])
+    useEffect(() => { setValue('salesReturn', sales) }, [sales.length, count])
+    useEffect(() => { handleTotal() }, [count])
+    useEffect(() => { fetchData(`/sales-return/${salesReturnId}`) }, [])
     useEffect(() => {
         if (apiData?._id) {
-            setorderTax(apiData.purchase?.orderTax)
-            setdiscount(apiData.purchase?.discount)
-            setshipping(apiData.purchase?.shippment)
-            settotal(apiData.total)
-            setcaldiscount(parseFloat(getDiscount(apiData.purchase?.discount, apiData.purchase?.subtotal).toFixed(2)))
-            setcalorderTax(parseFloat(getorderTax(apiData.purchase?.orderTax, apiData.purchase?.subtotal).toFixed(2)))
-            setValue('pruchaseDate', apiData.purchase?.purchase_date.split('T')[0])
-            setpurchases(apiData.returnItems?.map((pro: any) => ({
+            setorderTax(apiData.sale?.orderTax)
+            setdiscount(apiData.sale?.discount)
+            setshipping(apiData.sale?.shippment)
+            settotal(apiData.sale?.total)
+            setcaldiscount(parseFloat(getDiscount(apiData.sale?.discount, apiData.sale?.subtotal).toFixed(2)))
+            setcalorderTax(parseFloat(getorderTax(apiData.sale?.orderTax, apiData.sale?.subtotal).toFixed(2)))
+            setValue('salesDate', apiData.sale?.selling_date.split('T')[0])
+            setsales(apiData.returnItems?.map((pro: any) => ({
                 _id: pro.productId,
                 product: pro.name,
-                qtypurchased: `${pro.quantity} ${pro.unit}`,
-                stock: `${pro.stock} ${pro.unit}`,
-                qtyp: pro.quantity,
+                qtysold: `${pro.quantity} ${pro.unit}`,
+                qtys: pro.quantity,
                 tax: pro.tax,
-                cost: pro.cost,
+                price: pro.price,
                 qtyreturn: pro.returnqty, // Set Intial Product Qty Return
-                subtotal: getTaxonProduct(pro.cost, pro.tax, pro.returnqty)
+                subtotal: getTaxonProduct(pro.price, pro.tax, pro.quantity)
             })))
         }
-    }, [apiData?._id])
+    }, [apiData])
     return (
         <>
-            <Sec_Heading page={"Edit Purchase Return"} subtitle="Purchase Return" />
+            <Sec_Heading page={"Edit Sales Return"} subtitle="Sales Return" />
             <Section>
                 <div className="col-12">
                     <div className="card">
@@ -173,9 +169,9 @@ const UpdatePurchaseReturn = () => {
                                                 <label>Purchase Date </label>
                                                 <span className='importantField'>*</span>
                                             </div>
-                                            <div className={`inputForm`}>
+                                            <div className={`inputForm${errors.salesDate?.message ? 'inputError' : ''}`}>
                                                 <Controller
-                                                    name="pruchaseDate"
+                                                    name="salesDate"
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Input
@@ -192,7 +188,7 @@ const UpdatePurchaseReturn = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Purchase Return </label>
+                                                <label>Purchase </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm`}>
@@ -200,7 +196,7 @@ const UpdatePurchaseReturn = () => {
                                                     type="text"
                                                     className="input"
                                                     disabled={true}
-                                                    value={purchaseReturnId}
+                                                    value={salesReturnId}
                                                 />
                                             </div>
                                         </div>
@@ -212,7 +208,7 @@ const UpdatePurchaseReturn = () => {
                                         <DataTable
                                             title="Orders Items"
                                             columns={columns}
-                                            data={purchases}
+                                            data={sales}
                                         />
                                     </Col>
                                 </Row>
@@ -250,12 +246,19 @@ const UpdatePurchaseReturn = () => {
                                         <div className="flex-column">
                                             <label>Order Tax (%)</label>
                                         </div>
-                                        <div className={`inputForm`}>
-                                            <Input
-                                                type="number"
-                                                className="input"
-                                                disabled
-                                                value={orderTax}
+                                        <div className={`inputForm ${errors.orderTax?.message ? 'inputError' : ''} `}>
+                                            <Controller
+                                                name="orderTax"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        className="input"
+                                                        disabled
+                                                        value={orderTax}
+                                                    />
+                                                )}
                                             />
                                         </div>
                                     </Col>
@@ -263,12 +266,19 @@ const UpdatePurchaseReturn = () => {
                                         <div className="flex-column">
                                             <label>Discount (%)</label>
                                         </div>
-                                        <div className={`inputForm`}>
-                                            <Input
-                                                type="number"
-                                                className="input"
-                                                disabled
-                                                value={discount}
+                                        <div className={`inputForm ${errors.discount?.message ? 'inputError' : ''} `}>
+                                            <Controller
+                                                name="discount"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        className="input"
+                                                        disabled
+                                                        value={discount}
+                                                    />
+                                                )}
                                             />
                                         </div>
                                     </Col>
@@ -276,12 +286,19 @@ const UpdatePurchaseReturn = () => {
                                         <div className="flex-column">
                                             <label>Shipping cost </label>
                                         </div>
-                                        <div className={`inputForm`}>
-                                            <Input
-                                                type="number"
-                                                className="input"
-                                                disabled
-                                                value={shipping}
+                                        <div className={`inputForm ${errors.shipping?.message ? 'inputError' : ''} `}>
+                                            <Controller
+                                                name="shipping"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        className="input"
+                                                        disabled
+                                                        value={shipping}
+                                                    />
+                                                )}
                                             />
                                         </div>
                                     </Col>
@@ -290,6 +307,7 @@ const UpdatePurchaseReturn = () => {
                                 <Button
                                     type='submit'
                                     className='button-submit w-25'
+                                    disabled={isSubmitting}
                                     text={isSubmitting ? 'Submiting...' : 'Submit'}
                                 />
                             </form>
@@ -300,5 +318,4 @@ const UpdatePurchaseReturn = () => {
         </>
     )
 }
-
-export default UpdatePurchaseReturn
+export default UpdateSalesReturn

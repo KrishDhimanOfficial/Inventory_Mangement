@@ -220,9 +220,49 @@ const Sidebar = () => {
                                 </ul>
                             </Accordion.Body>
                         </Accordion.Item>
+                        <Accordion.Item eventKey="0">
+                            <Accordion.Header>
+                                <i className="fa-solid fa-users me-2"></i>
+                                <p>Peoples</p>
+                            </Accordion.Header>
+                            <Accordion.Body className='ps-0 bg-dark'>
+                                <ul className="nav nav-treeview">
+                                    {
+                                        user.permissions?.supplier.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/system_setting" className="nav-link">
+                                                    <i className="fa-solid fa-users nav-icon"></i>
+                                                    <p className="text ms-2">Supplers</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.permissions?.customer.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/setting/warehouse" className="nav-link">
+                                                    <i className="fa-solid fa-users nav-icon"></i>
+                                                    <p className="text ms-2">Customers</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.role === 'admin' && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/setting/payment-method" className="nav-link">
+                                                    <i className="fa-solid fa-users nav-icon"></i>
+                                                    <p className="text ms-2">users</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                </ul>
+                            </Accordion.Body>
+                        </Accordion.Item>
                         {
                             user.role === 'admin' && (
-                                <Accordion.Item eventKey="0">
+                                <Accordion.Item eventKey="7">
                                     <Accordion.Header>
                                         <i className="fa-solid fa-gear me-2"></i>
                                         <p>Settings</p>

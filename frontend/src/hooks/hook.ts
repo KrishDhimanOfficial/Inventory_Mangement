@@ -10,6 +10,8 @@ const getDiscount = (discount = 0, total: number) => parseFloat((total * discoun
 const getorderTax = (tax = 0, total: number) => parseFloat(Big(total * tax / 100).toFixed(2))
 const handelvalToNotbeNegitive = (val: number) => val > 0 ? val : 0;
 const handleqtytonotbeNegitive = (product: any) => {
+    console.log(product);
+
     return product.qty || product.qtyreturn <= 0
         ? 0
         : product.qty || product.qtyreturn - 1  // qtyreturn check on purchase & sales Return

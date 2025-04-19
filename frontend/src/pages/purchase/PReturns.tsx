@@ -42,14 +42,14 @@ const PReturns = () => {
             cell: (row: any) => (
                 <div className="d-flex justify-content-between">
                     {
-                        permission.product?.edit && (
+                        permission.purchase?.edit && (
                             <Link to={`/dashboard/update-purchase-return/${row.reference}`} className='btn btn-success me-2'>
                                 <i className="fa-solid fa-pen-to-square"></i>
                             </Link>
                         )
                     }
                     {
-                        permission.product?.delete && (
+                        permission.purchase?.delete && (
                             <Button text=''
                                 onclick={() => deleteTableRow(row._id)}
                                 className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>}

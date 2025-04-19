@@ -48,7 +48,7 @@ const PurchaseReturn = () => {
                     }} />
                     <div className="count">{row.qtyreturn}</div>
                     <Button text='+' onclick={() => {
-                        if (row.qtyreturn + 1 >= row.qtyp) {
+                        if (row.qtyreturn + 1 > row.qtyp) {
                             toast.warn('You cannot return more than the current stock')
                         } else {
                             handleQuantityPlus(row._id)
@@ -168,7 +168,7 @@ const PurchaseReturn = () => {
     }, [setValue, apiData])
     return (
         <>
-            <Sec_Heading page={"All Purchase Return"} subtitle="Purchase Return" />
+            <Sec_Heading page={"Purchase Return"} subtitle="Purchase Return" />
             <Section>
                 <div className="col-12">
                     <div className="card">

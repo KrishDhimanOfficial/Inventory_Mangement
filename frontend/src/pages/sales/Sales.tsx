@@ -40,6 +40,7 @@ const Sales = () => {
                     deletepermission={permission.sales?.delete}
                     returnURL={`/dashboard/sales-return/${row.reference}`}
                     paymentbtnShow={row.pstatus}
+                    return_status={row.return_status}
                     paymentModal={() => setpaymentodal(!paymentodal)}
                 />
             )
@@ -74,6 +75,7 @@ const Sales = () => {
                 total: item.total,
                 paid: item.payment_paid,
                 due: item.payment_due,
+                return_status: item.return_status,
                 pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />
             }))
             setdata(sales), setloading(false)

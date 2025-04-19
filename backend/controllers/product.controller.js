@@ -1000,7 +1000,7 @@ const pro_controllers = {
             response
                 ? response.orderItems.map(async (pro) => {
                     await productModel.findByIdAndUpdate({ _id: pro.productId },
-                        { $inc: { stock: -1 } }
+                        { $inc: { stock: -pro.quantity } }
                     )
                 })
                 : res.json({ error: 'Not Found!' })
@@ -1226,7 +1226,13 @@ const pro_controllers = {
 
             const response = await salesModel.create(dataTobeCreate)
             if (!response) return res.json({ error: 'An error occurred. Please try again.' })
-
+            response
+                ? response.orderItems?.map(async (pro) => {
+                    await productModel.findByIdAndUpdate({ _id: pro.productId }, {
+                        $inc: { stock: -pro.quantity },
+                    })
+                })
+                : res.json({ error: 'An error occurred. Please try again.' })
             return res.status(200).json({ success: 'Item added successfully.' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
@@ -1397,6 +1403,11 @@ const pro_controllers = {
 
             const response = await salesModel.findOneAndUpdate({ salesId: req.params.id }, docTobeUpdate, { new: true, runValidators: true })
             if (!response) return res.json({ error: 'An error occurred. Please try again.' })
+            response.orderItems.map(async (pro) => {
+                await productModel.findByIdAndUpdate({ _id: pro.productId }, {
+                    stock: pro.quantity,
+                })
+            })
             return res.status(200).json({ success: 'Updated successfully!' })
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
@@ -1430,7 +1441,13 @@ const pro_controllers = {
     deleteProductSales: async (req, res) => {
         try {
             const response = await salesModel.findByIdAndDelete({ _id: req.params.id }, { new: true })
-            if (!response) return res.json({ error: 'Not Found!' })
+            response
+                ? response.orderItems.map(async (pro) => {
+                    await productModel.findByIdAndUpdate({ _id: pro.productId },
+                        { $inc: { stock: pro.quantity } }
+                    )
+                })
+                : res.json({ error: 'Not Found!' })
             return res.status(200).json({ success: 'Deleted successfully!' })
         } catch (error) {
             console.log('deleteProductSales : ' + error.message)
@@ -1655,17 +1672,45 @@ const pro_controllers = {
                                 returnqty: "$purchaseReturn.returnqty",
                             }
                         },
+                        id: { $first: '$purchaseobjectId' },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'purchases',
+                        localField: 'id',
+                        foreignField: '_id',
+                        as: 'purchase'
+                    }
+                },
+                {
+                    $unwind: '$purchase'
+                },
+                {
+                    $project: {
+                        returnItems: 1,
+                        purchase_date: 1,
+                        'purchase.total': 1,
+                        'purchase.subtotal': 1,
+                        'purchase.discount': 1,
+                        'purchase.orderTax': 1,
+                        'purchase.shippment': 1,
+                        'purchase.purchase_date': 1,
                     }
                 }
             ])
             return res.status(200).json(response[0])
         } catch (error) {
             console.log('getSinglePurchaseReturnDetail : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updatePurchaseReturn: async (req, res) => {
         try {
             const { purchaseReturn, total } = req.body;
+            purchaseReturn.map(pro => {
+                if (pro.qtyreturn > pro.stock) return res.json({ success: 'Updated Successfully.' })
+            })
             const prevObject = await purchasereturnModel.findOne({ purchaseReturnId: req.params.id })
             const response = await purchasereturnModel.findOneAndUpdate({ purchaseReturnId: req.params.id },
                 {
@@ -1704,6 +1749,7 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updatePurchaseReturn : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     deletePurchaseReturn: async (req, res) => {
@@ -1723,6 +1769,7 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted Successfully.' })
         } catch (error) {
             console.log('deleteProductReturn : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getAllSalesReturnDetails: async (req, res) => {
@@ -1791,7 +1838,7 @@ const pro_controllers = {
                         "sales.payment_status": 1,
                         "sales.total": 1,
                         date: 1,
-                        salesId: 1,
+                        'salesreturns.salesId': 1,
                         'salesreturns.salesReturnId': 1,
                         'salesreturns._id': 1,
                     }
@@ -1801,6 +1848,7 @@ const pro_controllers = {
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAllSalesReturnDetails : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     createSalesReturn: async (req, res) => {
@@ -1808,7 +1856,7 @@ const pro_controllers = {
             let code = '';
             for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
             const { salesId, salesReturn, id, total } = req.body;
-            const transformedSalesReturn = salesReturn.map(pro => ({ id: new ObjectId(pro._id), returnqty: pro.qtyreturn }))
+            const transformedPurchaseReturn = salesReturn.map(pro => ({ id: new ObjectId(pro._id), returnqty: pro.qtyreturn }))
 
             const checkExistence = await salesreturnModel.findOne({ salesId })
             if (checkExistence?._id) return res.status(200).json({ salesReturnId: `${checkExistence.salesReturnId}` })
@@ -1824,18 +1872,18 @@ const pro_controllers = {
                 }))
             })
 
-            if (!response) return res.json({ error: 'unable to handle your request.' })
-            else transformedSalesReturn.map(async (pro) => {
+            if (!response) return res.json({ error: 'Could Not Process Your Request.' })
+            else transformedPurchaseReturn.map(async (pro) => {
                 await productModel.findByIdAndUpdate(
                     { _id: pro.id },
                     { $inc: { stock: pro.returnqty } },
                 )
             })
-
             await salesModel.findByIdAndUpdate({ _id: id }, { return_status: true })
             return res.status(200).json({ success: 'Added Successfully.' })
         } catch (error) {
             console.log('createSalesReturn : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getSingleSalesReturnDetail: async (req, res) => {
@@ -1874,19 +1922,96 @@ const pro_controllers = {
                                 productId: "$salesReturn.product._id",
                                 unit: "$unit.shortName",
                                 name: "$salesReturn.product.title",
-                                cost: "$salesReturn.product.cost",
+                                price: "$salesReturn.product.price",
                                 tax: "$salesReturn.product.tax",
                                 quantity: "$salesReturn.qty",
-                                stock: "$salesReturn.product.stock",
                                 returnqty: "$salesReturn.returnqty",
                             }
                         },
+                        id: { $first: '$salesobjectId' },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'sales',
+                        localField: 'id',
+                        foreignField: '_id',
+                        as: 'sale'
+                    }
+                },
+                {
+                    $unwind: '$sale'
+                },
+                {
+                    $project: {
+                        returnItems: 1,
+                        selling_date: 1,
+                        'sale.total': 1,
+                        'sale.subtotal': 1,
+                        'sale.discount': 1,
+                        'sale.orderTax': 1,
+                        'sale.shippment': 1,
+                        'sale.selling_date': 1,
                     }
                 }
             ])
             return res.status(200).json(response[0])
         } catch (error) {
             console.log('getSingleSalesReturnDetail : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
+        }
+    },
+    updateSalesReturn: async (req, res) => {
+        try {
+            const { salesReturn, total } = req.body;
+            const prevObject = await salesreturnModel.findOne({ salesReturnId: req.params.id })
+            const response = await salesreturnModel.findOneAndUpdate({ salesReturnId: req.params.id },
+                {
+                    total,
+                    salesReturn: salesReturn.map(pro => ({
+                        productId: new ObjectId(pro._id),
+                        returnqty: pro.qtyreturn,
+                        qty: pro.qtys
+                    }))
+                },
+                { new: true }
+            )
+            if (!response) return res.json({ error: 'unable to handle your request.' })
+            else salesReturn.forEach(async (currentItem) => {
+                const matchingPrev = prevObject.salesReturn.find(
+                    item => item.productId.toString() === currentItem._id.toString()
+                )
+
+                if (matchingPrev) {
+                    const diff = Math.abs(matchingPrev.returnqty - currentItem.qtyreturn);
+                    const comparsion = matchingPrev.returnqty < currentItem.qtyreturn;
+                    if (comparsion) {
+                        await productModel.findByIdAndUpdate(
+                            { _id: currentItem._id },
+                            { $inc: { stock: diff } },
+                        )
+                    } else {
+                        await productModel.findByIdAndUpdate(
+                            { _id: currentItem._id },
+                            { $inc: { stock: -diff } },
+                        )
+                    }
+                }
+            })
+            return res.status(200).json({ success: 'updated successfully.' })
+        } catch (error) {
+            console.log('updateSalesReturn : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
+        }
+    },
+    deleteSalesReturn: async (req, res) => {
+        try {
+            const response = await salesreturnModel.findOneAndDelete({ _id: req.params.id })
+            if (!response) return res.json({ error: 'An Error Occuried. Please Try Again.' })
+            return res.status(200).json({ success: 'Removed From DB.' })
+        } catch (error) {
+            console.log('deleteSalesReturn : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
 }

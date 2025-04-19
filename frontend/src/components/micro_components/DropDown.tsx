@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 import { setSingleData } from '../../controller/singleData'
 import { useState } from 'react';
 
-const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermission, paymentbtnShow, deletepermission, paymentModal, returnURL }: {
+const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermission, paymentbtnShow, deletepermission, return_status, paymentModal, returnURL }: {
     api: string,
     name: string,
     editURL: string,
@@ -17,6 +17,7 @@ const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermis
     paymentModal: () => void,
     updatepermission: Boolean,
     deletepermission: Boolean,
+    return_status: Boolean,
     paymentbtnShow: any,
 }) => {
     const dispatch = useDispatch()
@@ -43,7 +44,11 @@ const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermis
                 {
                     updatepermission && (
                         <>
-                            <Link to={`${editURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'> Edit </Link>
+                            {
+                                !return_status && (
+                                    <Link to={`${editURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'> Edit </Link>
+                                )
+                            }
                             {
                                 (paymentbtnShow.props?.text === 'unpaid' || paymentbtnShow.props?.text === 'parital') && (
                                     <Button
@@ -64,13 +69,19 @@ const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermis
                 }
                 <Link to={`${detailsURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'>{name} Details </Link>
                 {
-                    deletepermission && (
-                        <Button
-                            type='button'
-                            className='px-3 py-1 d-inline-block w-100 bg-transparent border-0 text-start'
-                            text='Delete'
-                            onclick={deletedata}
-                        />
+                    deletepermission && ( // check permssion to perform Delete Operation
+                        <>
+                            {
+                                !return_status && ( // Check return status to prevent to delete
+                                    <Button
+                                        type='button'
+                                        className='px-3 py-1 d-inline-block w-100 bg-transparent border-0 text-start'
+                                        text='Delete'
+                                        onclick={deletedata}
+                                    />
+                                )
+                            }
+                        </>
                     )
                 }
             </DropdownButton>
