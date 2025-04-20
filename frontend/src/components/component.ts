@@ -12,6 +12,7 @@ import Static_Modal from './modal/Static_Modal'
 import DropDownMenu from './micro_components/DropDown'
 import Payment_Modal from './modal/Payment_Modal'
 import Canvas from './micro_components/Canvas'
+import GenerateBill from './pdf/GenerateBill'
 
 export {
     Button,
@@ -27,5 +28,6 @@ export {
     TextArea,
     DropDownMenu,
     Payment_Modal,
-    Canvas
+    Canvas,
+    GenerateBill
 }

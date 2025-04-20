@@ -230,7 +230,7 @@ const Sidebar = () => {
                                     {
                                         user.permissions?.supplier.view && (
                                             <li className="nav-item">
-                                                <Link to="/dashboard/system_setting" className="nav-link">
+                                                <Link to="/dashboard/suppliers" className="nav-link">
                                                     <i className="fa-solid fa-users nav-icon"></i>
                                                     <p className="text ms-2">Supplers</p>
                                                 </Link>
@@ -240,7 +240,7 @@ const Sidebar = () => {
                                     {
                                         user.permissions?.customer.view && (
                                             <li className="nav-item">
-                                                <Link to="/dashboard/setting/warehouse" className="nav-link">
+                                                <Link to="/dashboard/customers" className="nav-link">
                                                     <i className="fa-solid fa-users nav-icon"></i>
                                                     <p className="text ms-2">Customers</p>
                                                 </Link>
@@ -250,7 +250,7 @@ const Sidebar = () => {
                                     {
                                         user.role === 'admin' && (
                                             <li className="nav-item">
-                                                <Link to="/dashboard/setting/payment-method" className="nav-link">
+                                                <Link to="/dashboard/user/permissions" className="nav-link">
                                                     <i className="fa-solid fa-users nav-icon"></i>
                                                     <p className="text ms-2">users</p>
                                                 </Link>

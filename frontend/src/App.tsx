@@ -1,6 +1,5 @@
-import { createBrowserRouter, RouterProvider, useNavigate } from "react-router"
+import { createBrowserRouter, RouterProvider } from "react-router"
 import Login from "./pages/auth/Login"
-// import Dashboard from "./pages/dashboard/Dashboard"
 import ProtectedRoute from "./pages/auth/ProtectedRoute"
 import Users from "./pages/peoples/user/Users"
 import Warehouses from "./pages/settings/warehouse/Warehouses"
@@ -30,7 +29,7 @@ import SalesReport from "./pages/reports/SalesReport"
 import PReturns from "./pages/purchase/PReturns"
 import UpdatePurchaseReturn from "./pages/purchase/UpdatePurchaseReturn"
 import SReturns from "./pages/sales/SReturns"
-import UpdateSalesReturn from "./pages/sales/updateSalesReturn"
+import UpdateSalesReturn from "./pages/sales/UpdateSalesReturn"
 import Error from "./components/layout/Error"
 
 const App = () => {

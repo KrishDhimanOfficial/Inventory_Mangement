@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sec_Heading, Section, Loader, Button, Static_Modal } from '../../components/component'
+import { Sec_Heading, Section, Loader, Button, Static_Modal, DropDownMenu } from '../../components/component'
 import DataTable from 'react-data-table-component';
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import config from '../../config/config';
@@ -12,6 +12,7 @@ const PReturns = () => {
     const [Id, setId] = useState('')
     const [refreshTable, setrefreshTable] = useState(false)
     const [warnModal, setwarnmodal] = useState(false)
+    const [paymentodal, setpaymentodal] = useState(false)
     const { permission } = useSelector((state: any) => state.permission)
 
     const tableBody = data.map((purchaseReturn: any, i: number) => [
@@ -33,30 +34,22 @@ const PReturns = () => {
         { name: "Purchase Ref", selector: (row: any) => row.pref, sortable: true },
         { name: "Supplier", selector: (row: any) => row.supplier, sortable: true },
         { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
-        { name: "Grand Total", selector: (row: any) => row.total, sortable: true },
-        { name: "Paid", selector: (row: any) => row.paid, sortable: true },
-        { name: "Due", selector: (row: any) => row.due, sortable: true },
+        { name: "Grand Total", selector: (row: any) => row.amount, sortable: true },
         { name: "Payment Status", selector: (row: any) => row.pstatus, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
-                <div className="d-flex justify-content-between">
-                    {
-                        permission.purchase?.edit && (
-                            <Link to={`/dashboard/update-purchase-return/${row.reference}`} className='btn btn-success me-2'>
-                                <i className="fa-solid fa-pen-to-square"></i>
-                            </Link>
-                        )
-                    }
-                    {
-                        permission.purchase?.delete && (
-                            <Button text=''
-                                onclick={() => deleteTableRow(row._id)}
-                                className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>}
-                            />
-                        )
-                    }
-                </div>
+                <DropDownMenu
+                    name='Purchase'
+                    api={`/purchase-return/${row.reference}`}
+                    editURL={`/dashboard/update-purchase-return/${row.reference}`}
+                    deletedata={() => deleteTableRow(row.id)}
+                    detailsURL={`/dashboard/purchase-return/${row.reference}`}
+                    updatepermission={permission.purchase?.edit}
+                    deletepermission={permission.purchase?.delete}
+                    paymentbtnShow={row.pstatus}
+                    paymentModal={() => setpaymentodal(!paymentodal)}
+                />
             )
         },
     ]
@@ -69,6 +62,8 @@ const PReturns = () => {
             const res: any = await DataService.get('/all-purchase-return-details', {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
+            console.log(res);
+
             const data = res.map((pro: any) => ({
                 _id: pro.purchasereturns._id,
                 date: pro.date,
@@ -78,6 +73,7 @@ const PReturns = () => {
                 warehouse: pro.warehouse.name,
                 total: pro.purchase.total,
                 paid: pro.purchase.payment_paid,
+                amount: pro.purchasereturns.total,
                 due: pro.purchase.payment_due,
                 pstatus: <Button className={`badges ${pro.purchase.payment_status}`} text={pro.purchase.payment_status} />,
             }))

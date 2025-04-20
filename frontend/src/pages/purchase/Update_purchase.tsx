@@ -540,6 +540,7 @@ const Update_purchase = () => {
                                                             {...field}
                                                             className=" adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
+                                                            onChange={(e: any) => { field.onChange(e) }}
                                                         />
                                                     </div>
                                                 )}

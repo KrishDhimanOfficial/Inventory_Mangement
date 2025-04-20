@@ -9,7 +9,7 @@ import { useNavigate, useParams } from 'react-router';
 import Big from 'big.js';
 import { toast } from 'react-toastify';
 
-const defaultValues = { pruchaseDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
+const defaultValues = { returnDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
 
 const UpdatePurchaseReturn = () => {
     const { purchaseReturnId } = useParams()
@@ -144,7 +144,7 @@ const UpdatePurchaseReturn = () => {
             settotal(apiData.total)
             setcaldiscount(parseFloat(getDiscount(apiData.purchase?.discount, apiData.purchase?.subtotal).toFixed(2)))
             setcalorderTax(parseFloat(getorderTax(apiData.purchase?.orderTax, apiData.purchase?.subtotal).toFixed(2)))
-            setValue('pruchaseDate', apiData.purchase?.purchase_date.split('T')[0])
+            setValue('returnDate', apiData.returnDate?.split('T')[0])
             setpurchases(apiData.returnItems?.map((pro: any) => ({
                 _id: pro.productId,
                 product: pro.name,
@@ -170,19 +170,18 @@ const UpdatePurchaseReturn = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Purchase Date </label>
+                                                <label>Return Date </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm`}>
                                                 <Controller
-                                                    name="pruchaseDate"
+                                                    name="returnDate"
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
                                                             type="date"
                                                             className="input"
-                                                            disabled
                                                         />
                                                     )}
                                                 />

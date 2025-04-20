@@ -10,7 +10,7 @@ import Big from 'big.js';
 import { toast } from 'react-toastify';
 
 
-const defaultValues = { pruchaseDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
+const defaultValues = { returnDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
 
 const PurchaseReturn = () => {
     const { purchaseId } = useParams()
@@ -152,7 +152,7 @@ const PurchaseReturn = () => {
             settotal(apiData.total)
             setcaldiscount(parseFloat(getDiscount(apiData.discount, apiData.subtotal).toFixed(2)))
             setcalorderTax(parseFloat(getorderTax(apiData.orderTax, apiData.subtotal).toFixed(2)))
-            setValue('pruchaseDate', apiData.purchase_date.split('T')[0])
+            setValue('returnDate', apiData.purchase_date.split('T')[0])
             setpurchases(apiData.orderItems?.map((pro: any) => ({
                 _id: pro.productId,
                 product: pro.name,
@@ -181,16 +181,15 @@ const PurchaseReturn = () => {
                                                 <label>Purchase Date </label>
                                                 <span className='importantField'>*</span>
                                             </div>
-                                            <div className={`inputForm${errors.pruchaseDate?.message ? 'inputError' : ''}`}>
+                                            <div className={`inputForm${errors.returnDate?.message ? 'inputError' : ''}`}>
                                                 <Controller
-                                                    name="pruchaseDate"
+                                                    name="returnDate"
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
                                                             type="date"
                                                             className="input"
-                                                            disabled
                                                         />
                                                     )}
                                                 />

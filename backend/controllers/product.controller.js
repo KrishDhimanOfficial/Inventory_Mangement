@@ -845,6 +845,7 @@ const pro_controllers = {
                                 tax: "$orderItems.product.tax",
                                 quantity: "$orderItems.quantity",
                                 stock: "$orderItems.product.stock",
+                                code: "$orderItems.product.sku"
                             }
                         },
                         supplierId: { $first: "$supplierId" },
@@ -1101,6 +1102,8 @@ const pro_controllers = {
                         _id: 1,
                         date: 1,
                         'customer.name': 1,
+                        'customer.email': 1,
+                        'customer.phone': 1,
                         'warehouse.name': 1,
                         orderItems: 1,
                         discount: 1,
@@ -1562,7 +1565,7 @@ const pro_controllers = {
                         date: {
                             $dateToString: {
                                 format: "%Y-%m-%d",
-                                date: "$purchasereturns.createdAt"
+                                date: "$purchasereturns.returnDate"
                             }
                         },
 
@@ -1578,8 +1581,8 @@ const pro_controllers = {
                         "purchase.payment_status": 1,
                         "purchase.total": 1,
                         date: 1,
-                        purchaseId: 1,
                         'purchasereturns.purchaseReturnId': 1,
+                        'purchasereturns.total': 1,
                         'purchasereturns._id': 1,
                     }
                 },
@@ -1594,7 +1597,9 @@ const pro_controllers = {
         try {
             let code = '';
             for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
-            const { purchaseId, purchaseReturn, id, total } = req.body;
+            console.log(req.body);
+
+            const { purchaseId, purchaseReturn, id, total, returnDate } = req.body;
             const transformedPurchaseReturn = purchaseReturn.map(pro => ({ id: new ObjectId(pro._id), returnqty: pro.qtyreturn }))
 
             const checkExistence = await purchasereturnModel.findOne({ purchaseId })
@@ -1603,6 +1608,7 @@ const pro_controllers = {
             const response = await purchasereturnModel.create({
                 purchaseReturnId: `PR_${code}`,
                 purchaseId, total,
+                returnDate: format(parseISO(returnDate), 'yyyy-MM-dd'),
                 purchaseobjectId: new ObjectId(id),
                 purchaseReturn: purchaseReturn.map(pro => ({
                     productId: new ObjectId(pro._id),
@@ -1673,6 +1679,8 @@ const pro_controllers = {
                             }
                         },
                         id: { $first: '$purchaseobjectId' },
+                        returnDate: { $first: '$returnDate' },
+                        total: { $first: '$total' }
                     }
                 },
                 {
@@ -1687,9 +1695,44 @@ const pro_controllers = {
                     $unwind: '$purchase'
                 },
                 {
+                    $lookup: {
+                        from: 'suppliers',
+                        localField: 'purchase.supplierId',
+                        foreignField: '_id',
+                        as: 'supplier'
+                    }
+                },
+                { $unwind: '$supplier' },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'purchase.warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                { $unwind: '$warehouse' },
+                {
+                    $addFields: {
+                        date: {
+                            $dateToString: {
+                                date: "$returnDate",
+                                format: "%d-%m-%Y"
+                            }
+                        }
+                    }
+                },
+                {
                     $project: {
+                        date: 1,
+                        total: 1,
                         returnItems: 1,
                         purchase_date: 1,
+                        returnDate: 1,
+                        'supplier.name': 1,
+                        'warehouse.name': 1,
+                        'supplier.email': 1,
+                        'supplier.phone': 1,
                         'purchase.total': 1,
                         'purchase.subtotal': 1,
                         'purchase.discount': 1,
@@ -1707,7 +1750,7 @@ const pro_controllers = {
     },
     updatePurchaseReturn: async (req, res) => {
         try {
-            const { purchaseReturn, total } = req.body;
+            const { purchaseReturn, total, returnDate } = req.body;
             purchaseReturn.map(pro => {
                 if (pro.qtyreturn > pro.stock) return res.json({ success: 'Updated Successfully.' })
             })
@@ -1715,6 +1758,7 @@ const pro_controllers = {
             const response = await purchasereturnModel.findOneAndUpdate({ purchaseReturnId: req.params.id },
                 {
                     total,
+                    returnDate: format(parseISO(returnDate), 'yyyy-MM-dd'),
                     purchaseReturn: purchaseReturn.map(pro => ({
                         productId: new ObjectId(pro._id),
                         returnqty: pro.qtyreturn,
@@ -1993,7 +2037,7 @@ const pro_controllers = {
                     } else {
                         await productModel.findByIdAndUpdate(
                             { _id: currentItem._id },
-                            { $inc: { stock: -diff } },
+                            { $inc: { stock: - diff } },
                         )
                     }
                 }

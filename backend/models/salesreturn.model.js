@@ -13,6 +13,9 @@ const salesReturnSchema = new mongoose.Schema({
     total: {
         type: mongoose.Schema.Types.Number
     },
+    returnDate: {
+        type: mongoose.Schema.Types.Date
+    },
     salesReturn: {
         type: [
             {

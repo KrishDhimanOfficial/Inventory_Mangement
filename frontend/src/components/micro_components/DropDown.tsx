@@ -2,23 +2,24 @@ import DropdownButton from 'react-bootstrap/DropdownButton'
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import Button from './Button';
-import { DataService } from '../../hooks/hook';
-import { useDispatch } from 'react-redux';
+import { DataService, useFetchData } from '../../hooks/hook';
+import { useDispatch, useSelector } from 'react-redux';
 import { setSingleData } from '../../controller/singleData'
 import { useState } from 'react';
+import { GenerateBill } from '../component';
 
 const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermission, paymentbtnShow, deletepermission, return_status, paymentModal, returnURL }: {
     api: string,
     name: string,
     editURL: string,
-    returnURL: string,
+    returnURL?: string,
     detailsURL: string,
     deletedata: () => void,
     paymentModal: () => void,
     updatepermission: Boolean,
     deletepermission: Boolean,
-    return_status: Boolean,
-    paymentbtnShow: any,
+    return_status?: Boolean,
+    paymentbtnShow?: any,
 }) => {
     const dispatch = useDispatch()
 
@@ -31,6 +32,7 @@ const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermis
             console.error(error)
         }
     }
+
     return (
         <>
             <DropdownButton

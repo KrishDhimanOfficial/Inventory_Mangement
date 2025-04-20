@@ -565,9 +565,10 @@ const SalesOrderForm = () => {
                                                 render={({ field }) => (
                                                     <div className="textarea-wrapper">
                                                         <TextArea
+                                                            {...field}
                                                             className="adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
-                                                            {...field}
+                                                            onChange={(e: any) => { field.onChange(e) }}
                                                         />
                                                     </div>
                                                 )}

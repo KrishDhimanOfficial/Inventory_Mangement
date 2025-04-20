@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sec_Heading, Section, Button } from '../component';
+import { Sec_Heading, Section, Button, GenerateBill } from '../component';
 import { generatePDF, DataService, getDiscount, getorderTax, getTaxonProduct } from '../../hooks/hook'
 import { DropdownDivider, ListGroup, Row, Table, Col, Alert, Badge } from 'react-bootstrap'
 import { useParams } from 'react-router';
@@ -12,13 +12,14 @@ interface Details {
 
 const Details: React.FC<Details> = ({ name, info }) => {
     const { settings } = useSelector((state: any) => state.singleData)
-    const { salesId, purchaseId } = useParams()
+    const { salesId, purchaseId, salesReturnId, purchaseReturnId } = useParams()
     const [orders, setorders] = useState([])
     const [calDiscount, setcalDiscount] = useState<number | any>(null)
     const [calOrdertax, setcalOrdertax] = useState<number | any>(null)
     const [ordersInfo, setordersInfo] = useState({
         date: '',
         warehouse: { name: '' },
+        customer: { name: '', email: '', phone: '' },
         supplier: { name: '', email: '', phone: '' },
         walkInCustomerDetails: { name: '', phone: '' },
         payment_status: '',
@@ -40,20 +41,34 @@ const Details: React.FC<Details> = ({ name, info }) => {
 
     const getOrders = async () => {
         try {
-            const res = salesId
-                ? await DataService.get(`/get/sales_details/${salesId}`)
-                : await DataService.get(`/get/purchase_details/${purchaseId}`)
+            const endpoint = salesId
+                ? `/get/sales_details/${salesId}`
+                : `/get/purchase_details/${purchaseId}`
+            // : salesReturnId
+            //     ? `/sales-return/${salesReturnId}`
+            //     : `/purchase-return/${purchaseReturnId}`;
 
+            const res = await DataService.get(endpoint)
             setordersInfo(res)
             setcalDiscount(getDiscount(ordersInfo.discount, ordersInfo.subtotal))
             setcalOrdertax(getorderTax(ordersInfo.orderTax, ordersInfo.subtotal))
-            setorders(res.orderItems.map((item: any) => ({
-                product: `${item.sku} (${item.name})`,
-                price: item.cost,
-                qty: `${item.qty} ${item.unit}`,
-                tax: `${item.tax}%`,
-                subtotal: 0
-            })))
+            setorders(
+                salesId || purchaseId
+                    ? res.orderItems?.map((item: any) => ({
+                        product: (<div className='d-flex flex-column gap-2'> <b>{item.sku}</b> ({item.name}) </div>),
+                        price: item.cost,
+                        qty: `${item.qty} ${item.unit}`,
+                        tax: `${item.tax}%`,
+                        subtotal: getTaxonProduct(item.cost, item.tax, item.qty)
+                    }))
+                    : res.returnItems?.map((item: any) => ({
+                        product: (<div className='d-flex flex-column gap-2'> <b>{item.sku}</b> ({item.name}) </div>),
+                        price: item.cost,
+                        qty: `${item.returnqty} ${item.unit}`,
+                        tax: `${item.tax}%`,
+                        subtotal: getTaxonProduct(item.cost, item.tax, item.returnqty)
+                    }))
+            )
         } catch (error) {
             console.error(error)
         }
@@ -63,7 +78,14 @@ const Details: React.FC<Details> = ({ name, info }) => {
         <>
             <Sec_Heading page={`${name} Details`} subtitle={name} />
             <Section>
-                <div className="card">
+                <div className="d-flex gap-3 mb-2">
+                    <Button
+                        text='Download Invoice'
+                        className='btn btn-danger'
+                        onclick={() => GenerateBill(name)}
+                    />
+                </div>
+                <div id='pdf-content' className="card">
                     <div className="card-body">
                         <div className="row mt-4 mb-2">
                             <div className="col-12">
@@ -89,6 +111,15 @@ const Details: React.FC<Details> = ({ name, info }) => {
                                                 <ListGroup.Item className='border-0 p-0'>{ordersInfo.supplier?.phone}</ListGroup.Item>
                                             </ListGroup>
                                         )
+                                }
+                                {
+                                    ordersInfo.customer?.name && (
+                                        <ListGroup>
+                                            <ListGroup.Item className='border-0 p-0'>{ordersInfo.customer?.name}</ListGroup.Item>
+                                            <ListGroup.Item className='border-0 p-0'>{ordersInfo.customer?.email}</ListGroup.Item>
+                                            <ListGroup.Item className='border-0 p-0'>{ordersInfo.customer?.phone}</ListGroup.Item>
+                                        </ListGroup>
+                                    )
                                 }
                             </Col>
                             <Col md='4'>
@@ -123,8 +154,8 @@ const Details: React.FC<Details> = ({ name, info }) => {
                             </Col>
                         </Row>
                         <Row className='mb-4'>
-                            <Col md='3' className='offset-md-9'>
-                                <Table striped>
+                            <Col md='5' className='offset-md-7'>
+                                <Table striped className='w-100'>
                                     <tbody>
                                         <tr>
                                             <td>Order Tax</td>

@@ -208,8 +208,8 @@ const UpdateSales = () => {
             setValue('orderTax', apiData.orderTax)
             setValue('discount', apiData.discount)
             setValue('shipping', apiData.shippment)
-            setValue('note', apiData.note)
             setValue('customerId', { value: apiData.customer?._id, label: apiData.customer?.name })
+            setValue('note', apiData.note)
             setValue('warehouseId', { value: apiData.warehouse?._id, label: apiData.warehouse?.name })
             setValue('subtotal', parseFloat(apiData.subtotal.toFixed(2)))
             setValue('total', apiData.total)
@@ -588,7 +588,7 @@ const UpdateSales = () => {
                                                             {...field}
                                                             className=" adjustable-textarea w-100 h-100"
                                                             placeholder="Enter note (Optional)"
-                                                            onChange={(e: any) => { setValue('note', e.target.value.trim()) }}
+                                                            onChange={(e: any) => { field.onChange(e) }}
                                                         />
                                                     </div>
                                                 )}
