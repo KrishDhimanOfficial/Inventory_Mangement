@@ -21,9 +21,6 @@ interface UserPermission {
 const Sidebar = () => {
     const dispatch = useDispatch()
     const { settings } = useSelector((state: any) => state.singleData)
-    const r = useSelector((state: any) => state.singleData.sidemenu)
-    // console.log(settings.logo);
-
     const [user, setuser] = useState<UserPermission>({
         role: '', permissions: {
             customer: { view: null },
@@ -208,11 +205,71 @@ const Sidebar = () => {
                                         )
                                     }
                                     {
+                                        (user.permissions?.product.view || user.permissions?.purchase.view) && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/product-purchase/report" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Product Purchase Report</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
                                         user.permissions?.sales.view && (
                                             <li className="nav-item">
                                                 <Link to="/dashboard/report/sales" className="nav-link">
                                                     <i className="fa-solid fa-file-invoice nav-icon"></i>
                                                     <p className="text">Sales Report</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.permissions?.sales.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/report/product-sales" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Product Sales Report</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.permissions?.product.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/report/top_selling_Products" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Top Selling Products</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.permissions?.product.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/stockreport" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Stock Report</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.permissions?.supplier.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/suppliers/report" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Suppliers Report</p>
+                                                </Link>
+                                            </li>
+                                        )
+                                    }
+                                    {
+                                        user.permissions?.customer.view && (
+                                            <li className="nav-item">
+                                                <Link to="/dashboard/customer/report" className="nav-link">
+                                                    <i className="fa-solid fa-file-invoice nav-icon"></i>
+                                                    <p className="text">Customer Report</p>
                                                 </Link>
                                             </li>
                                         )

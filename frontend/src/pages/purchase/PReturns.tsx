@@ -62,8 +62,6 @@ const PReturns = () => {
             const res: any = await DataService.get('/all-purchase-return-details', {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
-            console.log(res);
-
             const data = res.map((pro: any) => ({
                 _id: pro.purchasereturns._id,
                 date: pro.date,

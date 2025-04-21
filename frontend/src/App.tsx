@@ -31,6 +31,12 @@ import UpdatePurchaseReturn from "./pages/purchase/UpdatePurchaseReturn"
 import SReturns from "./pages/sales/SReturns"
 import UpdateSalesReturn from "./pages/sales/UpdateSalesReturn"
 import Error from "./components/layout/Error"
+import TopSellingproducts from "./pages/reports/TopSellingproducts"
+import SupplierReport from "./pages/reports/SuppliersReport"
+import CustomerReport from "./pages/reports/CustomersReport"
+import StockReport from "./pages/reports/StockReport"
+import ProductPurchaseReport from "./pages/reports/ProductPurchaseReport"
+import ProductSalesReport from "./pages/reports/ProductSalesReport"
 
 const App = () => {
   const router = createBrowserRouter([
@@ -287,6 +293,54 @@ const App = () => {
           element: (
             <ProtectedRoute>
               <SalesReport />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/report/top_selling_Products',
+          element: (
+            <ProtectedRoute>
+              <TopSellingproducts />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/suppliers/report',
+          element: (
+            <ProtectedRoute>
+              <SupplierReport />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/customer/report',
+          element: (
+            <ProtectedRoute>
+              <CustomerReport />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/stockreport',
+          element: (
+            <ProtectedRoute>
+              <StockReport />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/product-purchase/report',
+          element: (
+            <ProtectedRoute>
+              <ProductPurchaseReport />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: '/dashboard/report/product-sales',
+          element: (
+            <ProtectedRoute>
+              <ProductSalesReport />
             </ProtectedRoute>
           )
         },

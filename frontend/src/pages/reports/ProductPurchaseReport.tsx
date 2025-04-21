@@ -1,18 +1,16 @@
-import React, { lazy, useCallback, useEffect, useState } from 'react';
-import { Sec_Heading, Section, Button, Loader, Input } from '../../components/component';
+import { useEffect, useState, lazy } from 'react';
+import { Sec_Heading, Section, Button, Loader } from '../../components/component';
 import DataTable from 'react-data-table-component';
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
-import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { DropdownButton, Dropdown, } from 'react-bootstrap';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import config from '../../config/config';
-
 const Canvas = lazy(() => import('../../components/micro_components/Canvas'))
 
-const SalesReport = () => {
-    const [loading, setloading] = useState(false)
-    const [data, setdata] = useState([])
+const ProductPurchaseReport = () => {
+    const [loading, setloading] = useState(false);
+    const [data, setdata] = useState([]);
     const [canvasopen, setcanvasopen] = useState(false)
     const [fileterdata, setfilters] = useState([])
     const [state, setState] = useState([
@@ -22,50 +20,52 @@ const SalesReport = () => {
             key: 'selection'
         }
     ])
+
     const columns = [
         { name: "Date", selector: (row: any) => row.date, sortable: true },
         { name: "Reference", selector: (row: any) => row.reference, sortable: true },
-        { name: "Customer", selector: (row: any) => row.customer, sortable: true },
+        { name: "Product", selector: (row: any) => row.product, sortable: true },
+        { name: "Supplier", selector: (row: any) => row.supplier, sortable: true },
         { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
-        { name: "Grand Total", selector: (row: any) => row.total, sortable: true },
-        { name: "Paid", selector: (row: any) => row.paid, sortable: true },
-        { name: "Due", selector: (row: any) => row.due, sortable: true },
+        { name: "Qty Purchased", selector: (row: any) => row.qty, sortable: true },
+        { name: "Total", selector: (row: any) => row.total, sortable: true },
         { name: "Payment Status", selector: (row: any) => row.pstatus, sortable: true },
-    ]
-    const tableBody = data.map((purchase: any, i: number) => [
+    ];
+
+
+    const tableBody = data.map((product: any, i: number) => [
         i + 1,
-        purchase.date,
-        purchase.reference,
-        purchase.customer,
-        purchase.warehouse,
-        purchase.total,
-        purchase.paid,
-        purchase.due,
-        purchase.pstatus
+        product.date,
+        product.reference,
+        product.product,
+        product.supplier,
+        product.warehouse,
+        product.qty,
+        product.total,
+        product.pstatus
     ])
-    const pdfColumns = ["S.No", "Date", "Reference", "Customer", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
+
+    const pdfColumns = ["S.No", "Date", "Reference", "Product", "Supplier", "Warehouse", "Qty Purchased", "Total", " Payment Status"]
 
     const getReport = async () => {
         try {
-            setloading(true)
-            const res = await DataService.get(`/get/sales/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            setloading(true);
+            const res = await DataService.get(`/get/product-purchase/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`);
             const data = res?.map((item: any) => ({
                 date: item.date,
-                reference: item.salesId,
-                customer: item.customer?.name,
+                reference: item.purchaseId,
+                product: item.product,
+                supplier: item.supplier?.name,
                 warehouse: item.warehouse?.name,
+                qty: item.purchaseQty,
                 total: item.total,
-                paid: item.payment_paid,
-                due: item.payment_due,
                 pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
             }))
             setloading(false), setfilters(data), setdata(data)
         } catch (error) {
-            console.error(error)
+            console.error(error);
         } finally {
-            setloading(false)
+            setloading(false);
         }
     }
 
@@ -73,20 +73,20 @@ const SalesReport = () => {
     return (
         <>
             <Canvas
-                name='Customer'
+                name='Supplier'
                 data={data}
                 show={canvasopen}
                 handleClose={() => setcanvasopen(!canvasopen)}
-                selectBoxApi1='/all-customer'
+                selectBoxApi1='/all/supplier-details'
                 selectBoxApi2='/warehouses'
                 resetFilters={setfilters} />
-            <Sec_Heading page={"Sales Report"} subtitle="Report" />
+            <Sec_Heading page={"Product Purchase Report"} subtitle="Report" />
             <Section>
                 <div className="col-12">
                     <div className="card">
                         <div className="card-body pt-1">
                             <DataTable
-                                title="Reports"
+                                title="Product Purchase Reports"
                                 columns={columns}
                                 data={fileterdata}
                                 progressPending={loading}
@@ -102,13 +102,13 @@ const SalesReport = () => {
                                         />
                                         <Button
                                             text='Generate PDF'
-                                            className='btn btn-danger'
-                                            onclick={() => generatePDF('PurchaseReport', pdfColumns, tableBody)}
+                                            className='btn btn-danger '
+                                            onclick={() => generatePDF('productPurchaseReport', pdfColumns, tableBody)}
                                         />
                                         <Button
                                             text='CSV'
                                             className='btn btn-success'
-                                            onclick={() => downloadCSV('PurchaseReport', data)}
+                                            onclick={() => downloadCSV('productPurchaseReport', data)}
                                         />
                                         <DropdownButton id="dropdown-basic-button" title="Select Date">
                                             <Dropdown.Item href="#" className='p-0'>
@@ -123,20 +123,11 @@ const SalesReport = () => {
                                     </div>
                                 }
                             />
-                            <div style={{ textAlign: 'right', paddingInline: '1rem', fontWeight: 'bold' }}>
-                                Total Due Amount: ${data.reduce((sum, row: any) => parseFloat((sum + row.due).toFixed(2)), 0)}
-                            </div>
-                            <div style={{ textAlign: 'right', paddingInline: '1rem', fontWeight: 'bold' }}>
-                                Total Paid Amount: ${data.reduce((sum, row: any) => parseFloat((sum + row.paid).toFixed(2)), 0)}
-                            </div>
-                            <div style={{ textAlign: 'right', paddingInline: '1rem', fontWeight: 'bold' }}>
-                                Total Amount: ${data.reduce((sum, row: any) => parseFloat((sum + row.total).toFixed(2)), 0)}
-                            </div>
                         </div>
                     </div>
                 </div>
-            </Section >
+            </Section>
         </>
     )
 }
-export default React.memo(SalesReport)
+export default ProductPurchaseReport

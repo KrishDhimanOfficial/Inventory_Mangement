@@ -117,5 +117,13 @@ router.put('/system-setting', logo.single('logo'), handlemulterError, setting_co
 
 router.get('/get/purchase/reports', reportController.getPurchaseReport)
 router.get('/get/sales/reports', reportController.getSalesReport)
+router.get('/get/top-selling-products/reports', reportController.topsellinfProductsReport)
+router.get('/get/suppliers/reports', reportController.getSuppliersReport)
+router.get('/get/customers/reports', reportController.getCustomersReport)
+router.get('/get/product-stock/reports', reportController.getProductStockReport)
+router.get('/get/product-purchase/reports', reportController.getProductPurchaseReport)
+router.get('/get/product-sales/reports', reportController.getProductSalesReport)
+router.get('/get/dashbaord/reports', reportController.dashboardReport)
+router.get('/get/sales-purchase-by-day', reportController.getSalesPurchaseByDayOnBars)
 
 export default router

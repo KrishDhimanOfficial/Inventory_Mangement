@@ -11,12 +11,12 @@ interface Canvas {
     selectBoxApi1: string;
     selectBoxApi2: string;
     handleClose: () => void;
-    setData: any;
+    resetFilters: any;
 }
 
 const status = [{ label: 'paid', value: 'paid' }, { label: 'parital', value: 'parital' }, { label: 'unpaid', value: 'unpaid' }]
 
-const Canvas: React.FC<Canvas> = ({ name, data, show, handleClose, selectBoxApi1, selectBoxApi2, setData }) => {
+const Canvas: React.FC<Canvas> = ({ name, data, show, handleClose, selectBoxApi1, selectBoxApi2, resetFilters }) => {
     const [select1, setselect1] = useState([{ label: '', value: '' }])
     const [select2, setselect2] = useState([{ label: '', value: '' }])
     const [selectedoption1, setselectedoption1] = useState({ label: `Select ${name}`, value: '' })
@@ -43,16 +43,16 @@ const Canvas: React.FC<Canvas> = ({ name, data, show, handleClose, selectBoxApi1
 
     const handleFiltering = () => {
         const filterdata = data.filter((item: any) => {
-            return item.supplier
+            return (item.supplier
                 ? item.supplier && item.supplier.toLowerCase().includes(selectedoption1.value.toLowerCase())
-                : item.customer && item.customer.toLowerCase().includes(selectedoption1.value.toLowerCase())
-                &&
+                : item.customer && item.customer.toLowerCase().includes(selectedoption1.value.toLowerCase())) &&
                 item.warehouse && item.warehouse.toLowerCase().includes(selectedoption2.value.toLowerCase()) &&
                 item.pstatus.props?.text && item.pstatus.props?.text.toLowerCase().includes(selectedStatus.value.toLowerCase()) &&
                 item.reference && item.reference.toLowerCase().includes(ref.toLowerCase())
         })
-        setData(filterdata)
+        resetFilters(filterdata)
         handleClose()
+        reset()
     }
 
     const reset = () => {

@@ -142,6 +142,7 @@ const UpdatePurchaseReturn = () => {
             setdiscount(apiData.purchase?.discount)
             setshipping(apiData.purchase?.shippment)
             settotal(apiData.total)
+            setValue('total', apiData.sale?.total)
             setcaldiscount(parseFloat(getDiscount(apiData.purchase?.discount, apiData.purchase?.subtotal).toFixed(2)))
             setcalorderTax(parseFloat(getorderTax(apiData.purchase?.orderTax, apiData.purchase?.subtotal).toFixed(2)))
             setValue('returnDate', apiData.returnDate?.split('T')[0])

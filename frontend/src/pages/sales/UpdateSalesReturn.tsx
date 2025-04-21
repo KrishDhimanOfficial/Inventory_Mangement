@@ -117,11 +117,10 @@ const UpdateSalesReturn = () => {
                 .toFixed(2)
         ))
     } // this will set sub total of sales
+    console.log();
 
     const registeration = async (formdata: object) => {
         try {
-            console.log(formdata);
-
             const res = await DataService.put(`/sales-return/${salesReturnId}`, formdata)
             Notify(res)
             if (res.success) navigate('/dashboard/sales/returns')
@@ -142,6 +141,7 @@ const UpdateSalesReturn = () => {
             setcaldiscount(parseFloat(getDiscount(apiData.sale?.discount, apiData.sale?.subtotal).toFixed(2)))
             setcalorderTax(parseFloat(getorderTax(apiData.sale?.orderTax, apiData.sale?.subtotal).toFixed(2)))
             setValue('salesDate', apiData.sale?.selling_date.split('T')[0])
+            setValue('total', apiData.sale?.total)
             setsales(apiData.returnItems?.map((pro: any) => ({
                 _id: pro.productId,
                 product: pro.name,
