@@ -64,10 +64,24 @@ const Products = () => {
                             />
                         )
                     }
+                    <Button text=''
+                        onclick={() => BarcodeGenerator(row._id)}
+                        className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>}
+                    />
                 </div>
             )
         },
     ]
+
+    const printBarcode = () => {
+        let sku = '';
+        for (let i = 0; i < 8; ++i) sku += Math.round(Math.random() * 9)
+
+
+        // Add a setTimeout to generate final barcode
+        JsBarcode(barcodeRef.current, sku, { format: "CODE39" });
+
+    }
 
     const tableBody = data.map((product: ProductSchema) => [
         product.id,
@@ -76,7 +90,7 @@ const Products = () => {
         product.category,
         product.brand,
     ])
-    
+
     const pdfColumns = ["S.No", "SKU", "Title", "Category", "Brand"]
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
     const fetch = useCallback(async () => {

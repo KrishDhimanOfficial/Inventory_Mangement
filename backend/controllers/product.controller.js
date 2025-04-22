@@ -1581,6 +1581,9 @@ const pro_controllers = {
                         "purchase.payment_status": 1,
                         "purchase.total": 1,
                         date: 1,
+                        'purchasereturns.payment_status': 1,
+                        'purchasereturns.payment_paid': 1,
+                        'purchasereturns.payment_due': 1,
                         'purchasereturns.purchaseReturnId': 1,
                         'purchasereturns.total': 1,
                         'purchasereturns._id': 1,
@@ -1597,9 +1600,8 @@ const pro_controllers = {
         try {
             let code = '';
             for (let i = 0; i < 4; ++i) code += Math.round(Math.random() * 9)
-            console.log(req.body);
 
-            const { purchaseId, purchaseReturn, id, total, returnDate } = req.body;
+            const { purchaseId, purchaseReturn, id, total } = req.body;
             const transformedPurchaseReturn = purchaseReturn.map(pro => ({ id: new ObjectId(pro._id), returnqty: pro.qtyreturn }))
 
             const checkExistence = await purchasereturnModel.findOne({ purchaseId })
@@ -1608,8 +1610,8 @@ const pro_controllers = {
             const response = await purchasereturnModel.create({
                 purchaseReturnId: `PR_${code}`,
                 purchaseId, total,
-                returnDate: format(parseISO(returnDate), 'yyyy-MM-dd'),
                 purchaseobjectId: new ObjectId(id),
+                payment_due: total,
                 purchaseReturn: purchaseReturn.map(pro => ({
                     productId: new ObjectId(pro._id),
                     returnqty: pro.qtyreturn,
@@ -1680,7 +1682,26 @@ const pro_controllers = {
                         },
                         id: { $first: '$purchaseobjectId' },
                         returnDate: { $first: '$returnDate' },
-                        total: { $first: '$total' }
+                        total: { $first: '$total' },
+                        payment_due: { $first: '$payment_due' },
+                        payment_paid: { $first: '$payment_paid' },
+                        payment_status: { $first: '$payment_status' },
+                        purchaseReturnId: { $first: '$purchaseReturnId' },
+                        paymentmethodId: { $first: '$paymentmethodId' },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'paymentmethods',
+                        localField: 'paymentmethodId',
+                        foreignField: '_id',
+                        as: 'payment'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$payment',
+                        preserveNullAndEmptyArrays: true
                     }
                 },
                 {
@@ -1729,6 +1750,11 @@ const pro_controllers = {
                         returnItems: 1,
                         purchase_date: 1,
                         returnDate: 1,
+                        payment_due: 1,
+                        payment_paid: 1,
+                        payment_status: 1,
+                        purchaseReturnId: 1,
+                        'payment.name': 1,
                         'supplier.name': 1,
                         'warehouse.name': 1,
                         'supplier.email': 1,
@@ -1794,6 +1820,25 @@ const pro_controllers = {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updatePurchaseReturn : ' + error.message)
             return res.status(503).json({ error: 'Server currently unavailable.' })
+        }
+    },
+    updatePurchaseReturnPayment: async (req, res) => {
+        try {
+            const { paid, due, paymentId, pStatus, } = req.body;
+            const record = await purchasereturnModel.findById({ _id: req.params.id })
+            const response = await purchasereturnModel.findByIdAndUpdate({ _id: req.params.id },
+                {
+                    payment_status: pStatus.value,
+                    $inc: { payment_paid: paid },
+                    payment_due: parseFloat((record.payment_due - paid).toFixed(2)),
+                    paymentmethodId: new ObjectId(paymentId.value)
+                },
+                { new: true, runValidators: true }
+            )
+            if (!response) return res.json({ error: 'Please try again later.' })
+            return res.status(200).json({ success: 'Saved' })
+        } catch (error) {
+            console.log('updatePurchaseReturnPayment : ' + error.message)
         }
     },
     deletePurchaseReturn: async (req, res) => {
@@ -1866,7 +1911,7 @@ const pro_controllers = {
                         date: {
                             $dateToString: {
                                 format: "%Y-%m-%d",
-                                date: "$salesreturns.createdAt"
+                                date: "$salesreturns.returnDate"
                             }
                         },
 
@@ -1874,14 +1919,14 @@ const pro_controllers = {
                 },
                 {
                     $project: {
+                        date: 1,
                         'customer.name': 1,
                         'warehouse.name': 1,
-                        "sales.payment_paid": 1,
+                        "salesreturns.payment_paid": 1,
                         "sales.purchaseId": 1,
-                        "sales.payment_due": 1,
-                        "sales.payment_status": 1,
-                        "sales.total": 1,
-                        date: 1,
+                        "salesreturns.payment_due": 1,
+                        "salesreturns.payment_status": 1,
+                        "salesreturns.total": 1,
                         'salesreturns.salesId': 1,
                         'salesreturns.salesReturnId': 1,
                         'salesreturns._id': 1,
@@ -1908,6 +1953,7 @@ const pro_controllers = {
             const response = await salesreturnModel.create({
                 salesReturnId: `SR_${code}`,
                 salesId, total,
+                payment_due: total,
                 salesobjectId: new ObjectId(id),
                 salesReturn: salesReturn.map(pro => ({
                     productId: new ObjectId(pro._id),
@@ -1973,6 +2019,37 @@ const pro_controllers = {
                             }
                         },
                         id: { $first: '$salesobjectId' },
+                        total: { $first: '$total' },
+                        returnDate: { $first: '$returnDate' },
+                        payment_due: { $first: '$payment_due' },
+                        payment_paid: { $first: '$payment_paid' },
+                        payment_status: { $first: '$payment_status' },
+                        salesReturnId: { $first: '$salesReturnId' },
+                        paymentmethodId: { $first: '$paymentmethodId' },
+                    }
+                },
+                {
+                    $addFields: {
+                        date: {
+                            $dateToString: {
+                                date: "$returnDate",
+                                format: "%d-%m-%Y"
+                            }
+                        }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'paymentmethods',
+                        localField: 'paymentmethodId',
+                        foreignField: '_id',
+                        as: 'payment'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$payment',
+                        preserveNullAndEmptyArrays: true
                     }
                 },
                 {
@@ -1988,8 +2065,16 @@ const pro_controllers = {
                 },
                 {
                     $project: {
+                        date: 1,
+                        total: 1,
+                        payment_due: 1,
+                        payment_paid: 1,
+                        payment_status: 1,
+                        paymentmethodId: 1,
+                        salesReturnId: 1,
                         returnItems: 1,
                         selling_date: 1,
+                        'payment.name': 1,
                         'sale.total': 1,
                         'sale.subtotal': 1,
                         'sale.discount': 1,
@@ -2007,11 +2092,12 @@ const pro_controllers = {
     },
     updateSalesReturn: async (req, res) => {
         try {
-            const { salesReturn, total } = req.body;
+            const { salesReturn, total, salesDate } = req.body;
             const prevObject = await salesreturnModel.findOne({ salesReturnId: req.params.id })
             const response = await salesreturnModel.findOneAndUpdate({ salesReturnId: req.params.id },
                 {
                     total,
+                    returnDate: format(parseISO(salesDate), 'yyyy-MM-dd'),
                     salesReturn: salesReturn.map(pro => ({
                         productId: new ObjectId(pro._id),
                         returnqty: pro.qtyreturn,
@@ -2045,6 +2131,26 @@ const pro_controllers = {
             return res.status(200).json({ success: 'updated successfully.' })
         } catch (error) {
             console.log('updateSalesReturn : ' + error.message)
+            return res.status(503).json({ error: 'Server currently unavailable.' })
+        }
+    },
+    updateSalesReturnPayment: async (req, res) => {
+        try {
+            const { paid, due, paymentId, pStatus } = req.body;
+            const record = await salesreturnModel.findById({ _id: req.params.id })
+            const response = await salesreturnModel.findByIdAndUpdate({ _id: req.params.id },
+                {
+                    payment_status: pStatus.value,
+                    $inc: { payment_paid: paid },
+                    payment_due: parseFloat((record.payment_due - paid).toFixed(2)),
+                    paymentmethodId: new ObjectId(paymentId.value)
+                },
+                { new: true, runValidators: true }
+            )
+            if (!response) return res.status(404).json({ error: 'Please try again later.' })
+            return res.status(200).json({ success: 'Saved.' })
+        } catch (error) {
+            console.log('updateSalesReturnPayment : ' + error.message)
             return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },

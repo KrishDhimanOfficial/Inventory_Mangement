@@ -9,7 +9,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import Big from 'big.js';
 
-const defaultValues = { salesDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, salesReturn: [], salesId: '', id: '' }
+const defaultValues = { salesDate: Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, salesReturn: [], salesId: '', id: '' }
 
 const SalesReturn = () => {
     const { salesId } = useParams()
@@ -146,7 +146,7 @@ const SalesReturn = () => {
             settotal(apiData.total)
             setcaldiscount(parseFloat(getDiscount(apiData.discount, apiData.subtotal).toFixed(2)))
             setcalorderTax(parseFloat(getorderTax(apiData.orderTax, apiData.subtotal).toFixed(2)))
-            setValue('salesDate', apiData.date)
+            setValue('salesDate', new Date().toISOString().split('T')[0])
             setsales(apiData.orderItems?.map((pro: any) => ({
                 _id: pro.productId,
                 product: pro.name,

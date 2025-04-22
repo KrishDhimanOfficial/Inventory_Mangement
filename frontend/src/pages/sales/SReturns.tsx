@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Static_Modal, Sec_Heading, Section, Button, Loader } from '../../components/component'
+import { useState, useEffect, lazy } from 'react';
+import { Sec_Heading, Section, Button, Loader, DropDownMenu } from '../../components/component'
 import { useSelector } from 'react-redux';
 import DataTable from 'react-data-table-component';
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
-import { Link } from 'react-router';
 import config from '../../config/config';
 
+const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
+const Static_Modal = lazy(() => import('../../components/modal/Static_Modal'))
 const SReturns = () => {
     const [data, setdata] = useState([])
     const [loading, setloading] = useState(false)
     const [Id, setId] = useState('')
     const [refreshTable, setrefreshTable] = useState(false)
     const [warnModal, setwarnmodal] = useState(false)
+    const [paymentodal, setpaymentodal] = useState(false)
     const { permission } = useSelector((state: any) => state.permission)
 
     const tableBody = data.map((salesReturn: any, i: number) => [
@@ -40,23 +42,18 @@ const SReturns = () => {
         {
             name: "Actions",
             cell: (row: any) => (
-                <div className="d-flex justify-content-between">
-                    {
-                        permission.sales?.edit && (
-                            <Link to={`/dashboard/update-sales-return/${row.reference}`} className='btn btn-success me-2'>
-                                <i className="fa-solid fa-pen-to-square"></i>
-                            </Link>
-                        )
-                    }
-                    {
-                        permission.sales?.delete && (
-                            <Button text=''
-                                onclick={() => deleteTableRow(row._id)}
-                                className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>}
-                            />
-                        )
-                    }
-                </div>
+                <DropDownMenu
+                    name='Return'
+                    api={`/sales-return/${row.reference}`}
+                    editURL={`/dashboard/update-sales-return/${row.reference}`}
+                    deletedata={() => deleteTableRow(row.id)}
+                    detailsURL={`/dashboard/sales-return-details/${row.reference}`}
+                    updatepermission={permission.sales?.edit}
+                    deletepermission={permission.sales?.delete}
+                    paymentbtnShow={row.sstatus}
+                    paymentModal={() => setpaymentodal(!paymentodal)}
+                    isReturnItem={true}
+                />
             )
         },
     ]
@@ -67,6 +64,8 @@ const SReturns = () => {
             const res: any = await DataService.get('/all-sales-return-details', {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
+            console.log(res);
+            
             const data = res.map((pro: any) => ({
                 _id: pro.salesreturns._id,
                 date: pro.date,
@@ -74,10 +73,10 @@ const SReturns = () => {
                 sref: pro.salesreturns.salesId,
                 customer: pro.customer.name,
                 warehouse: pro.warehouse.name,
-                total: pro.sales.total,
-                paid: pro.sales.payment_paid,
-                due: pro.sales.payment_due,
-                sstatus: <Button className={`badges ${pro.sales?.payment_status}`} text={pro.sales.payment_status} />,
+                total: pro.salesreturns.total,
+                paid: pro.salesreturns.payment_paid,
+                due: pro.salesreturns.payment_due,
+                sstatus: <Button className={`badges ${pro.salesreturns.payment_status}`} text={pro.salesreturns.payment_status} />,
             }))
             setdata(data), setloading(false)
         } catch (error) {
@@ -88,6 +87,16 @@ const SReturns = () => {
     useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
+            <Payment_Modal
+                show={paymentodal}
+                endApi={`/sales-return`}
+                handleClose={() => setpaymentodal(!paymentodal)}
+                refreshTable={() => {
+                    setpaymentodal(!paymentodal)
+                    setrefreshTable(!refreshTable)
+                    setloading(!loading)
+                }}
+            />
             <Static_Modal show={warnModal} endApi={`/sales-return/${Id}`}
                 handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {

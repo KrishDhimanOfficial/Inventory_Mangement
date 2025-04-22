@@ -27,7 +27,7 @@ const pStatus = [{ label: 'paid', value: 'paid' }, { label: 'parital', value: 'p
 const defaultValues = { paid: 0, due: 0, paymentId: '', pStatus: '' }
 
 const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable }) => {
-    const [payment_methods, setpayment_methods] = useState([])
+    const [payment_methods, setpayment_methods] = useState([{ label: 'Select', value: 0 }])
     const [balanceamount, setbalanceamount] = useState(0)
     const [statusOption, setstatusOption] = useState({ label: 'Select ', value: 0 })
     const [method, setmethod] = useState({ label: 'Select ', value: 0 })
@@ -48,9 +48,9 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
 
     const handlepay = (amount: number) => {
         if (amount > data.payment_due) toast.warning('Amount is greater than due amount')
-        setbalanceamount(parseFloat(Big(data.payment_due).minus(amount).toFixed(2)))
-        setValue('paid', parseFloat(Big(amount).toFixed(2)))
-        setValue('due', parseFloat(Big(data.payment_due).toFixed(2)))
+        else setbalanceamount(parseFloat(Big(data.payment_due).minus(amount).toFixed(2))),
+            setValue('paid', parseFloat(Big(amount).toFixed(2))),
+            setValue('due', parseFloat(Big(data.payment_due).toFixed(2)))
     }
 
     const updatePatchRequest = async (formdata: any) => {
@@ -72,7 +72,7 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
         if (data?._id) {
             const payment = { value: data.payment?._id, label: data.payment?.name }
             setmethod(payment)
-            setValue('due', parseFloat(Big(data.payment_due).plus(0).toFixed(2)))
+            setValue('due', parseFloat((data.payment_due).toFixed(2)))
             setValue('paymentId', payment || { value: 0, label: 'Select' })
             setValue('pStatus', { label: data.payment_status, value: data.payment_status })
             setstatusOption({ label: data.payment_status, value: data.payment_status })
@@ -106,7 +106,7 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
                                 <label>Referernce </label>
                             </div>
                             <div className={`inputForm`}>
-                                {data.purchaseId || data.salesId}
+                                {data.purchaseId || data.salesId || data.purchaseReturnId || data.salesReturnId}
                             </div>
                         </Col>
                         <Col md='4'>

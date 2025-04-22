@@ -5,14 +5,15 @@ import { DropdownDivider, ListGroup, Row, Table, Col, Badge } from 'react-bootst
 import { useParams } from 'react-router';
 import DataTable from 'react-data-table-component';
 import { useSelector } from 'react-redux';
+import { table } from 'console';
 interface Details {
     name: string,
     info: string
 }
 
-const Details: React.FC<Details> = ({ name, info }) => {
+const ReturnDetails: React.FC<Details> = ({ name, info }) => {
     const { settings } = useSelector((state: any) => state.singleData)
-    const { salesId, purchaseId, salesReturnId, purchaseReturnId } = useParams()
+    const { salesReturnId, purchaseReturnId } = useParams()
     const [orders, setorders] = useState([])
     const [calDiscount, setcalDiscount] = useState<number | any>(null)
     const [calOrdertax, setcalOrdertax] = useState<number | any>(null)
@@ -33,38 +34,37 @@ const Details: React.FC<Details> = ({ name, info }) => {
 
     const columns = [
         { name: "Product", selector: (row: any) => row.product },
-        { name: `${salesId ? 'Price' : 'Cost'}`, selector: (row: any) => salesId ? row.price : row.cost },
+        { name: `${salesReturnId ? 'Price' : 'Cost'}`, selector: (row: any) => salesReturnId? row.price : row.cost },
         { name: "Quantity", selector: (row: any) => row.qty },
         { name: "Tax", selector: (row: any) => row.tax },
         { name: "SubTotal", selector: (row: any) => row.subtotal },
     ]
-    console.log(calOrdertax, calDiscount);
-
 
     const getOrders = async () => {
         try {
-            const endpoint = salesId
-                ? `/get/sales_details/${salesId}`
-                : `/get/purchase_details/${purchaseId}`
+            const endpoint = salesReturnId
+                ? `/sales-return/${salesReturnId}`
+                : `/purchase-return/${purchaseReturnId}`
             const res = await DataService.get(endpoint)
+            console.table(res.returnItems)
             setordersInfo(res)
-            setcalDiscount(getDiscount(res.discount, res.subtotal))
-            setcalOrdertax(getorderTax(res.orderTax, res.subtotal))
+            setcalDiscount(getDiscount(ordersInfo.discount, ordersInfo.subtotal))
+            setcalOrdertax(getorderTax(ordersInfo.orderTax, ordersInfo.subtotal))
             setorders(
-                salesId
-                    ? res.orderItems?.map((item: any) => ({
+                salesReturnId
+                    ? res.returnItems?.map((item: any) => ({
                         product: (<div className='d-flex flex-column gap-2'> <b>{item.sku}</b> ({item.name}) </div>),
                         price: item.price,
-                        qty: `${item.qty} ${item.unit}`,
+                        qty: `${item.returnqty} ${item.unit}`,
                         tax: `${item.tax}%`,
-                        subtotal: getTaxonProduct(item.price, item.tax, item.qty)
+                        subtotal: getTaxonProduct(item.price, item.tax, item.returnqty)
                     }))
-                    : res.orderItems?.map((item: any) => ({
+                    : res.returnItems?.map((item: any) => ({
                         product: (<div className='d-flex flex-column gap-2'> <b>{item.sku}</b> ({item.name}) </div>),
                         cost: item.cost,
-                        qty: `${item.qty} ${item.unit}`,
+                        qty: `${item.returnqty} ${item.unit}`,
                         tax: `${item.tax}%`,
-                        subtotal: getTaxonProduct(item.cost, item.tax, item.qty)
+                        subtotal: getTaxonProduct(item.cost, item.tax, item.returnqty)
                     }))
             )
         } catch (error) {
@@ -87,7 +87,7 @@ const Details: React.FC<Details> = ({ name, info }) => {
                     <div className="card-body">
                         <div className="row mt-4 mb-2">
                             <div className="col-12">
-                                <h5 className='text-center'>{name} Detail : {salesId || purchaseId}</h5>
+                                <h5 className='text-center'>{name} Detail : {salesReturnId || purchaseReturnId}</h5>
                             </div>
                         </div>
                         <DropdownDivider className='mt-3 mb-5 bg-dark' style={{ height: '0.5px' }} />
@@ -132,7 +132,7 @@ const Details: React.FC<Details> = ({ name, info }) => {
                             <Col md='4'>
                                 <h5 className='mb-2'>Invoice Info</h5>
                                 <ListGroup>
-                                    <ListGroup.Item className='border-0 p-0'>Reference : {salesId || purchaseId}</ListGroup.Item>
+                                    <ListGroup.Item className='border-0 p-0'>Reference : {salesReturnId || purchaseReturnId}</ListGroup.Item>
                                     <ListGroup.Item className='border-0 p-0'>Payment Status : {ordersInfo.payment_status === 'paid' && (<Badge bg='bg-success'>{ordersInfo.payment_status}</Badge>)}
                                         {ordersInfo.payment_status === 'unpaid' && (<Badge bg='danger'>{ordersInfo.payment_status}</Badge>)}
                                         {ordersInfo.payment_status === 'partial' && (<Badge bg='dark'>{ordersInfo.payment_status}</Badge>)}
@@ -160,7 +160,7 @@ const Details: React.FC<Details> = ({ name, info }) => {
                                             <td>{settings.currency?.value} {
                                                 calOrdertax == 0
                                                     ? 0
-                                                    : parseFloat(calOrdertax).toFixed(2)} ({ordersInfo.orderTax}%)
+                                                    : parseFloat(ordersInfo.subtotal + calOrdertax).toFixed(2)} ({parseFloat(calOrdertax).toFixed(2)}%)
 
                                             </td>
                                         </tr>
@@ -169,7 +169,7 @@ const Details: React.FC<Details> = ({ name, info }) => {
                                             <td>{settings.currency?.value} {
                                                 calDiscount == 0
                                                     ? 0
-                                                    : parseFloat(calDiscount).toFixed(2)} ({ordersInfo.discount} %)
+                                                    : (ordersInfo.subtotal - calDiscount).toFixed(2)} ({parseFloat(calDiscount).toFixed(2)}%)
                                             </td>
                                         </tr>
                                         <tr>
@@ -199,4 +199,4 @@ const Details: React.FC<Details> = ({ name, info }) => {
         </>
     )
 }
-export default Details
+export default ReturnDetails

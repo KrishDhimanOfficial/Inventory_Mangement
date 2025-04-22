@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Sec_Heading, Section, Loader, Button, Static_Modal, DropDownMenu } from '../../components/component'
+import { useEffect, useState, lazy } from 'react';
+import { Sec_Heading, Section, Loader, Button, DropDownMenu } from '../../components/component'
 import DataTable from 'react-data-table-component';
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import config from '../../config/config';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router';
+
+const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
+const Static_Modal = lazy(() => import('../../components/modal/Static_Modal'))
 
 const PReturns = () => {
     const [data, setdata] = useState([])
@@ -35,20 +37,23 @@ const PReturns = () => {
         { name: "Supplier", selector: (row: any) => row.supplier, sortable: true },
         { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
         { name: "Grand Total", selector: (row: any) => row.amount, sortable: true },
+        { name: "Paid", selector: (row: any) => row.paid, sortable: true },
+        { name: "Due", selector: (row: any) => row.due, sortable: true },
         { name: "Payment Status", selector: (row: any) => row.pstatus, sortable: true },
         {
             name: "Actions",
             cell: (row: any) => (
                 <DropDownMenu
-                    name='Purchase'
+                    name='Return'
                     api={`/purchase-return/${row.reference}`}
                     editURL={`/dashboard/update-purchase-return/${row.reference}`}
                     deletedata={() => deleteTableRow(row.id)}
-                    detailsURL={`/dashboard/purchase-return/${row.reference}`}
+                    detailsURL={`/dashboard/purchase-return-details/${row.reference}`}
                     updatepermission={permission.purchase?.edit}
                     deletepermission={permission.purchase?.delete}
                     paymentbtnShow={row.pstatus}
                     paymentModal={() => setpaymentodal(!paymentodal)}
+                    isReturnItem={true}
                 />
             )
         },
@@ -70,10 +75,10 @@ const PReturns = () => {
                 supplier: pro.supplier.name,
                 warehouse: pro.warehouse.name,
                 total: pro.purchase.total,
-                paid: pro.purchase.payment_paid,
+                paid: pro.purchasereturns.payment_paid,
                 amount: pro.purchasereturns.total,
-                due: pro.purchase.payment_due,
-                pstatus: <Button className={`badges ${pro.purchase.payment_status}`} text={pro.purchase.payment_status} />,
+                due: pro.purchasereturns.payment_due,
+                pstatus: <Button className={`badges ${pro.purchasereturns.payment_status}`} text={pro.purchasereturns.payment_status} />,
             }))
             setdata(data), setloading(false)
         } catch (error) {
@@ -84,6 +89,16 @@ const PReturns = () => {
     useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
+            <Payment_Modal
+                show={paymentodal}
+                endApi={`/purchase-return`}
+                handleClose={() => setpaymentodal(!paymentodal)}
+                refreshTable={() => {
+                    setpaymentodal(!paymentodal)
+                    setrefreshTable(!refreshTable)
+                    setloading(!loading)
+                }}
+            />
             <Static_Modal show={warnModal} endApi={`/purchase-return/${Id}`}
                 handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {

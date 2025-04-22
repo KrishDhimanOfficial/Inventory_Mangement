@@ -1,14 +1,12 @@
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link,  } from 'react-router-dom';
 import Button from './Button';
-import { DataService, useFetchData } from '../../hooks/hook';
-import { useDispatch, useSelector } from 'react-redux';
+import { DataService,  } from '../../hooks/hook';
+import { useDispatch,  } from 'react-redux';
 import { setSingleData } from '../../controller/singleData'
-import { useState } from 'react';
-import { GenerateBill } from '../component';
 
-const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermission, paymentbtnShow, deletepermission, return_status, paymentModal, returnURL }: {
+const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermission, paymentbtnShow, deletepermission, isReturnItem,return_status, paymentModal, returnURL }: {
     api: string,
     name: string,
     editURL: string,
@@ -19,6 +17,7 @@ const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermis
     updatepermission: Boolean,
     deletepermission: Boolean,
     return_status?: Boolean,
+    isReturnItem?: Boolean,
     paymentbtnShow?: any,
 }) => {
     const dispatch = useDispatch()
@@ -26,6 +25,8 @@ const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermis
     const handlePaymentModalOpen = async () => {
         try {
             const res = await DataService.get(api)
+            console.log(res);
+            
             paymentModal()
             dispatch(setSingleData(res))
         } catch (error) {
@@ -65,7 +66,7 @@ const DropDownMenu = ({ name, api, editURL, detailsURL, deletedata, updatepermis
                     )
                 }
                 {
-                    paymentbtnShow.props?.text === 'paid' && (
+                    (paymentbtnShow.props?.text === 'paid' && !isReturnItem) && (
                         <Link to={`${returnURL}`} className='px-3 py-1 text-decoration-none text-dark w-100 d-inline-block'>{name} Return </Link>
                     )
                 }

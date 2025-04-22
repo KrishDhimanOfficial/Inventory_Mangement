@@ -595,48 +595,104 @@ const reportController = {
     getSalesPurchaseByDayOnBars: async (req, res) => {
         try {
             const { startDate, endDate } = req.query;
-            const sales = await salesModel.aggregate([
+            const response = await productModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'sales',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 0,
+                                    data: '$$ROOT',
+                                }
+                            }
+                        ],
+                        as: 'sales'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'purchases',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 0,
+                                    data: '$$ROOT',
+                                }
+                            }
+                        ],
+                        as: 'purchases'
+                    }
+                },
+                {
+                    $project: {
+                        mergedArray: {
+                            $setUnion: [
+                                '$sales',
+                                '$purchases'
+                            ]
+                        }
+                    }
+                },
+                { $unwind: '$mergedArray' },
+                { $replaceRoot: { newRoot: '$mergedArray.data' } },
+                {
+                    $group: {
+                        _id: '$_id', // use _id to group duplicates
+                        doc: { $first: '$$ROOT' }
+                    }
+                },
                 {
                     $match: {
+                        $or: [
+                            {
+                                'doc.selling_date': {
+                                    $gte: new Date(startDate),
+                                    $lte: new Date(endDate)
+                                }
+                            },
+                            {
+                                'doc.purchase_date': {
+                                    $gte: new Date(startDate),
+                                    $lte: new Date(endDate)
+                                }
+                            }
+                        ],
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            sDate: '$doc.selling_date',
+                            pDate: '$doc.purchase_date',
+                        },
+                        selling_date: { $first: '$doc.selling_date' },
+                        purchase_date: { $first: '$doc.purchase_date' },
+                        totalSales: { $sum: { $sum: '$doc.orderItems.quantity' } },
+                        totalAmount: { $sum: '$doc.total' },
+                        totalPurchase: { $sum: { $sum: '$doc.orderItems.quantity' } },
+                        totalPurchaseAmount: { $sum: '$doc.total' },
+                    }
+                },
+                {
+                    $addFields: {
                         selling_date: {
-                            $gte: new Date(startDate),
-                            $lte: new Date(endDate)
-                        }
-                    }
-                },
-                {
-                    $group: {
-                        _id: {
-                            $dateToString: { date: "$selling_date", format: "%Y/%m/%d" }
+                            $dateToString: { date: "$selling_date", format: "%Y-%m-%d" }
                         },
-                        totalSales: { $sum: { $sum: '$orderItems.quantity' } },
-                        totalAmount: { $sum: '$total' },
-                    }
-                },
-                {
-                    $sort: { date: -1 },
-                },
-            ])
-            const purchase = await purchaseModel.aggregate([
-                {
-                    $match: {
                         purchase_date: {
-                            $gte: new Date(startDate),
-                            $lte: new Date(endDate)
+                            $dateToString: { date: "$purchase_date", format: "%Y-%m-%d" }
                         }
                     }
                 },
                 {
-                    $group: {
-                        _id: {
-                            $dateToString: { date: "$purchase_date", format: "%Y-%m-%d" }
-                        },
-                        totalPurchase: { $sum: { $sum: '$orderItems.quantity' } },
+                    $sort: {
+                        selling_date: -1,
+                        purchase_date: -1
                     }
-                },
-                { $sort: { date: -1 } },
+                }
             ])
-            return res.status(200).json({ sales, purchase })
+
+            return res.status(200).json(response)
         } catch (error) {
             console.log('getSalesPurchaseByDayOnBars : ' + error.message)
         }

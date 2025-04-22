@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router';
 import Big from 'big.js';
 import { toast } from 'react-toastify';
+import config from '../../config/config';
 
 const defaultValues = { returnDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
 
@@ -123,7 +124,9 @@ const UpdatePurchaseReturn = () => {
 
     const registeration = async (formdata: object) => {
         try {
-            const res = await DataService.put(`/purchase-return/${purchaseReturnId}`, formdata)
+            const res = await DataService.put(`/purchase-return/${purchaseReturnId}`, formdata, {
+                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+            })
             Notify(res)
             if (res.success) navigate('/dashboard/purchase/returns')
         } catch (error) {
@@ -245,7 +248,7 @@ const UpdatePurchaseReturn = () => {
                                     </Col>
                                 </Row>
                                 {/* Row 4 Grand Total */}
-                                <Row className="mb-4">
+                                {/* <Row className="mb-4">
                                     <Col md='4'>
                                         <div className="flex-column">
                                             <label>Order Tax (%)</label>
@@ -285,7 +288,7 @@ const UpdatePurchaseReturn = () => {
                                             />
                                         </div>
                                     </Col>
-                                </Row>
+                                </Row> */}
                                 {/* Row 5 End  order, discount,status,shippment*/}
                                 <Button
                                     type='submit'

@@ -540,3 +540,22 @@ input[type="number"] {
 }
 
 /* badges */
+
+/* Page Loader */
+/* From Uiverse.io by MikeAndrewDesigner */
+.loader {
+    width: 5.4em;
+    height: 5.4em;
+    border: 0.4em solid rgb(241, 241, 241);
+    border-left-color: #a23ffc;
+    border-radius: 45%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Page Loader */

@@ -166,7 +166,7 @@ const UpdateSalesReturn = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Purchase Date </label>
+                                                <label>Sales Return Date </label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm${errors.salesDate?.message ? 'inputError' : ''}`}>
@@ -178,7 +178,6 @@ const UpdateSalesReturn = () => {
                                                             {...field}
                                                             type="date"
                                                             className="input"
-                                                            disabled
                                                         />
                                                     )}
                                                 />
@@ -188,7 +187,7 @@ const UpdateSalesReturn = () => {
                                     <Col md='4'>
                                         <div className="w-100">
                                             <div className="flex-column">
-                                                <label>Purchase </label>
+                                                <label>Sales</label>
                                                 <span className='importantField'>*</span>
                                             </div>
                                             <div className={`inputForm`}>
@@ -241,7 +240,7 @@ const UpdateSalesReturn = () => {
                                     </Col>
                                 </Row>
                                 {/* Row 4 Grand Total */}
-                                <Row className="mb-4">
+                                {/* <Row className="mb-4">
                                     <Col md='4'>
                                         <div className="flex-column">
                                             <label>Order Tax (%)</label>
@@ -303,7 +302,7 @@ const UpdateSalesReturn = () => {
                                         </div>
                                     </Col>
                                 </Row>
-                                {/* Row 5 End  order, discount,status,shippment*/}
+                                Row 5 End  order, discount,status,shippment */}
                                 <Button
                                     type='submit'
                                     className='button-submit w-25'

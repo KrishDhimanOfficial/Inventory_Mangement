@@ -33,18 +33,19 @@ const Pie = () => {
             </div>
             <div className="card-body">
                 <VictoryPie
-                    width={300}
+                    width={400}
                     data={data}
                     style={{
                         labels: {
-                            fontSize: 16, // adjust the font size here
+                            fontSize: 12, // adjust the font size here
                             fontFamily: 'Arial', // optional
                         },
                         parent: {
-                            fontSize: 16, // adjust the font size here
+                            fontSize: 12, // adjust the font size here
                             fontFamily: 'Arial', // optional
                         },
                     }}
+                    animate={{duration: 500 }}
                     theme={VictoryTheme.clean}
                 />
             </div>

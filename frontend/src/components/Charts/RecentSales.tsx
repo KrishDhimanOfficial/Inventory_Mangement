@@ -1,12 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataService } from '../../hooks/hook';
 import config from '../../config/config';
 import { Table } from 'react-bootstrap';
 import { Loader } from '../component';
+import DataTable from 'react-data-table-component';
 
 const RecentSales = () => {
-    const [data, setdata] = React.useState<any>([])
-    const [loading, setloading] = React.useState(false)
+    const [data, setdata] = useState([])
+    const [loading, setloading] = useState(false)
+
+    const columns = [
+        { name: "Date", selector: (row: any) => row.date, sortable: true },
+        { name: "Reference", selector: (row: any) => row.reference, sortable: true },
+        { name: "Customer", selector: (row: any) => row.customer, sortable: true },
+        { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
+        { name: "Total", selector: (row: any) => row.total, sortable: true },
+        { name: "Paid", selector: (row: any) => row.paid, sortable: true },
+        { name: "due", selector: (row: any) => row.due, sortable: true },
+    ]
 
     const fetch = async () => {
         try {
@@ -14,7 +25,17 @@ const RecentSales = () => {
             const res = await DataService.get('/get-all-sales-details', {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
-            setdata(res)
+            setdata(
+                res?.map((item: any) => ({
+                    reference: item.salesId,
+                    date: item.date,
+                    customer: item.customer?.name,
+                    warehouse: item.warehouse?.name,
+                    total: item.total,
+                    paid: item.payment_paid,
+                    due: item.payment_due
+                }))
+            )
             setloading(false)
         } catch (error) {
             console.error(error);
@@ -27,7 +48,7 @@ const RecentSales = () => {
                 <h2 className="card-title mb-0">Recent Sales</h2>
             </div>
             <div className="card-body">
-                <Table>
+                {/* <Table>
                     <thead>
                         <tr>
                             <th>Invoice No</th>
@@ -43,22 +64,28 @@ const RecentSales = () => {
                         {
                             loading
                                 ? <Loader />
-                                : data?.map((item: any, index: number) => (
-                                    <tr key={index}>
-                                        <td>{item.salesId}</td>
-                                        <td>{item.date}</td>
-                                        <td>{item.customer?.name}</td>
-                                        <td>{item.warehouse?.name}</td>
-                                        <td>{item.total}</td>
-                                        <td>{item.payment_paid}</td>
-                                        <td>{item.payment_due}</td>
-                                    </tr>
-                                )).slice(0, 8)
+                                : data
                         }
                     </tbody>
-                </Table>
+                </Table> */}
+                <DataTable
+                    title="Recent Sales"
+                    paginationPerPage={5}
+                    paginationRowsPerPageOptions={[5, 10, 20]}
+                    paginationComponentOptions={{
+                        rowsPerPageText: 'Rows per page',
+                        rangeSeparatorText: 'of',
+                        noRowsPerPage: true,
+                        selectAllRowsItem: false,
+                    }}
+                    columns={columns}
+                    data={data}
+                    progressPending={loading}
+                    progressComponent={<Loader />}
+                    pagination
+                />
             </div>
         </div>
     )
 }
-export default RecentSales
+export default React.memo(RecentSales)

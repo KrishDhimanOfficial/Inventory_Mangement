@@ -12,7 +12,22 @@ const purchaseReturnSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Number
     },
     returnDate: {
-        type: mongoose.Schema.Types.Date
+        type: mongoose.Schema.Types.Date,
+    },
+    payment_paid: {
+        type: mongoose.Schema.Types.Number,
+        default: 0
+    },
+    payment_due: {
+        type: mongoose.Schema.Types.Number
+    },
+    paymentmethodId: {
+        type: mongoose.Schema.Types.ObjectId
+    },
+    payment_status: {
+        type: mongoose.Schema.Types.String,
+        enum: ['paid', 'unpaid', 'parital'],
+        default: 'unpaid'
     },
     purchaseReturn: {
         type: [

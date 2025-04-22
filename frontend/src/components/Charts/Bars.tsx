@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { VictoryChart, VictoryBar, VictoryGroup, VictoryLegend, VictoryTheme } from 'victory'
+import { VictoryChart, VictoryBar, VictoryGroup, VictoryAxis, VictoryLabel, VictoryLegend, VictoryTheme } from 'victory'
 import { DataService } from '../../hooks/hook'
 
 
 const Bars = () => {
     const [sales, setSales] = useState<any>([])
     const [purchases, setpurchases] = useState<any>([])
+    const [y_axis, sety_axis] = useState<number>(10)
     const [state, setState] = useState([
         {
             startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
@@ -17,14 +18,26 @@ const Bars = () => {
     const fetch = async () => {
         try {
             const res = await DataService.get(`/get/sales-purchase-by-day?startDate=${state[0].startDate}&endDate=${state[0].endDate}`)
-            setSales(res.sales?.map((item: any) => ({
-                x: item._id,
-                y: item.totalSales,
-            })).slice(0, 7))
-            setpurchases(res.purchase?.map((item: any) => ({
-                x: item._id,
-                y: item.totalPurchase,
-            })).slice(0, 7))
+            sety_axis(res?.reduce((acc: any, item: any) => {
+                const total = item.totalSales + item.totalPurchase
+                return Math.max(acc, total)
+            }, 0) + 10)
+            setSales(
+                res
+                    ?.filter((item: any) => item._id?.sDate)
+                    .map((item: any) => ({
+                        x: item.selling_date,
+                        y: item.totalSales,
+                    }))
+            )
+            setpurchases(
+                res
+                    ?.filter((item: any) => item._id?.pDate)
+                    .map((item: any) => ({
+                        x: item.purchase_date,
+                        y: item.totalPurchase,
+                    }))
+            )
         } catch (error) {
             console.error(error)
         }
@@ -39,39 +52,41 @@ const Bars = () => {
             <div className="card-body">
                 <VictoryChart
                     theme={VictoryTheme.clean}
-                    domain={{ y: [1, 10] }}
-                    domainPadding={{ x: 40 }} >
+                    domain={{ y: [1, y_axis] }}
+                    domainPadding={{ x: 20 }}
+                >
                     <VictoryLegend
                         x={90}
                         y={20}
                         orientation="horizontal"
+                        animate={{ duration: 200 }}
                         gutter={20}
                         data={[
                             { name: "Sales" },
                             { name: "Purchases" },
                         ]}
                     />
-                    <VictoryGroup
-                        offset={40}
-                        style={{ data: { width: 15 } }}>
+
+                    <VictoryAxis
+                        tickLabelComponent={<VictoryLabel angle={-40} textAnchor="end" />}
+                    />
+
+                    <VictoryAxis dependentAxis />
+
+                    <VictoryGroup offset={20} style={{ data: { width: 15 } }}>
                         <VictoryBar
                             data={sales}
-                            labels={({ datum }) => datum.y}
+                            labels={({ datum }) => Math.trunc(datum.y)}
+                            animate={{ duration: 1000 }}
                         />
                         <VictoryBar
                             data={purchases}
-                            style={{
-                                labels: {
-                                    fontSize: 1, // adjust the font size here
-                                },
-                                parent: {
-                                    fontSize: 1, // adjust the font size here
-                                },
-                            }}
-                            labels={({ datum }) => (datum.y, datum.x.toString())}
+                            labels={({ datum }) => Math.trunc(datum.y)}
+                            animate={{ duration: 1000 }}
                         />
                     </VictoryGroup>
                 </VictoryChart>
+
             </div>
         </div>
     )

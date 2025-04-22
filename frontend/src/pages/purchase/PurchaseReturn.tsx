@@ -10,7 +10,7 @@ import Big from 'big.js';
 import { toast } from 'react-toastify';
 
 
-const defaultValues = { returnDate: new Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
+const defaultValues = { returnDate: Date(), orderTax: 0, total: 0, discount: 0, shipping: 0, purchaseReturn: [], purchaseId: '', id: '' }
 
 const PurchaseReturn = () => {
     const { purchaseId } = useParams()
@@ -121,7 +121,7 @@ const PurchaseReturn = () => {
     } // this will set sub total of purchase
 
     const registeration = async (formdata: object) => {
-        try {
+        try { 
             const res = await DataService.post(`/purchase-return/${purchaseId}`, formdata)
             Notify(res)
             if (res.purchaseReturnId) {
@@ -152,7 +152,7 @@ const PurchaseReturn = () => {
             settotal(apiData.total)
             setcaldiscount(parseFloat(getDiscount(apiData.discount, apiData.subtotal).toFixed(2)))
             setcalorderTax(parseFloat(getorderTax(apiData.orderTax, apiData.subtotal).toFixed(2)))
-            setValue('returnDate', apiData.purchase_date.split('T')[0])
+            setValue('returnDate', new Date().toISOString().split('T')[0])
             setpurchases(apiData.orderItems?.map((pro: any) => ({
                 _id: pro.productId,
                 product: pro.name,

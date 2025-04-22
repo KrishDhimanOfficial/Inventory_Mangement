@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState,useRef } from 'react'
 import { motion } from 'motion/react'
 import JsBarcode from "jsbarcode"
 import Select from 'react-select'
@@ -30,6 +30,7 @@ const validationSchema = yup.object().shape({
 })
 
 const Product = () => {
+    const barcodeRef = useRef(null)
     const { id } = useParams()
     const navigate = useNavigate()
     const [categories, setcategories] = useState([])
@@ -92,7 +93,9 @@ const Product = () => {
         setsku(sku)
 
         // Add a setTimeout to generate final barcode
-        // JsBarcode(barcodeRef.current, '1237454', { format: "CODE39" })
+        setTimeout(() => {
+            JsBarcode(barcodeRef.current, sku, { format: "CODE39" });
+        }, 0)
     }
 
     const registeration = async (formdata: any) => {

@@ -38,7 +38,7 @@ const Home = () => {
 
                             <div className="info-box-content">
                                 <span className="info-box-text">Purchases</span>
-                                <span className="info-box-number">{settings.currency?.value} {details.purchases?.total}</span>
+                                <span className="info-box-number">{settings.currency?.value} {parseFloat(details.purchases?.total).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>
