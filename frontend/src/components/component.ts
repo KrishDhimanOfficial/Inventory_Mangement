@@ -16,6 +16,7 @@ import GenerateBill from './pdf/GenerateBill'
 import Pie from './Charts/Pie'
 import Bars from './Charts/Bars'
 import RecentSales from './Charts/RecentSales'
+import Filters from './Filters/Filters'
 
 export {
     Button,
@@ -35,5 +36,6 @@ export {
     GenerateBill,
     Pie,
     Bars,
-    RecentSales
+    RecentSales,
+    Filters
 }

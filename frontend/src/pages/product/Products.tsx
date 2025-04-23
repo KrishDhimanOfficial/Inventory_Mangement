@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { Sec_Heading, Section, Button, Loader, Static_Modal, Input } from '../../components/component'
-import { DataService, downloadCSV, generatePDF, filterData } from '../../hooks/hook'
-import DataTable from 'react-data-table-component'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
+import { Sec_Heading, Section, Button, Loader, Static_Modal, } from '../../components/component'
+import { DataService, downloadCSV, generatePDF, } from '../../hooks/hook'
+// import DataTable from 'react-data-table-component'
 import { Link } from 'react-router'
 import { useSelector } from 'react-redux'
+import JsBarcode from "jsbarcode"
+import DataTable from '../../components/Datatable/DataTable'
 interface ProductSchema {
     id: number,
     name: string,
@@ -12,6 +14,7 @@ interface ProductSchema {
     title: string,
     image: string,
     sku: string,
+    code: string,
     cost: number,
     price: number,
     tax: number,
@@ -24,16 +27,10 @@ interface ProductSchema {
     unit: { shortName: string }
 }
 
-const months = [
-    'January', 'February', 'March', 'April',
-    'May', 'June', 'July', 'August',
-    'September', 'October', 'November', 'December'
-]
-
 const Products = () => {
+    const barcodeRef = useRef<any>(null)
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
-    const [filterdata, setfilterdata] = useState([])
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
@@ -60,39 +57,52 @@ const Products = () => {
                         permission.product?.delete && (
                             <Button text=''
                                 onclick={() => deleteTableRow(row._id)}
-                                className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>}
+                                className='btn btn-danger me-2' icon={<i className="fa-solid fa-trash"></i>}
                             />
                         )
                     }
                     <Button text=''
-                        onclick={() => BarcodeGenerator(row._id)}
-                        className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>}
+                        onclick={() => printBarcode(row.code)}
+                        className='btn btn-info text-white' icon={<i className="fa-solid fa-print"></i>}
                     />
                 </div>
             )
         },
     ]
 
-    const printBarcode = () => {
-        let sku = '';
-        for (let i = 0; i < 8; ++i) sku += Math.round(Math.random() * 9)
-
-
-        // Add a setTimeout to generate final barcode
-        JsBarcode(barcodeRef.current, sku, { format: "CODE39" });
-
+    const printBarcode = (code: string) => {
+        JsBarcode(barcodeRef.current, code, { format: "CODE39" })
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(`
+            <html>
+              <head>
+                <title>Print Barcode</title>
+              </head>
+              <body>
+                 <svg id="barcode">${barcodeRef.current?.outerHTML}</svg>
+                <script>
+                  window.onload = function() {
+                    window.print();
+                  }
+                </script>
+              </body>
+            </html>
+          `);
+            printWindow.close()
+        }
     }
 
     const tableBody = data.map((product: ProductSchema) => [
         product.id,
-        product.sku,
+        product.code,
         product.name,
         product.category,
         product.brand,
     ])
-
-    const pdfColumns = ["S.No", "SKU", "Title", "Category", "Brand"]
+    const tableHeader = ["S.No", "SKU", "Title", "Category", "Brand"]
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
+
     const fetch = useCallback(async () => {
         try {
             setloading(true)
@@ -115,6 +125,7 @@ const Products = () => {
     useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
+            <svg ref={barcodeRef} className='d-none' />
             <Static_Modal show={warnModal} endApi={`/product/${Id}`}
                 handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
@@ -126,9 +137,15 @@ const Products = () => {
             <Sec_Heading page="Product Management" subtitle="Products" />
             <Section>
                 <div className="col-12">
-                    <div className="card">
-                        <div className="card-body pt-1">
-                            <DataTable
+                    <DataTable
+                        pdfName='products'
+                        addURL='/dashboard/add/product'
+                        data={data}
+                        tablebody={tableBody}
+                        tableHeader={tableHeader}
+                        deleteTableRow={deleteTableRow}
+                    />
+                    {/* <DataTable
                                 title="Products Details"
                                 columns={columns}
                                 data={filterdata.length == 0 ? data : filterdata}
@@ -139,43 +156,26 @@ const Products = () => {
                                 subHeader
                                 subHeaderComponent={
                                     <div className="d-flex gap-3 justify-content-end">
-                                        <div>
-                                            <div className="searchbar">
-                                                <div className="searchbar-wrapper">
-                                                    <div className="searchbar-center">
-                                                        <div className="searchbar-input-spacer" />
-                                                        <Input
-                                                            type="text"
-                                                            className="searchbar-input"
-                                                            autoCapitalize="off"
-                                                            onChange={(e: any) => setfilterdata(filterData(data, e.target.value.trim()))}
-                                                            title="Search" role="combobox" placeholder="Search by name" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                         <Button
                                             text='Generate PDF'
-                                            className='btn btn-danger'
+                                            className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
                                             onclick={() => generatePDF('product.pdf', pdfColumns, tableBody)}
                                         />
                                         <Button
                                             text='CSV'
-                                            className='btn btn-success'
+                                            className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
                                             onclick={() => downloadCSV('products', data)}
                                         />
                                         {
                                             permission.product?.create && (
-                                                <Link className='btn btn-primary' to='/dashboard/add/product'>
+                                                <Link className='btn btn-dark btn-sm bg-transparent text-dark h-fit' state={{ from: location.pathname }} to='/dashboard/add/product'>
                                                     Create
                                                 </Link>
                                             )
                                         }
                                     </div>
                                 }
-                            />
-                        </div>
-                    </div>
+                            /> */}
                 </div>
             </Section>
         </>

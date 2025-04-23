@@ -1,4 +1,4 @@
-import { useEffect, useState,useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion } from 'motion/react'
 import JsBarcode from "jsbarcode"
 import Select from 'react-select'
@@ -163,7 +163,7 @@ const Product = () => {
 
     return (
         <>
-            <Sec_Heading page={id ? "Edit Product Details" : "Add Product"} subtitle="Product" />
+            <Sec_Heading page={id ? "Edit Product Details" : "Add Product"} subtitle="Product" ispural />
             <Section>
                 <div className="col-8">
                     <form onSubmit={handleSubmit(registeration)} className="form p-0 bg-transparent">

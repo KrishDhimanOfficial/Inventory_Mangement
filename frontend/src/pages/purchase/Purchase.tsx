@@ -239,7 +239,7 @@ const Purchase = () => {
     }, [shippment])
     return (
         <>
-            <Sec_Heading page={"Create Purchase"} subtitle="Purchase" />
+            <Sec_Heading page={"Create Purchase"} subtitle="Purchase" ispural />
             <Section>
                 <div className="col-12">
                     <div className="card">

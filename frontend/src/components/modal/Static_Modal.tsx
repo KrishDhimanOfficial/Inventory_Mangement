@@ -36,7 +36,7 @@ const Static_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTable
                         Close
                     </Button>
                     <Button
-                        variant="primary" onClick={() => deleteData(endApi)}>
+                        variant="danger" onClick={() => deleteData(endApi)}>
                         {isloading ? 'Deleting...' : ' Understood'}
                     </Button>
                 </Modal.Footer>

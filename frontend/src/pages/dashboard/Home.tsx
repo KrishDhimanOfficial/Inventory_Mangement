@@ -20,9 +20,8 @@ const Home = () => {
     useEffect(() => { fetch() }, [])
     return (
         <>
-            <Sec_Heading page='Dashboard' />
             <Section>
-                <div className="row">
+                <div className="row mt-5">
                     <div className="col-md-3 col-sm-6 col-12">
                         <div className="info-box shadow-sm">
                             <span className="info-box-icon bg-info"><i className="fa-solid fa-arrow-up-right-dots"></i> </span>

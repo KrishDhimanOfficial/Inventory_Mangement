@@ -60,7 +60,7 @@ const Sidebar = () => {
                 <nav className="mt-2">
                     <Accordion className='border-0 mb-3'>
                         <Accordion.Item eventKey="5">
-                            <Accordion.Header style={{}}>
+                            <Accordion.Header className='hidearrow'>
                                 <Link to="/dashboard" className="nav-link">
                                     <i className="fa-solid fa-gauge"></i>
                                     <p>Dashboard</p>
@@ -76,7 +76,7 @@ const Sidebar = () => {
                                         <i className="fa-solid fa-bars me-2"></i>
                                         <p> Product  </p>
                                     </Accordion.Header>
-                                    <Accordion.Body className='ps-0 bg-dark'>
+                                    <Accordion.Body className='ps-0 '>
                                         <ul className="nav nav-treeview">
                                             <li className="nav-item">
                                                 <Link to="/dashboard/products" className="nav-link">
@@ -114,7 +114,7 @@ const Sidebar = () => {
                                         <i className="fa-solid fa-credit-card me-2"></i>
                                         <p>Purchase</p>
                                     </Accordion.Header>
-                                    <Accordion.Body className='ps-0 bg-dark'>
+                                    <Accordion.Body className='ps-0 '>
                                         <ul className="nav nav-treeview">
                                             <li className="nav-item">
                                                 <Link to="/dashboard/purchases" className="nav-link">
@@ -144,7 +144,7 @@ const Sidebar = () => {
                                         <i className="fa-solid fa-chart-area me-2"></i>
                                         <p>Sales </p>
                                     </Accordion.Header>
-                                    <Accordion.Body className='ps-0 bg-dark'>
+                                    <Accordion.Body className='ps-0 '>
                                         <ul className="nav nav-treeview">
                                             <li className="nav-item">
                                                 <Link to="/dashboard/sales" className="nav-link">
@@ -166,7 +166,7 @@ const Sidebar = () => {
                         {
                             user.permissions?.purchase.view && (
                                 <Accordion.Item eventKey="3">
-                                    <Accordion.Header >
+                                    <Accordion.Header className='hidearrow'>
                                         <Link to="/dashboard/purchase/returns" className="nav-link">
                                             <i className="fa-solid fa-arrow-left"></i>
                                             <p>Purchase Return</p>
@@ -178,7 +178,7 @@ const Sidebar = () => {
                         {
                             user.permissions?.sales.view && (
                                 <Accordion.Item eventKey="2">
-                                    <Accordion.Header >
+                                    <Accordion.Header className='hidearrow'>
                                         <Link to="/dashboard/sales/returns" className="nav-link">
                                             <i className="fa-solid fa-arrow-right"></i>
                                             <p>Sales Return</p>
@@ -192,7 +192,7 @@ const Sidebar = () => {
                                 <i className="fa-solid fa-chart-area me-2"></i>
                                 <p>Reports</p>
                             </Accordion.Header>
-                            <Accordion.Body className='ps-0 bg-dark'>
+                            <Accordion.Body className='ps-0 '>
                                 <ul className="nav nav-treeview">
                                     {
                                         user.permissions?.purchase.view && (
@@ -282,7 +282,7 @@ const Sidebar = () => {
                                 <i className="fa-solid fa-users me-2"></i>
                                 <p>Peoples</p>
                             </Accordion.Header>
-                            <Accordion.Body className='ps-0 bg-dark'>
+                            <Accordion.Body className='ps-0 '>
                                 <ul className="nav nav-treeview">
                                     {
                                         user.permissions?.supplier.view && (
@@ -324,7 +324,7 @@ const Sidebar = () => {
                                         <i className="fa-solid fa-gear me-2"></i>
                                         <p>Settings</p>
                                     </Accordion.Header>
-                                    <Accordion.Body className='ps-0 bg-dark'>
+                                    <Accordion.Body className='ps-0 '>
                                         <ul className="nav nav-treeview">
                                             <li className="nav-item">
                                                 <Link to="/dashboard/system_setting" className="nav-link">

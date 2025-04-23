@@ -62,12 +62,4 @@ const generatePDF = (pdfname: string, columns: any, tablebodyarry: any) => {
 }
 //  Download PDF
 
-// Filter Data
-const filterData = (data: any, searchText: string) => {
-    const filteredItems = data.filter(
-        (item: any) => item.name && item.name.toLowerCase().includes(searchText.toLowerCase())
-    )
-    return filteredItems
-}
-// Filter Data
-export { downloadCSV, generatePDF, filterData }
+export { downloadCSV, generatePDF, }

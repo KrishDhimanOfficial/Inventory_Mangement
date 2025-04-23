@@ -750,7 +750,7 @@ const pro_controllers = {
                         warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
                         date: {
                             $dateToString: {
-                                format: "%Y-%m-%d",
+                                format: "%d-%m-%Y",
                                 date: "$purchase_date"
                             }
                         }
@@ -759,7 +759,7 @@ const pro_controllers = {
                 {
                     $project: { createdAt: 0, updatedAt: 0, note: 0, supplierId: 0, warehouseId: 0 }
                 },
-                { $sort: { _id: -1 } }
+                { $sort: { date: -1 } }
             ])
             return res.json(response)
         } catch (error) {

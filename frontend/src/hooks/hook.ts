@@ -3,7 +3,7 @@ import useFetchData from "./useFetchData";
 import useDeleteData from "./useDeleteData";
 import Notify from "./Notify";
 import DataService from "./DataService";
-import { downloadCSV, generatePDF, filterData } from "./datatable";
+import { downloadCSV, generatePDF } from "./datatable";
 
 /**  Calculators */
 const getDiscount = (discount = 0, total: number) => parseFloat((total * discount / 100).toFixed(2))
@@ -29,7 +29,6 @@ export {
     DataService,
     downloadCSV,
     generatePDF,
-    filterData,
     handleqtytonotbeNegitive,
     getDiscount,
     getTaxonProduct,

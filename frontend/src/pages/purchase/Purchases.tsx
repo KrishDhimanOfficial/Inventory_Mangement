@@ -1,21 +1,25 @@
 import { lazy, useEffect, useState } from 'react'
-import { Section, Sec_Heading, Loader, Button, Static_Modal, DropDownMenu } from '../../components/component'
+import { Section, Sec_Heading, Loader, Button, Static_Modal, DropDownMenu, Filters } from '../../components/component'
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
 import DataTable from 'react-data-table-component'
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import config from '../../config/config';
+import { Col, Row } from 'react-bootstrap';
 const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
 
 const Purchases = () => {
     const navigate = useNavigate()
+    const location = useLocation()
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
+    const [filterdata, setfilterdata] = useState([])
     const [Id, setId] = useState('')
     const [warnModal, setwarnmodal] = useState(false)
     const [paymentodal, setpaymentodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const { permission } = useSelector((state: any) => state.permission)
+
 
     const columns = [
         { name: "Date", selector: (row: any) => row.date, sortable: true },
@@ -77,7 +81,7 @@ const Purchases = () => {
                 return_status: item.return_status,
                 pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />
             }))
-            setdata(purchases), setloading(false)
+            setfilterdata(purchases), setdata(purchases), setloading(false)
         } catch (error) {
             console.error(error)
         } finally {
@@ -114,29 +118,48 @@ const Purchases = () => {
                             <DataTable
                                 title="Purchase Details"
                                 columns={columns}
-                                data={data}
+                                data={filterdata}
                                 progressPending={loading}
                                 progressComponent={<Loader />}
                                 pagination
                                 subHeader
+                                highlightOnHover={true}
                                 subHeaderComponent={
-                                    <div className="d-flex gap-3 justify-content-end">
-                                        <Button
-                                            text='Generate PDF'
-                                            className='btn btn-danger'
-                                            onclick={() => generatePDF('Purchases', pdfColumns, tableBody)}
-                                        />
-                                        <Button
-                                            text='CSV'
-                                            className='btn btn-success'
-                                            onclick={() => downloadCSV('purchase', data)}
-                                        />
-                                        <Button
-                                            text='Create'
-                                            className='btn btn-primary'
-                                            onclick={() => navigate('/dashboard/create/purchase')}
-                                        />
-                                    </div>
+                                    <Row>
+                                        <Col md='12' className='mb-3'>
+                                            <div className="d-flex flex-column gap-2">
+                                                <div className='d-flex justify-content-between flex-wrap gap-2'>
+                                                    <div className="d-flex gap-2">
+                                                        <Button
+                                                            text='Download PDF'
+                                                            className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
+                                                            onclick={() => generatePDF('Purchases', pdfColumns, tableBody)}
+                                                        />
+                                                        <Button
+                                                            text='CSV'
+                                                            className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
+                                                            onclick={() => downloadCSV('purchase', data)}
+                                                        />
+                                                        {
+                                                            permission.purchase?.create && (
+                                                                <Button
+                                                                    text='Add'
+                                                                    className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
+                                                                    onclick={() => navigate('/dashboard/create/purchase', { state: { from: location.pathname } })}
+                                                                />
+                                                            )
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                {/* Filters Component */}
+                                                <Filters
+                                                    data={data}
+                                                    setdata={setfilterdata}
+                                                />
+                                            </div>
+                                        </Col>
+                                    </Row>
                                 }
                             />
                         </div>
