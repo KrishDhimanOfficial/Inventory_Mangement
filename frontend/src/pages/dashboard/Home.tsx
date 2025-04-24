@@ -27,7 +27,7 @@ const Home = () => {
                             <span className="info-box-icon bg-info"><i className="fa-solid fa-arrow-up-right-dots"></i> </span>
                             <div className="info-box-content">
                                 <span className="info-box-text">Sales</span>
-                                <span className="info-box-number m-0">{settings.currency?.value} {details.sales?.total}</span>
+                                <span className="info-box-number m-0">{settings.currency?.value} {parseFloat(details.sales?.total).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>
@@ -47,7 +47,7 @@ const Home = () => {
 
                             <div className="info-box-content">
                                 <span className="info-box-text">Sales Return</span>
-                                <span className="info-box-number">{settings.currency?.value} {details.salesreturn?.total}</span>
+                                <span className="info-box-number">{settings.currency?.value} {parseFloat(details.salesreturn?.total).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>
@@ -57,7 +57,7 @@ const Home = () => {
 
                             <div className="info-box-content">
                                 <span className="info-box-text">Purchase Return</span>
-                                <span className="info-box-number">{settings.currency?.value} {details.purchasereturn?.total}</span>
+                                <span className="info-box-number">{settings.currency?.value} {parseFloat(details.purchasereturn?.total).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>

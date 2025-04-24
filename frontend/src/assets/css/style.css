@@ -2,9 +2,14 @@
     height: fit-content;
 }
 
-.btn-check:checked+.btn,.btn.active,.btn.show,.btn:first-child:active,:not(.btn-check)+.btn:active {
+.btn-check:checked+.btn,
+.btn.active,
+.btn.show,
+.btn:first-child:active,
+:not(.btn-check)+.btn:active {
     border-color: transparent;
 }
+
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -98,12 +103,15 @@ input::-webkit-inner-spin-button {
     color: #fff;
     background: transparent;
 }
+
 .hidearrow .accordion-button:not(.collapsed)::after {
     display: none !important;
 }
+
 .hidearrow .accordion-button.collapsed::after {
     display: none !important;
 }
+
 /* Firefox */
 input[type="number"] {
     -moz-appearance: textfield;

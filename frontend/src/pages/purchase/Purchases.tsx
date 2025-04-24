@@ -1,11 +1,9 @@
 import { lazy, useEffect, useState } from 'react'
-import { Section, Sec_Heading, Loader, Button, Static_Modal, DropDownMenu, Filters } from '../../components/component'
+import { Section, Sec_Heading, Button, Static_Modal, DropDownMenu, DataTable } from '../../components/component'
 import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
-import DataTable from 'react-data-table-component'
 import { useNavigate, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import config from '../../config/config';
-import { Col, Row } from 'react-bootstrap';
 const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
 
 const Purchases = () => {
@@ -13,7 +11,6 @@ const Purchases = () => {
     const location = useLocation()
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
-    const [filterdata, setfilterdata] = useState([])
     const [Id, setId] = useState('')
     const [warnModal, setwarnmodal] = useState(false)
     const [paymentodal, setpaymentodal] = useState(false)
@@ -22,33 +19,40 @@ const Purchases = () => {
 
 
     const columns = [
-        { name: "Date", selector: (row: any) => row.date, sortable: true },
-        { name: "Reference", selector: (row: any) => row.reference, sortable: true },
-        { name: "Supplier", selector: (row: any) => row.supplier, sortable: true },
-        { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
-        { name: "Grand Total", selector: (row: any) => row.total, sortable: true },
-        { name: "Paid", selector: (row: any) => row.paid, sortable: true },
-        { name: "Due", selector: (row: any) => row.due, sortable: true },
-        { name: "Payment Status", selector: (row: any) => row.pstatus, sortable: true },
+        { accessorKey: 'date', header: "Date", },
+        { accessorKey: 'reference', header: "Reference", },
+        { accessorKey: 'supplier', header: "Supplier", },
+        { accessorKey: 'warehouse', header: "Warehouse", },
+        { accessorKey: 'total', header: "Grand Total", },
+        { accessorKey: 'paid', header: "Paid", },
+        { accessorKey: 'due', header: "Due", },
         {
-            name: "Actions",
-            cell: (row: any) => (
-                <DropDownMenu
-                    name='Purchase'
-                    api={`/purchase/${row.reference}`}
-                    editURL={`/dashboard/purchase/${row.reference}`}
-                    deletedata={() => deleteTableRow(row.id)}
-                    detailsURL={`/dashboard/purchase-Details/${row.reference}`}
-                    returnURL={`/dashboard/purchase-return/${row.reference}`}
-                    updatepermission={permission.purchase?.edit}
-                    deletepermission={permission.purchase?.delete}
-                    paymentbtnShow={row.pstatus}
-                    return_status={row.return_status}
-                    paymentModal={() => setpaymentodal(!paymentodal)}
-                />
-            )
+            accessorKey: 'pstatus',
+            header: "Payment Status",
+            filterVariant: 'select',
+            filterFn: 'equals',
+            filterSelectOptions: ['paid', 'unpaid', 'parital'],
         },
+        // {
+        //     header: "Actions",
+        //     accessorFn: (row: any) => (
+        //         <DropDownMenu
+        //             name='Purchase'
+        //             api={`/purchase/${row.reference}`}
+        //             editURL={`/dashboard/purchase/${row.reference}`}
+        //             deletedata={() => deleteTableRow(row.id)}
+        //             detailsURL={`/dashboard/purchase-Details/${row.reference}`}
+        //             returnURL={`/dashboard/purchase-return/${row.reference}`}
+        //             updatepermission={permission.purchase?.edit}
+        //             deletepermission={permission.purchase?.delete}
+        //             paymentbtnShow={row.pstatus}
+        //             return_status={row.return_status}
+        //             paymentModal={() => setpaymentodal(!paymentodal)}
+        //         />
+        //     ),
+        // },
     ]
+
     const tableBody = data.map((purchase: any, i: number) => [
         i + 1,
         purchase.date,
@@ -58,9 +62,10 @@ const Purchases = () => {
         purchase.total,
         purchase.paid,
         purchase.due,
-        purchase.pstatus
+        purchase.pstatus.props.text
     ])
-    const pdfColumns = ["S.No", "Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
+
+    const tableHeader = ["S.No", "Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
     const deleteTableRow = (id: string) => { setId(id), setwarnmodal(!warnModal) }
 
     const fetch = async () => {
@@ -81,11 +86,9 @@ const Purchases = () => {
                 return_status: item.return_status,
                 pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />
             }))
-            setfilterdata(purchases), setdata(purchases), setloading(false)
+            setdata(purchases), setloading(false)
         } catch (error) {
             console.error(error)
-        } finally {
-            setloading(false)
         }
     }
 
@@ -113,57 +116,17 @@ const Purchases = () => {
             <Sec_Heading page={"All Purchase"} subtitle="Purchases" />
             <Section>
                 <div className="col-12">
-                    <div className="card">
-                        <div className="card-body pt-1">
-                            <DataTable
-                                title="Purchase Details"
-                                columns={columns}
-                                data={filterdata}
-                                progressPending={loading}
-                                progressComponent={<Loader />}
-                                pagination
-                                subHeader
-                                highlightOnHover={true}
-                                subHeaderComponent={
-                                    <Row>
-                                        <Col md='12' className='mb-3'>
-                                            <div className="d-flex flex-column gap-2">
-                                                <div className='d-flex justify-content-between flex-wrap gap-2'>
-                                                    <div className="d-flex gap-2">
-                                                        <Button
-                                                            text='Download PDF'
-                                                            className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
-                                                            onclick={() => generatePDF('Purchases', pdfColumns, tableBody)}
-                                                        />
-                                                        <Button
-                                                            text='CSV'
-                                                            className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
-                                                            onclick={() => downloadCSV('purchase', data)}
-                                                        />
-                                                        {
-                                                            permission.purchase?.create && (
-                                                                <Button
-                                                                    text='Add'
-                                                                    className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
-                                                                    onclick={() => navigate('/dashboard/create/purchase', { state: { from: location.pathname } })}
-                                                                />
-                                                            )
-                                                        }
-                                                    </div>
-                                                </div>
-
-                                                {/* Filters Component */}
-                                                <Filters
-                                                    data={data}
-                                                    setdata={setfilterdata}
-                                                />
-                                            </div>
-                                        </Col>
-                                    </Row>
-                                }
-                            />
-                        </div>
-                    </div>
+                    <DataTable
+                        pdfName='purchases'
+                        addURL='/dashboard/create/purchase'
+                        cols={columns}
+                        data={data}
+                        tablebody={tableBody}
+                        tableHeader={tableHeader}
+                        updatepermission={permission.purchase?.edit}
+                        deletepermission={permission.purchase?.delete}
+                        paymentModal={() => setpaymentodal(!paymentodal)}
+                    />
                 </div>
             </Section>
         </>

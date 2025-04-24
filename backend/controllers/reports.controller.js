@@ -282,6 +282,7 @@ const reportController = {
                             name: '$name',
                         },
                         phone: { $first: '$phone' },
+                        phoneWIC: { $first: '$sales.walkInCustomerDetails.phone' },
                         sales: { $sum: { $sum: '$sales.orderItems.quantity' } },
                         total: { $sum: '$sales.total' },
                         payment_paid: { $sum: '$sales.payment_paid' },
@@ -300,6 +301,7 @@ const reportController = {
                 {
                     $addFields: {
                         totalSalesreturn: { $sum: '$salesreturn.total' },
+                        phone: { $ifNull: ['$phone', '$phoneWIC'] }
                     }
                 },
                 {

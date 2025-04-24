@@ -37,61 +37,38 @@ const Products = () => {
     const { permission } = useSelector((state: any) => state.permission)
 
     const columns = [
-        { name: "ID", selector: (row: any) => row.id, sortable: true },
-        { name: "Code", selector: (row: any) => row.code, sortable: true },
-        { name: "Name", selector: (row: any) => row.name, sortable: true },
-        { name: "Category", selector: (row: any) => row.category, sortable: true },
-        { name: "Brand", selector: (row: any) => row.brand, sortable: true },
+        { accessorKey: 'id', header: 'ID', },
+        { accessorKey: 'code', header: 'Code' },
+        { accessorKey: 'name', header: 'Name' },
+        { accessorKey: 'category', header: 'Category' },
+        { accessorKey: 'brand', header: 'Brand' },
         {
-            name: "Actions",
-            cell: (row: any) => (
-                <div className="d-flex justify-content-between">
+            header: 'Actions',
+            accessorFn: (row: any) => (
+                <div className="d-flex gap-2 p-2 justify-content-between">
                     {
                         permission.product?.edit && (
-                            <Link to={`/dashboard/product/${row._id}`} className='btn btn-success me-2'>
+                            <Link to={`/dashboard/product/${row._id}`} state={{ from: location.pathname }} className='btn btn-dark btn-sm bg-transparent text-dark h-fit'>
                                 <i className="fa-solid fa-pen-to-square"></i>
                             </Link>
                         )
                     }
+                    <Button text=''
+                        onclick={() => { deleteTableRow(row._id) }}
+                        className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-trash"></i>}
+                    />
                     {
-                        permission.product?.delete && (
+                        permission.product?.create && (
                             <Button text=''
-                                onclick={() => deleteTableRow(row._id)}
-                                className='btn btn-danger me-2' icon={<i className="fa-solid fa-trash"></i>}
+                                // onclick={() => printBarcode(row.code)}
+                                className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-print"></i>}
                             />
                         )
                     }
-                    <Button text=''
-                        onclick={() => printBarcode(row.code)}
-                        className='btn btn-info text-white' icon={<i className="fa-solid fa-print"></i>}
-                    />
                 </div>
-            )
-        },
-    ]
-
-    const printBarcode = (code: string) => {
-        JsBarcode(barcodeRef.current, code, { format: "CODE39" })
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(`
-            <html>
-              <head>
-                <title>Print Barcode</title>
-              </head>
-              <body>
-                 <svg id="barcode">${barcodeRef.current?.outerHTML}</svg>
-                <script>
-                  window.onload = function() {
-                    window.print();
-                  }
-                </script>
-              </body>
-            </html>
-          `);
-            printWindow.close()
+            ),
         }
-    }
+    ]
 
     const tableBody = data.map((product: ProductSchema) => [
         product.id,
@@ -103,7 +80,7 @@ const Products = () => {
     const tableHeader = ["S.No", "SKU", "Title", "Category", "Brand"]
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
-    const fetch = useCallback(async () => {
+    const fetch = async () => {
         try {
             setloading(true)
             const res = await DataService.get('/all/products')
@@ -120,12 +97,12 @@ const Products = () => {
         } catch (error) {
             console.error(error)
         }
-    }, [])
+    }
 
     useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
-            <svg ref={barcodeRef} className='d-none' />
+            {/* <svg ref={barcodeRef}  /> */}
             <Static_Modal show={warnModal} endApi={`/product/${Id}`}
                 handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
@@ -140,42 +117,11 @@ const Products = () => {
                     <DataTable
                         pdfName='products'
                         addURL='/dashboard/add/product'
+                        cols={columns}
                         data={data}
                         tablebody={tableBody}
                         tableHeader={tableHeader}
-                        deleteTableRow={deleteTableRow}
                     />
-                    {/* <DataTable
-                                title="Products Details"
-                                columns={columns}
-                                data={filterdata.length == 0 ? data : filterdata}
-                                progressPending={loading}
-                                progressComponent={<Loader />}
-                                pagination
-                                persistTableHead
-                                subHeader
-                                subHeaderComponent={
-                                    <div className="d-flex gap-3 justify-content-end">
-                                        <Button
-                                            text='Generate PDF'
-                                            className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
-                                            onclick={() => generatePDF('product.pdf', pdfColumns, tableBody)}
-                                        />
-                                        <Button
-                                            text='CSV'
-                                            className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
-                                            onclick={() => downloadCSV('products', data)}
-                                        />
-                                        {
-                                            permission.product?.create && (
-                                                <Link className='btn btn-dark btn-sm bg-transparent text-dark h-fit' state={{ from: location.pathname }} to='/dashboard/add/product'>
-                                                    Create
-                                                </Link>
-                                            )
-                                        }
-                                    </div>
-                                }
-                            /> */}
                 </div>
             </Section>
         </>
