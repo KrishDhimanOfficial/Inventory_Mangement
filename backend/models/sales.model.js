@@ -1,3 +1,4 @@
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2"
 import mongoose from "../config/DB.js"
 
 const saleOrderSchema = new mongoose.Schema({
@@ -97,4 +98,5 @@ const salesSchema = new mongoose.Schema({
     { timestamps: true }
 )
 
+salesSchema.plugin(mongooseAggregatePaginate)
 export default mongoose.model('sale', salesSchema)

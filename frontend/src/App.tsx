@@ -186,6 +186,14 @@ const routes = [
         )
       },
       {
+        path: '/dashboard/sales-return-details/:salesReturnId',
+        element: (
+          <ProtectedRoute>
+            <ReturnDetails name="Sales Return" info="Customer" />
+          </ProtectedRoute>
+        )
+      },
+      {
         path: '/dashboard/sales/returns',
         element: (
           <ProtectedRoute>

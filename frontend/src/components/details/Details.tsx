@@ -38,9 +38,7 @@ const Details: React.FC<Details> = ({ name, info }) => {
         { name: "Tax", selector: (row: any) => row.tax },
         { name: "SubTotal", selector: (row: any) => row.subtotal },
     ]
-    console.log(calOrdertax, calDiscount);
-
-
+    
     const getOrders = async () => {
         try {
             const endpoint = salesId
@@ -74,7 +72,7 @@ const Details: React.FC<Details> = ({ name, info }) => {
     useEffect(() => { getOrders() }, [])
     return (
         <>
-            <Sec_Heading page={`${name} Details`} subtitle={name} />
+            <Sec_Heading page={`${name} Details`} subtitle={name} ispural />
             <Section>
                 <div className="d-flex gap-3 mb-2">
                     <Button

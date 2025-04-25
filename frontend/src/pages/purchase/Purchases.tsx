@@ -1,60 +1,93 @@
 import { lazy, useEffect, useState } from 'react'
-import { Section, Sec_Heading, Button, Static_Modal, DropDownMenu, DataTable } from '../../components/component'
-import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
-import { useNavigate, useLocation } from 'react-router';
+import { Section, Sec_Heading, Static_Modal, DropDownMenu, DataTable } from '../../components/component'
+import { DataService } from '../../hooks/hook'
 import { useSelector } from 'react-redux';
 import config from '../../config/config';
+
 const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
 
 const Purchases = () => {
-    const navigate = useNavigate()
-    const location = useLocation()
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
     const [Id, setId] = useState('')
     const [warnModal, setwarnmodal] = useState(false)
     const [paymentodal, setpaymentodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
     const { permission } = useSelector((state: any) => state.permission)
-
+    const { settings } = useSelector((state: any) => state.singleData)
+    const currency = settings.currency?.value;
 
     const columns = [
-        { accessorKey: 'date', header: "Date", },
-        { accessorKey: 'reference', header: "Reference", },
-        { accessorKey: 'supplier', header: "Supplier", },
-        { accessorKey: 'warehouse', header: "Warehouse", },
-        { accessorKey: 'total', header: "Grand Total", },
-        { accessorKey: 'paid', header: "Paid", },
-        { accessorKey: 'due', header: "Due", },
         {
-            accessorKey: 'pstatus',
+            id: 'date',
+            header: "Date",
+            filterVariant: 'date',
+            filterFn: (row: any, columnId: any, filterValue: any) => {
+                const [day, month, year] = row.original?.date.split('-')
+                const rowDate = new Date(`${year}-${month}-${day}`)
+                const filterDate = new Date(filterValue)
+                return rowDate.toLocaleDateString() === filterDate.toLocaleDateString()
+            },
+            accessorFn: (row: any) => {
+                const [day, month, year] = row.date.split('-')
+                return new Date(`${year}-${month}-${day}`)
+            },
+            Cell: ({ cell }: { cell: any }) => new Date(cell.getValue()).toLocaleDateString(),
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'reference', header: "Reference",
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'supplier', header: "Supplier",
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'warehouse', header: "Warehouse",
+            enableColumnFilterModes: false,
+        },
+        { accessorKey: 'total', header: `Grand Total (${settings.currency?.value})` },
+        { accessorKey: 'paid', header: `Paid (${settings.currency?.value})` },
+        { accessorKey: 'due', header: `Due (${settings.currency?.value})` },
+        {
+            id: 'pstatus',
+            accessorFn: (row: any) => row.pstatus,
             header: "Payment Status",
             filterVariant: 'select',
             filterFn: 'equals',
             filterSelectOptions: ['paid', 'unpaid', 'parital'],
+            enableColumnFilterModes: false,
+            Cell: ({ cell }: { cell: any }) => {
+                const status = cell.getValue()
+                return <span className={`badges ${status.toLowerCase()}`}> {status} </span>
+            },
         },
-        // {
-        //     header: "Actions",
-        //     accessorFn: (row: any) => (
-        //         <DropDownMenu
-        //             name='Purchase'
-        //             api={`/purchase/${row.reference}`}
-        //             editURL={`/dashboard/purchase/${row.reference}`}
-        //             deletedata={() => deleteTableRow(row.id)}
-        //             detailsURL={`/dashboard/purchase-Details/${row.reference}`}
-        //             returnURL={`/dashboard/purchase-return/${row.reference}`}
-        //             updatepermission={permission.purchase?.edit}
-        //             deletepermission={permission.purchase?.delete}
-        //             paymentbtnShow={row.pstatus}
-        //             return_status={row.return_status}
-        //             paymentModal={() => setpaymentodal(!paymentodal)}
-        //         />
-        //     ),
-        // },
+        {
+            header: "Actions",
+            enableColumnFilter: false,
+            enableSorting: false,
+            accessorFn: (row: any) => (
+                <DropDownMenu
+                    name='Purchase'
+                    api={`/purchase/${row.reference}`}
+                    editURL={`/dashboard/purchase/${row.reference}`}
+                    deletedata={() => deleteTableRow(row.id)}
+                    detailsURL={`/dashboard/purchase-Details/${row.reference}`}
+                    returnURL={`/dashboard/purchase-return/${row.reference}`}
+                    updatepermission={permission.purchase?.edit}
+                    deletepermission={permission.purchase?.delete}
+                    paymentbtnShow={row.pstatus}
+                    return_status={row.return_status}
+                    paymentModal={() => setpaymentodal(!paymentodal)}
+                />
+            ),
+        },
     ]
 
-    const tableBody = data.map((purchase: any, i: number) => [
-        i + 1,
+    const tableBody = data.map((purchase: any) => [
         purchase.date,
         purchase.reference,
         purchase.supplier,
@@ -62,19 +95,19 @@ const Purchases = () => {
         purchase.total,
         purchase.paid,
         purchase.due,
-        purchase.pstatus.props.text
+        purchase.pstatus
     ])
 
-    const tableHeader = ["S.No", "Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
+    const tableHeader = ["Date", "Reference", "Supplier", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
     const deleteTableRow = (id: string) => { setId(id), setwarnmodal(!warnModal) }
 
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get('/get-all-purchases-details', {
+            const res = await DataService.get(`/get-all-purchases-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`, {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
-            const purchases = res?.map((item: any) => ({
+            const purchases = res.collectionData?.map((item: any) => ({
                 id: item._id,
                 date: item.date,
                 reference: item.purchaseId,
@@ -83,10 +116,10 @@ const Purchases = () => {
                 total: item.total,
                 paid: item.payment_paid,
                 due: item.payment_due,
-                return_status: item.return_status,
-                pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />
+                return_status: item.return_status ? 'Return' : ' ',
+                pstatus: item.payment_status,
             }))
-            setdata(purchases), setloading(false)
+            setRowCount(res.totalDocs), setdata(purchases), setloading(false)
         } catch (error) {
             console.error(error)
         }
@@ -123,9 +156,8 @@ const Purchases = () => {
                         data={data}
                         tablebody={tableBody}
                         tableHeader={tableHeader}
-                        updatepermission={permission.purchase?.edit}
-                        deletepermission={permission.purchase?.delete}
-                        paymentModal={() => setpaymentodal(!paymentodal)}
+                        rowCount={rowCount}
+                        paginationProps={{ pagination, setPagination }}
                     />
                 </div>
             </Section>

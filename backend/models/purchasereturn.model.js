@@ -1,3 +1,4 @@
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2"
 import mongoose from "../config/DB.js"
 
 const purchaseReturnSchema = new mongoose.Schema({
@@ -43,5 +44,5 @@ const purchaseReturnSchema = new mongoose.Schema({
     timestamps: true
 })
 
-
+purchaseReturnSchema.plugin(mongooseAggregatePaginate)
 export default mongoose.model('purchasereturn', purchaseReturnSchema)

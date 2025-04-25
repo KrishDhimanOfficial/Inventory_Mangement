@@ -14,6 +14,7 @@ import { getUser } from '../services/auth.js';
 import paymentMethodModel from '../models/paymentMethod.model.js';
 import purchasereturnModel from '../models/purchasereturn.model.js';
 import salesreturnModel from '../models/salesreturn.model.js';
+import handleAggregatePagination from '../services/handlepagePagination.js';
 const ObjectId = mongoose.Types.ObjectId;
 const delay = 100;
 
@@ -273,7 +274,7 @@ const pro_controllers = {
     },
     getAllproducts_Details: async (req, res) => {
         try {
-            const response = await productModel.aggregate([
+            const pipeline = [
                 {
                     $lookup: {
                         from: 'units',
@@ -358,7 +359,8 @@ const pro_controllers = {
                     }
                 },
                 { $sort: { _id: -1 } }
-            ])
+            ]
+            const response = await handleAggregatePagination(productModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAllproducts_Details : ' + error.message)
@@ -700,7 +702,7 @@ const pro_controllers = {
     getAll_purchase_Details: async (req, res) => {
         try {
             const user = getUser(req.headers['authorization']?.split(' ')[1])
-            const response = await userModel.aggregate([
+            const pipeline = [
                 {
                     $match: {
                         _id: new ObjectId(user?.id)
@@ -760,8 +762,9 @@ const pro_controllers = {
                     $project: { createdAt: 0, updatedAt: 0, note: 0, supplierId: 0, warehouseId: 0 }
                 },
                 { $sort: { date: -1 } }
-            ])
-            return res.json(response)
+            ]
+            const response = await handleAggregatePagination(userModel, pipeline, req.query)
+            return res.status(200).json(response)
         } catch (error) {
             console.log('getAll_purchase_Details : ' + error.message)
         }
@@ -1128,7 +1131,7 @@ const pro_controllers = {
     getAll_sales_Details: async (req, res) => {
         try {
             const user = getUser(req.headers['authorization']?.split(' ')[1])
-            const response = await userModel.aggregate([
+            const pipeline = [
                 {
                     $match: {
                         _id: new ObjectId(user?.id)
@@ -1183,7 +1186,7 @@ const pro_controllers = {
                         warehouse: { $ifNull: ['$warehouse', { name: 'N/A' }] },
                         date: {
                             $dateToString: {
-                                format: "%Y-%m-%d",
+                                format: "%d-%m-%Y",
                                 date: "$selling_date"
                             }
                         }
@@ -1193,7 +1196,8 @@ const pro_controllers = {
                     $project: { createdAt: 0, updatedAt: 0, note: 0, supplierId: 0, warehouseId: 0 }
                 },
                 { $sort: { _id: -1 } }
-            ])
+            ]
+            const response = await handleAggregatePagination(userModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAll_sales_Details : ' + error.message)
@@ -1518,7 +1522,7 @@ const pro_controllers = {
     getAllPurchaseReturnDetails: async (req, res) => {
         try {
             const user = getUser(req.headers['authorization'].split(' ')[1])
-            const response = await userModel.aggregate([
+            const pipeline = [
                 {
                     $match: {
                         _id: new ObjectId(user?.id)
@@ -1564,7 +1568,7 @@ const pro_controllers = {
                     $addFields: {
                         date: {
                             $dateToString: {
-                                format: "%Y-%m-%d",
+                                format: "%d-%m-%Y",
                                 date: "$purchasereturns.returnDate"
                             }
                         },
@@ -1590,7 +1594,8 @@ const pro_controllers = {
                     }
                 },
                 { $sort: { createdAt: -1 } }
-            ])
+            ]
+            const response = await handleAggregatePagination(userModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAllPurchaseReturnDetails : ' + error.message)
@@ -1864,7 +1869,7 @@ const pro_controllers = {
     getAllSalesReturnDetails: async (req, res) => {
         try {
             const user = getUser(req.headers['authorization'].split(' ')[1])
-            const response = await userModel.aggregate([
+            const pipeline = [
                 {
                     $match: {
                         _id: new ObjectId(user?.id)
@@ -1910,7 +1915,7 @@ const pro_controllers = {
                     $addFields: {
                         date: {
                             $dateToString: {
-                                format: "%Y-%m-%d",
+                                format: '%d-%m-%Y',
                                 date: "$salesreturns.returnDate"
                             }
                         },
@@ -1933,7 +1938,8 @@ const pro_controllers = {
                     }
                 },
                 { $sort: { createdAt: -1 } }
-            ])
+            ]
+            const response = await handleAggregatePagination(userModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAllSalesReturnDetails : ' + error.message)
@@ -2064,9 +2070,40 @@ const pro_controllers = {
                     $unwind: '$sale'
                 },
                 {
+                    $lookup: {
+                        from: 'customers',
+                        localField: 'sale.customerId',
+                        foreignField: '_id',
+                        as: 'customer'
+                    }
+                },
+                {
+                    $unwind: '$customer'
+                },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'sale.warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                {
+                    $unwind: '$warehouse'
+                },
+                {
+                    $addFields: {
+                        
+                        name: { $ifNull: ['$customer.name', '$sale.walkInCustomerDetails.name'] },
+                        phone: { $ifNull: ['$customer.phone', '$sale.walkInCustomerDetails.phone'] }
+                    }
+                },
+                {
                     $project: {
                         date: 1,
                         total: 1,
+                        name: 1,
+                        phone: 1,
                         payment_due: 1,
                         payment_paid: 1,
                         payment_status: 1,
@@ -2074,6 +2111,7 @@ const pro_controllers = {
                         salesReturnId: 1,
                         returnItems: 1,
                         selling_date: 1,
+                        'warehouse.name': 1,
                         'payment.name': 1,
                         'sale.total': 1,
                         'sale.subtotal': 1,

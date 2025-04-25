@@ -1,7 +1,6 @@
 import { useEffect, useState, lazy } from 'react';
-import { Sec_Heading, Section, Loader, Button, DropDownMenu } from '../../components/component'
-import DataTable from 'react-data-table-component';
-import { generatePDF, downloadCSV, DataService } from '../../hooks/hook'
+import { Sec_Heading, Section, Loader, Button, DropDownMenu, DataTable } from '../../components/component'
+import { DataService } from '../../hooks/hook'
 import config from '../../config/config';
 import { useSelector } from 'react-redux';
 
@@ -15,10 +14,12 @@ const PReturns = () => {
     const [refreshTable, setrefreshTable] = useState(false)
     const [warnModal, setwarnmodal] = useState(false)
     const [paymentodal, setpaymentodal] = useState(false)
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
     const { permission } = useSelector((state: any) => state.permission)
+    const { settings } = useSelector((state: any) => state.singleData)
 
-    const tableBody = data.map((purchaseReturn: any, i: number) => [
-        i + 1,
+    const tableBody = data.map((purchaseReturn: any) => [
         purchaseReturn.date,
         purchaseReturn.reference,
         purchaseReturn.pref,
@@ -27,22 +28,65 @@ const PReturns = () => {
         purchaseReturn.total,
         purchaseReturn.paid,
         purchaseReturn.due,
-        purchaseReturn.pstatus.props?.text
+        purchaseReturn.status
     ])
-    const pdfColumns = ["S.No", "Date", "Reference", "Purchase Ref", "Supplier", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
+    const tableHeader = ["S.No", "Date", "Reference", "Purchase Ref", "Supplier", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
     const columns = [
-        { name: "Date", selector: (row: any) => row.date, sortable: true },
-        { name: "Reference", selector: (row: any) => row.reference, sortable: true },
-        { name: "Purchase Ref", selector: (row: any) => row.pref, sortable: true },
-        { name: "Supplier", selector: (row: any) => row.supplier, sortable: true },
-        { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
-        { name: "Grand Total", selector: (row: any) => row.amount, sortable: true },
-        { name: "Paid", selector: (row: any) => row.paid, sortable: true },
-        { name: "Due", selector: (row: any) => row.due, sortable: true },
-        { name: "Payment Status", selector: (row: any) => row.pstatus, sortable: true },
         {
-            name: "Actions",
-            cell: (row: any) => (
+            id: 'date',
+            header: "Date",
+            filterVariant: 'date',
+            filterFn: (row: any, columnId: any, filterValue: any) => {
+                const [day, month, year] = row.original?.date.split('-')
+                const rowDate = new Date(`${year}-${month}-${day}`)
+                const filterDate = new Date(filterValue)
+                return rowDate.toLocaleDateString() === filterDate.toLocaleDateString()
+            },
+            accessorFn: (row: any) => {
+                console.log(row.date?.split('-'));
+                const [day, month, year] = row.date.split('-')
+                return new Date(`${year}-${month}-${day}`)
+            },
+            Cell: ({ cell }: { cell: any }) => new Date(cell.getValue()).toLocaleDateString(),
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'reference', header: "Reference",
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'pref', header: "Purchase Reference",
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'supplier', header: "Supplier",
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'warehouse', header: "Warehouse",
+            enableColumnFilterModes: false,
+        },
+        { accessorKey: 'paid', header: `Paid (${settings.currency?.value})` },
+        { accessorKey: 'due', header: `Due (${settings.currency?.value})` },
+        { accessorKey: 'amount', header: `Purchase Return ${settings.currency?.value}` },
+        {
+            id: 'pstatus',
+            accessorFn: (row: any) => row.pstatus,
+            header: "Payment Status",
+            filterVariant: 'select',
+            filterFn: 'equals',
+            filterSelectOptions: ['paid', 'unpaid', 'parital'],
+            enableColumnFilterModes: false,
+            Cell: ({ cell }: { cell: any }) => {
+                const status = cell.getValue()
+                return <span className={`badges ${status.toLowerCase()}`}> {status} </span>
+            },
+        },
+        {
+            header: "Actions",
+            enableColumnFilter: false,
+            enableSorting: false,
+            accessorFn: (row: any) => (
                 <DropDownMenu
                     name='Return'
                     api={`/purchase-return/${row.reference}`}
@@ -51,11 +95,11 @@ const PReturns = () => {
                     detailsURL={`/dashboard/purchase-return-details/${row.reference}`}
                     updatepermission={permission.purchase?.edit}
                     deletepermission={permission.purchase?.delete}
-                    paymentbtnShow={row.pstatus}
+                    paymentbtnShow={row.status}
                     paymentModal={() => setpaymentodal(!paymentodal)}
                     isReturnItem={true}
                 />
-            )
+            ),
         },
     ]
     const deleteTableRow = (id: string) => { setId(id), setwarnmodal(!warnModal) }
@@ -67,20 +111,19 @@ const PReturns = () => {
             const res: any = await DataService.get('/all-purchase-return-details', {
                 Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
             })
-            const data = res.map((pro: any) => ({
+            const data = res.collectionData?.map((pro: any) => ({
                 _id: pro.purchasereturns._id,
                 date: pro.date,
                 reference: pro.purchasereturns.purchaseReturnId,
                 pref: pro.purchase.purchaseId,
                 supplier: pro.supplier.name,
                 warehouse: pro.warehouse.name,
-                total: pro.purchase.total,
                 paid: pro.purchasereturns.payment_paid,
                 amount: pro.purchasereturns.total,
                 due: pro.purchasereturns.payment_due,
-                pstatus: <Button className={`badges ${pro.purchasereturns.payment_status}`} text={pro.purchasereturns.payment_status} />,
+                pstatus: pro.purchasereturns.payment_status,
             }))
-            setdata(data), setloading(false)
+            setRowCount(data.totalDocs), setdata(data), setloading(false)
         } catch (error) {
             console.error(error)
         }
@@ -91,7 +134,7 @@ const PReturns = () => {
         <>
             <Payment_Modal
                 show={paymentodal}
-                endApi={`/purchase-return`}
+                endApi={`/ purchase -return`}
                 handleClose={() => setpaymentodal(!paymentodal)}
                 refreshTable={() => {
                     setpaymentodal(!paymentodal)
@@ -99,7 +142,8 @@ const PReturns = () => {
                     setloading(!loading)
                 }}
             />
-            <Static_Modal show={warnModal} endApi={`/purchase-return/${Id}`}
+            <Static_Modal show={warnModal} endApi={`/ purchase -return/${Id}`
+            }
                 handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
@@ -107,36 +151,18 @@ const PReturns = () => {
                     setloading(!loading)
                 }}
             />
-            <Sec_Heading page={"All Purchase Return"} subtitle="Purchase Return" />
+            < Sec_Heading page={"All Purchase Return"} subtitle="Purchase Return" />
             <Section>
                 <div className="col-12">
-                    <div className="card">
-                        <div className="card-body pt-1">
-                            <DataTable
-                                title="Purchase Return"
-                                columns={columns}
-                                data={data}
-                                progressPending={loading}
-                                progressComponent={<Loader />}
-                                pagination
-                                subHeader
-                                subHeaderComponent={
-                                    <div className="d-flex gap-3 justify-content-end">
-                                        <Button
-                                            text='Generate PDF'
-                                            className='btn btn-danger'
-                                            onclick={() => generatePDF('Purchase returns', pdfColumns, tableBody)}
-                                        />
-                                        <Button
-                                            text='CSV'
-                                            className='btn btn-success'
-                                            onclick={() => downloadCSV('purchase returns', data)}
-                                        />
-                                    </div>
-                                }
-                            />
-                        </div>
-                    </div>
+                    <DataTable
+                        pdfName='Purchase Return'
+                        cols={columns}
+                        data={data}
+                        tablebody={tableBody}
+                        tableHeader={tableHeader}
+                        rowCount={rowCount}
+                        paginationProps={{ pagination, setPagination }}
+                    />
                 </div>
             </Section>
         </>

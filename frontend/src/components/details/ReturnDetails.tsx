@@ -5,7 +5,6 @@ import { DropdownDivider, ListGroup, Row, Table, Col, Badge } from 'react-bootst
 import { useParams } from 'react-router';
 import DataTable from 'react-data-table-component';
 import { useSelector } from 'react-redux';
-import { table } from 'console';
 interface Details {
     name: string,
     info: string
@@ -46,8 +45,9 @@ const ReturnDetails: React.FC<Details> = ({ name, info }) => {
                 ? `/sales-return/${salesReturnId}`
                 : `/purchase-return/${purchaseReturnId}`
             const res = await DataService.get(endpoint)
-            console.table(res.returnItems)
             setordersInfo(res)
+            console.log(res);
+            
             setcalDiscount(getDiscount(ordersInfo.discount, ordersInfo.subtotal))
             setcalOrdertax(getorderTax(ordersInfo.orderTax, ordersInfo.subtotal))
             setorders(
@@ -74,7 +74,7 @@ const ReturnDetails: React.FC<Details> = ({ name, info }) => {
     useEffect(() => { getOrders() }, [])
     return (
         <>
-            <Sec_Heading page={`${name} Details`} subtitle={name} />
+            <Sec_Heading page={`${name} Details`} subtitle={name} ispural />
             <Section>
                 <div className="d-flex gap-3 mb-2">
                     <Button
@@ -135,7 +135,7 @@ const ReturnDetails: React.FC<Details> = ({ name, info }) => {
                                     <ListGroup.Item className='border-0 p-0'>Reference : {salesReturnId || purchaseReturnId}</ListGroup.Item>
                                     <ListGroup.Item className='border-0 p-0'>Payment Status : {ordersInfo.payment_status === 'paid' && (<Badge bg='bg-success'>{ordersInfo.payment_status}</Badge>)}
                                         {ordersInfo.payment_status === 'unpaid' && (<Badge bg='danger'>{ordersInfo.payment_status}</Badge>)}
-                                        {ordersInfo.payment_status === 'partial' && (<Badge bg='dark'>{ordersInfo.payment_status}</Badge>)}
+                                        {ordersInfo.payment_status === 'parital' && (<Badge bg='dark'>{ordersInfo.payment_status}</Badge>)}
                                     </ListGroup.Item>
                                     <ListGroup.Item className='border-0 p-0'>Warehouse : {ordersInfo?.warehouse?.name}</ListGroup.Item>
                                     <ListGroup.Item className='border-0 p-0'>Date: {ordersInfo?.date}</ListGroup.Item>

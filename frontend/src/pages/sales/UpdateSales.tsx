@@ -42,7 +42,6 @@ const UpdateSales = () => {
     const [searchedProducts, setsearchedProducts] = useState<any>([])
     const { apiData, fetchData }: { apiData: any, fetchData: any } = useFetchData({})
     const [WalkinCustomerRequired, setWalkinCustomer] = useState<Boolean>(false)
-    console.log(apiData);
 
     const { control, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         defaultValues,

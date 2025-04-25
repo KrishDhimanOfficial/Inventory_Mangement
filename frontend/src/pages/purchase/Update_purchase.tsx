@@ -261,7 +261,7 @@ const Update_purchase = () => {
     }, [shippment])
     return (
         <>
-            <Sec_Heading page={"Edit Purchase Details"} subtitle="Purchase" />
+            <Sec_Heading page={"Edit Purchase Details"} subtitle="Purchase" ispural />
             <Section>
                 <div className="col-12">
                     <div className="card">

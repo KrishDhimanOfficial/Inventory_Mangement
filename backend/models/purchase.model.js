@@ -1,4 +1,5 @@
 import mongoose from "../config/DB.js"
+import mongoosePaginate from 'mongoose-aggregate-paginate-v2'
 
 const purchaseOrderSchema = new mongoose.Schema({
     quantity: { type: mongoose.Schema.Types.Number },
@@ -82,4 +83,5 @@ const purchaseSchema = new mongoose.Schema({
     { timestamps: true }
 )
 
+purchaseSchema.plugin(mongoosePaginate)
 export default mongoose.model('purchase', purchaseSchema)

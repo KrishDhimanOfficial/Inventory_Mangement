@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react'
-import { Sec_Heading, Section, Button, Loader, Static_Modal, } from '../../components/component'
-import { DataService, downloadCSV, generatePDF, } from '../../hooks/hook'
-// import DataTable from 'react-data-table-component'
+import React, { useEffect, useState, useRef } from 'react'
+import { Sec_Heading, Section, Button, Static_Modal, } from '../../components/component'
+import { DataService, } from '../../hooks/hook'
 import { Link } from 'react-router'
 import { useSelector } from 'react-redux'
 import JsBarcode from "jsbarcode"
@@ -27,6 +26,7 @@ interface ProductSchema {
     unit: { shortName: string }
 }
 
+
 const Products = () => {
     const barcodeRef = useRef<any>(null)
     const [loading, setloading] = useState(false)
@@ -34,7 +34,10 @@ const Products = () => {
     const [warnModal, setwarnmodal] = useState(false)
     const [refreshTable, setrefreshTable] = useState(false)
     const [Id, setId] = useState('')
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
     const { permission } = useSelector((state: any) => state.permission)
+
 
     const columns = [
         { accessorKey: 'id', header: 'ID', },
@@ -44,6 +47,8 @@ const Products = () => {
         { accessorKey: 'brand', header: 'Brand' },
         {
             header: 'Actions',
+            enableColumnFilter: false,
+            enableSorting: false,
             accessorFn: (row: any) => (
                 <div className="d-flex gap-2 p-2 justify-content-between">
                     {
@@ -70,36 +75,29 @@ const Products = () => {
         }
     ]
 
-    const tableBody = data.map((product: ProductSchema) => [
-        product.id,
-        product.code,
-        product.name,
-        product.category,
-        product.brand,
-    ])
+    const tableBody = data.map((product: ProductSchema) => [product.id, product.code, product.name, product.category, product.brand,])
     const tableHeader = ["S.No", "SKU", "Title", "Category", "Brand"]
     const deleteTableRow = (id: string) => { setwarnmodal(true), setId(id) }
 
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get('/all/products')
-            const response = res?.map((pro: ProductSchema, i: number) => ({
-                id: i + 1,
+            const res = await DataService.get(`/all/products?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
+            const response = res.collectionData?.map((pro: ProductSchema) => ({
+                id: res.pageCounter++,
                 _id: pro._id,
                 code: pro.sku,
                 name: pro.title,
                 brand: pro.brand?.name,
                 category: pro.category?.name,
             }))
-            setdata(response)
-            setloading(false)
+            setRowCount(res.totalDocs), setdata(response), setloading(false)
         } catch (error) {
             console.error(error)
         }
     }
 
-    useEffect(() => { fetch() }, [!refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
     return (
         <>
             {/* <svg ref={barcodeRef}  /> */}
@@ -121,6 +119,8 @@ const Products = () => {
                         data={data}
                         tablebody={tableBody}
                         tableHeader={tableHeader}
+                        rowCount={rowCount}
+                        paginationProps={{ pagination, setPagination }}
                     />
                 </div>
             </Section>
