@@ -48,9 +48,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
 
     const registeration = async (formdata: object) => {
         try {
-            const res = await DataService.post('/user', formdata, {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            const res = await DataService.post('/user', formdata, )
             Notify(res), reset(), handleClose()
             if (res.success) refreshTable(), handleClose()
         } catch (error) {

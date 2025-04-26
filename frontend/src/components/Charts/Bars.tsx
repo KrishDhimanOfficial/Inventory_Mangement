@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { VictoryChart, VictoryBar, VictoryGroup, VictoryAxis, VictoryLabel, VictoryLegend, VictoryTheme } from 'victory'
 import { DataService } from '../../hooks/hook'
+import config from '../../config/config';
 
 
 const Bars = () => {

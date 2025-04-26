@@ -1,5 +1,5 @@
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2"
-import mongoose from "../config/DB.js"
+import mongoose from 'mongoose'
 
 const purchaseReturnSchema = new mongoose.Schema({
     purchaseReturnId: { type: String, required: true },
@@ -14,6 +14,7 @@ const purchaseReturnSchema = new mongoose.Schema({
     },
     returnDate: {
         type: mongoose.Schema.Types.Date,
+        default: new Date()
     },
     payment_paid: {
         type: mongoose.Schema.Types.Number,

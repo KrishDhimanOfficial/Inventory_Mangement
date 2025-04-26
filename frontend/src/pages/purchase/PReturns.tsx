@@ -1,7 +1,6 @@
 import { useEffect, useState, lazy } from 'react';
-import { Sec_Heading, Section, Loader, Button, DropDownMenu, DataTable } from '../../components/component'
+import { Sec_Heading, Section, DropDownMenu, DataTable } from '../../components/component'
 import { DataService } from '../../hooks/hook'
-import config from '../../config/config';
 import { useSelector } from 'react-redux';
 
 const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
@@ -91,11 +90,11 @@ const PReturns = () => {
                     name='Return'
                     api={`/purchase-return/${row.reference}`}
                     editURL={`/dashboard/update-purchase-return/${row.reference}`}
-                    deletedata={() => deleteTableRow(row.id)}
+                    deletedata={() => deleteTableRow(row._id)}
                     detailsURL={`/dashboard/purchase-return-details/${row.reference}`}
                     updatepermission={permission.purchase?.edit}
                     deletepermission={permission.purchase?.delete}
-                    paymentbtnShow={row.status}
+                    paymentbtnShow={row.pstatus}
                     paymentModal={() => setpaymentodal(!paymentodal)}
                     isReturnItem={true}
                 />
@@ -108,9 +107,7 @@ const PReturns = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res: any = await DataService.get('/all-purchase-return-details', {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            const res: any = await DataService.get(`/all-purchase-return-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`,)
             const data = res.collectionData?.map((pro: any) => ({
                 _id: pro.purchasereturns._id,
                 date: pro.date,
@@ -125,6 +122,7 @@ const PReturns = () => {
             }))
             setRowCount(data.totalDocs), setdata(data), setloading(false)
         } catch (error) {
+            setloading(false)
             console.error(error)
         }
     }
@@ -134,7 +132,7 @@ const PReturns = () => {
         <>
             <Payment_Modal
                 show={paymentodal}
-                endApi={`/ purchase -return`}
+                endApi={`/purchase-return/${Id}`}
                 handleClose={() => setpaymentodal(!paymentodal)}
                 refreshTable={() => {
                     setpaymentodal(!paymentodal)
@@ -142,7 +140,7 @@ const PReturns = () => {
                     setloading(!loading)
                 }}
             />
-            <Static_Modal show={warnModal} endApi={`/ purchase -return/${Id}`
+            <Static_Modal show={warnModal} endApi={`/purchase-return/${Id}`
             }
                 handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
@@ -162,6 +160,7 @@ const PReturns = () => {
                         tableHeader={tableHeader}
                         rowCount={rowCount}
                         paginationProps={{ pagination, setPagination }}
+                        isloading={loading}
                     />
                 </div>
             </Section>

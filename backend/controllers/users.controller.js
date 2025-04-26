@@ -6,6 +6,7 @@ const ObjectId = mongoose.Types.ObjectId;
 import validate from '../services/validateData.js'
 import bcrypt from 'bcrypt'
 import { getUser, setUser } from '../services/auth.js'
+import handleAggregatePagination from "../services/handlepagePagination.js";
 
 // /** @type {Object.<string, (req: import('express').Request, res: import('express').Response) => Promise<any>>} */
 const delay = 100;
@@ -97,7 +98,7 @@ const users_controllers = {
     },
     getAllUsersDetails: async (req, res) => {
         try {
-            const response = await userModel.aggregate([
+            const pipeline = [
                 {
                     $lookup: {
                         from: 'users',
@@ -109,7 +110,8 @@ const users_controllers = {
                 { $unwind: '$sub_accounts' },
                 { $replaceRoot: { newRoot: '$sub_accounts' } },
                 { $project: { _id: 1, name: 1, email: 1, phone: 1 } }
-            ])
+            ]
+            const response = await handleAggregatePagination(userModel, pipeline, req.query)
             setTimeout(() => res.json(response), delay)
         } catch (error) {
             console.log('getAllUsersDetails : ' + error.message)
@@ -246,7 +248,17 @@ const users_controllers = {
     },
     getAllCustomersDetails: async (req, res) => {
         try {
-            const response = (await customerModel.find({ $nor: [{ _id: '67f753b61a99887e802660af' }] })).reverse()
+            const pipeline = [
+                {
+                    $match: {
+                        $nor: [{ _id: new ObjectId('67f753b61a99887e802660af') }]
+                    }
+                },
+                {
+                    $sort: { createdAt: -1 }
+                }
+            ]
+            const response = await handleAggregatePagination(customerModel, pipeline, req.query)
             setTimeout(() => res.status(200).json(response), delay)
         } catch (error) {
             console.log('getAllCustomersDetails  : ' + error.message)

@@ -124,9 +124,7 @@ const UpdatePurchaseReturn = () => {
 
     const registeration = async (formdata: object) => {
         try {
-            const res = await DataService.put(`/purchase-return/${purchaseReturnId}`, formdata, {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            const res = await DataService.put(`/purchase-return/${purchaseReturnId}`, formdata, )
             Notify(res)
             if (res.success) navigate('/dashboard/purchase/returns')
         } catch (error) {

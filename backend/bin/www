@@ -10,6 +10,7 @@ import http from 'http'
 import config from '../config/config.js'
 import cluster from 'cluster'
 import numcpu from 'os'
+import connectDB from '../config/DB.js'
 
 const log = debug('backend:server')
 
@@ -19,6 +20,7 @@ if (cluster.isPrimary) {
   cluster.on('exit', (worker, code, signal) => console.log(`worker ${worker.process.pid} died`))
 } else {
   const port = normalizePort(config.port || 8000)
+  connectDB()
   app.set('port', port)
   /**
    * Create HTTP server.
@@ -28,7 +30,7 @@ if (cluster.isPrimary) {
 
   server.on('error', onError)
   server.on('listening', onListening)
-
+  server.setTimeout(2000)
   /**
    * Normalize a port into a number, string, or false.
    */

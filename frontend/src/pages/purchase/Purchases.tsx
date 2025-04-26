@@ -17,7 +17,6 @@ const Purchases = () => {
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
     const { permission } = useSelector((state: any) => state.permission)
     const { settings } = useSelector((state: any) => state.singleData)
-    const currency = settings.currency?.value;
 
     const columns = [
         {
@@ -104,9 +103,7 @@ const Purchases = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get(`/get-all-purchases-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`, {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            const res = await DataService.get(`/get-all-purchases-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`,)
             const purchases = res.collectionData?.map((item: any) => ({
                 id: item._id,
                 date: item.date,
@@ -121,6 +118,7 @@ const Purchases = () => {
             }))
             setRowCount(res.totalDocs), setdata(purchases), setloading(false)
         } catch (error) {
+            setloading(false)
             console.error(error)
         }
     }
@@ -158,6 +156,8 @@ const Purchases = () => {
                         tableHeader={tableHeader}
                         rowCount={rowCount}
                         paginationProps={{ pagination, setPagination }}
+                        addPermission={permission.purchase?.create}
+                        isloading={loading}
                     />
                 </div>
             </Section>

@@ -1,20 +1,18 @@
-import React, { lazy, useCallback, useEffect, useState } from 'react';
-import { Sec_Heading, Section, Button, Loader, Input } from '../../components/component';
-import DataTable from 'react-data-table-component';
-import { generatePDF, downloadCSV, DataService } from '../../hooks/hook';
+import React, { useEffect, useState } from 'react';
+import { Sec_Heading, Section, DataTable } from '../../components/component';
+import { DataService } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import config from '../../config/config';
-
-const Canvas = lazy(() => import('../../components/micro_components/Canvas'))
+import { useSelector } from 'react-redux';
 
 const SalesReport = () => {
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
-    const [canvasopen, setcanvasopen] = useState(false)
-    const [fileterdata, setfilters] = useState([])
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
+    const { settings } = useSelector((state: any) => state.singleData)
     const [state, setState] = useState([
         {
             startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
@@ -22,18 +20,56 @@ const SalesReport = () => {
             key: 'selection'
         }
     ])
+
     const columns = [
-        { name: "Date", selector: (row: any) => row.date, sortable: true },
-        { name: "Reference", selector: (row: any) => row.reference, sortable: true },
-        { name: "Customer", selector: (row: any) => row.customer, sortable: true },
-        { name: "Warehouse", selector: (row: any) => row.warehouse, sortable: true },
-        { name: "Grand Total", selector: (row: any) => row.total, sortable: true },
-        { name: "Paid", selector: (row: any) => row.paid, sortable: true },
-        { name: "Due", selector: (row: any) => row.due, sortable: true },
-        { name: "Payment Status", selector: (row: any) => row.pstatus, sortable: true },
+        {
+            id: 'date',
+            header: "Date",
+            filterVariant: 'date',
+            filterFn: (row: any, columnId: any, filterValue: any) => {
+                const [day, month, year] = row.original?.date.split('-')
+                const rowDate = new Date(`${year}-${month}-${day}`)
+                const filterDate = new Date(filterValue)
+                return rowDate.toLocaleDateString() === filterDate.toLocaleDateString()
+            },
+            accessorFn: (row: any) => {
+                console.log(row.date?.split('-'));
+                const [day, month, year] = row.date.split('-')
+                return new Date(`${year}-${month}-${day}`)
+            },
+            Cell: ({ cell }: { cell: any }) => new Date(cell.getValue()).toLocaleDateString(),
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'reference', header: "Reference",
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'customer', header: "Customer",
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'warehouse', header: "Warehouse",
+            enableColumnFilterModes: false,
+        },
+        { accessorKey: 'paid', header: `Paid (${settings.currency?.value})` },
+        { accessorKey: 'due', header: `Due (${settings.currency?.value})` },
+        {
+            id: 'pstatus',
+            accessorFn: (row: any) => row.pstatus,
+            header: "Payment Status",
+            filterVariant: 'select',
+            filterFn: 'equals',
+            filterSelectOptions: ['paid', 'unpaid', 'parital'],
+            enableColumnFilterModes: false,
+            Cell: ({ cell }: { cell: any }) => {
+                const status = cell.getValue()
+                return <span className={`badges ${status}`}> {status} </span>
+            },
+        },
     ]
-    const tableBody = data.map((purchase: any, i: number) => [
-        i + 1,
+
+    const tableBody = data.map((purchase: any) => [
         purchase.date,
         purchase.reference,
         purchase.customer,
@@ -43,14 +79,13 @@ const SalesReport = () => {
         purchase.due,
         purchase.pstatus
     ])
-    const pdfColumns = ["S.No", "Date", "Reference", "Customer", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
+
+    const tableHeader = ["Date", "Reference", "Customer", "Warehouse", "Grand Total", "Paid", "Due", "Payment Status"]
 
     const getReport = async () => {
         try {
             setloading(true)
-            const res = await DataService.get(`/get/sales/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            const res = await DataService.get(`/get/sales/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}&page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`,)
             const data = res?.map((item: any) => ({
                 date: item.date,
                 reference: item.salesId,
@@ -59,81 +94,47 @@ const SalesReport = () => {
                 total: item.total,
                 paid: item.payment_paid,
                 due: item.payment_due,
-                pstatus: <Button className={`badges ${item.payment_status}`} text={item.payment_status} />,
+                pstatus: item.payment_status,
             }))
-            setloading(false), setfilters(data), setdata(data)
+            setdata(data), setRowCount(res.totalDocs), setloading(false)
         } catch (error) {
-            console.error(error)
-        } finally {
-            setloading(false)
+            setloading(false), console.error(error)
         }
     }
 
     useEffect(() => { getReport() }, [state, setState])
     return (
         <>
-            <Canvas
-                name='Customer'
-                data={data}
-                show={canvasopen}
-                handleClose={() => setcanvasopen(!canvasopen)}
-                selectBoxApi1='/all-customer'
-                selectBoxApi2='/warehouses'
-                resetFilters={setfilters} />
-            <Sec_Heading page={"Sales Report"} subtitle="Report" />
+            <Sec_Heading page={"Sales Report"} subtitle="Sales Report" />
             <Section>
                 <div className="col-12">
-                    <div className="card">
-                        <div className="card-body pt-1">
-                            <DataTable
-                                title="Reports"
-                                columns={columns}
-                                data={fileterdata}
-                                progressPending={loading}
-                                progressComponent={<Loader />}
-                                pagination
-                                subHeader
-                                subHeaderComponent={
-                                    <div className="d-flex gap-3 justify-content-end">
-                                        <Button
-                                            text='Filters'
-                                            className='btn btn-dark'
-                                            onclick={() => setcanvasopen(!canvasopen)}
-                                        />
-                                        <Button
-                                            text='Generate PDF'
-                                            className='btn btn-danger'
-                                            onclick={() => generatePDF('PurchaseReport', pdfColumns, tableBody)}
-                                        />
-                                        <Button
-                                            text='CSV'
-                                            className='btn btn-success'
-                                            onclick={() => downloadCSV('PurchaseReport', data)}
-                                        />
-                                        <DropdownButton id="dropdown-basic-button" title="Select Date">
-                                            <Dropdown.Item href="#" className='p-0'>
-                                                <DateRangePicker
-                                                    editableDateInputs={true}
-                                                    onChange={(item: any) => setState([item.selection])}
-                                                    moveRangeOnFirstSelection={false}
-                                                    ranges={state}
-                                                />
-                                            </Dropdown.Item>
-                                        </DropdownButton>
-                                    </div>
-                                }
-                            />
-                            <div style={{ textAlign: 'right', paddingInline: '1rem', fontWeight: 'bold' }}>
-                                Total Due Amount: ${data.reduce((sum, row: any) => parseFloat((sum + row.due).toFixed(2)), 0)}
-                            </div>
-                            <div style={{ textAlign: 'right', paddingInline: '1rem', fontWeight: 'bold' }}>
-                                Total Paid Amount: ${data.reduce((sum, row: any) => parseFloat((sum + row.paid).toFixed(2)), 0)}
-                            </div>
-                            <div style={{ textAlign: 'right', paddingInline: '1rem', fontWeight: 'bold' }}>
-                                Total Amount: ${data.reduce((sum, row: any) => parseFloat((sum + row.total).toFixed(2)), 0)}
-                            </div>
-                        </div>
+                    <div className="card py-2">
+                        <DropdownButton id="dropdown-basic-button"
+                            title={`${state[0].startDate.toLocaleDateString()} - ${state[0].endDate.toLocaleDateString()}`}
+                            className='mx-auto border-1 border-black'
+                            variant='white'>
+                            <Dropdown.Item href="#" className='p-0'>
+                                <DateRangePicker
+                                    editableDateInputs={true}
+                                    onChange={(item: any) => setState([item.selection])}
+                                    moveRangeOnFirstSelection={false}
+                                    ranges={state}
+                                />
+                            </Dropdown.Item>
+                        </DropdownButton>
                     </div>
+                </div>
+                <div className="col-12">
+                    <DataTable
+                        pdfName='Sales Return'
+                        cols={columns}
+                        data={data}
+                        tablebody={tableBody}
+                        tableHeader={tableHeader}
+                        rowCount={rowCount}
+                        paginationProps={{ pagination, setPagination }}
+                        isloading={loading}
+                    />
                 </div>
             </Section >
         </>

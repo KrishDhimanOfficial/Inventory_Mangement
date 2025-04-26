@@ -18,15 +18,17 @@ interface Props {
     addURL?: string,
     pdfName: string,
     paymentModal?: () => void
+    addbtn?: React.ReactNode
     rowCount?: number,
-    paginationProps?: any
+    paginationProps?: any,
+    addPermission?: boolean,
+    isloading: boolean,
 }
 
-const DataTable: React.FC<Props> = ({ addURL, data, cols, tablebody, tableHeader, pdfName, paginationProps, rowCount, }) => {
+const DataTable: React.FC<Props> = ({ addURL, data, cols, isloading, tablebody, tableHeader, pdfName, addPermission, paginationProps, rowCount, addbtn }) => {
     const { pagination, setPagination } = paginationProps;
     const location = useLocation()
     const columns = useMemo<any>(() => cols, [])
-
 
     const handleExportRows = (rows: any) => {
         const doc = new jsPDF()
@@ -45,7 +47,11 @@ const DataTable: React.FC<Props> = ({ addURL, data, cols, tablebody, tableHeader
         columnFilterDisplayMode: 'popover',
         manualPagination: true,
         rowCount, // total rows from the server
-        state: { pagination },
+        state: {
+            pagination,
+            isLoading: isloading,
+            showSkeletons: isloading
+        },
         onPaginationChange: setPagination,
         muiTableBodyCellProps: {
             sx: {
@@ -66,9 +72,12 @@ const DataTable: React.FC<Props> = ({ addURL, data, cols, tablebody, tableHeader
                     className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-print me-2"></i>}
                 />
                 {
-                    addURL && (
+                    (addPermission && addURL) && (
                         <Link to={addURL} state={{ from: location.pathname }} className='btn btn-dark btn-sm bg-transparent text-dark h-fit'> Add</Link>
                     )
+                }
+                {
+                    addbtn && (addbtn)
                 }
             </div>
         )

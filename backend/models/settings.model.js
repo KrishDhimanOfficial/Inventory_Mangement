@@ -1,4 +1,4 @@
-import mongoose from "../config/DB.js"
+import mongoose from 'mongoose'
 
 const system_setting = new mongoose.Schema({
     name: {

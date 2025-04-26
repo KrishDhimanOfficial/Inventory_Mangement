@@ -1,4 +1,4 @@
-import mongoose from "../config/DB.js"
+import mongoose from 'mongoose'
 import mongoosePaginate from 'mongoose-aggregate-paginate-v2'
 
 const productSchema = new mongoose.Schema({

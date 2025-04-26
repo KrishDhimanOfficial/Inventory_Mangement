@@ -1,4 +1,4 @@
-import mongoose from "../config/DB.js"
+import mongoose from 'mongoose'
 
 const paymentMethodSchema = new mongoose.Schema({
     name: {

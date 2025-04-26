@@ -5,6 +5,7 @@ import { DataService, } from '../../hooks/hook';
 import { useDispatch, } from 'react-redux';
 import { setSingleData } from '../../controller/singleData'
 import { Menu, IconButton, } from '@mui/material'
+import config from '../../config/config';
 
 interface Props {
     api?: string,
@@ -31,7 +32,7 @@ const DropDownMenu: React.FC<Props> = ({ name, api, editURL, detailsURL, deleted
 
     const handlePaymentModalOpen = async () => {
         try {
-            const res = await DataService.get(`${api}`)
+            const res = await DataService.get(`${api}`, )
             paymentModal && paymentModal()
             dispatch(setSingleData(res))
         } catch (error) {

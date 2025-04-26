@@ -44,6 +44,7 @@ const routes = [
   {
     path: '/login',
     element: <Login />,
+    errorElement: <Error />// error page
   },
   {
     path: '/dashboard',

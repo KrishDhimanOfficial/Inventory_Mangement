@@ -1,5 +1,4 @@
-import mongoose from "../config/DB.js"
-const { String } = mongoose.Schema.Types;
+import mongoose from 'mongoose'
 
 const warehouseSchema = new mongoose.Schema({
     name: {

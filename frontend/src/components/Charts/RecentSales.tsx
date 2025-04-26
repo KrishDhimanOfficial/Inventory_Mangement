@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { DataService } from '../../hooks/hook';
-import config from '../../config/config';
-import { Table } from 'react-bootstrap';
 import { Loader } from '../component';
 import DataTable from 'react-data-table-component';
 
 const RecentSales = () => {
     const [data, setdata] = useState([])
     const [loading, setloading] = useState(false)
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
 
     const columns = [
         { name: "Date", selector: (row: any) => row.date, sortable: true },
@@ -22,11 +22,10 @@ const RecentSales = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get('/get-all-sales-details', {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            const res = await DataService.get(`/get-all-sales-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`,)
+            setRowCount(res.totalDocs)
             setdata(
-                res?.map((item: any) => ({
+                res.collectionData?.map((item: any) => ({
                     reference: item.salesId,
                     date: item.date,
                     customer: item.customer?.name,
@@ -48,26 +47,6 @@ const RecentSales = () => {
                 <h2 className="card-title mb-0">Recent Sales</h2>
             </div>
             <div className="card-body">
-                {/* <Table>
-                    <thead>
-                        <tr>
-                            <th>Invoice No</th>
-                            <th>Date</th>
-                            <th>Customer</th>
-                            <th>Warehouse</th>
-                            <th>Total</th>
-                            <th>Paid</th>
-                            <th>Due</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            loading
-                                ? <Loader />
-                                : data
-                        }
-                    </tbody>
-                </Table> */}
                 <DataTable
                     title="Recent Sales"
                     paginationPerPage={5}
@@ -83,6 +62,7 @@ const RecentSales = () => {
                     progressPending={loading}
                     progressComponent={<Loader />}
                     pagination
+                    paginationTotalRows={rowCount}
                 />
             </div>
         </div>

@@ -1,4 +1,5 @@
-import mongoose from "../config/DB.js"
+import mongoose from 'mongoose'
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2'
 
 const supplierSchema = new mongoose.Schema({
     name: {
@@ -48,4 +49,5 @@ const supplierSchema = new mongoose.Schema({
     timestamps: true
 })
 
+supplierSchema.plugin(mongooseAggregatePaginate)
 export default mongoose.model('supplier', supplierSchema)

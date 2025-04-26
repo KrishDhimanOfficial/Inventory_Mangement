@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import Big from 'big.js';
+import config from '../../config/config';
 
 interface Modal {
     endApi: string,
@@ -39,7 +40,7 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
 
     const fetch = async () => {
         try {
-            const res = await DataService.get('/get-all-payment-methods')
+            const res = await DataService.get('/get-all-payment-methods', )
             setpayment_methods(res?.map((item: any) => ({ value: item._id, label: item.name })))
         } catch (error) {
             console.error(error)
@@ -58,7 +59,9 @@ const Payment_Modal: React.FC<Modal> = ({ endApi, show, handleClose, refreshTabl
             if (formdata.paid > data.payment_due) {
                 toast.warning('Amount is greater than due amount')
             } else {
-                const res = await DataService.patch(`${endApi}/${data._id}`, formdata)
+                const res = await DataService.patch(`${endApi}/${data._id}`, formdata, {
+                    Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
+                })
                 Notify(res) // Show API Response
                 if (res.success) reset(), refreshTable(), handleClose()
             }

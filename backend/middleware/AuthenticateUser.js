@@ -1,20 +1,17 @@
 import { getUser } from "../services/auth.js"
-import userModel from "../models/user.model.js";
-import mongoose from "mongoose"
-const ObjectId = mongoose.Types.ObjectId;
 
 const AuthenticateUser = async (req, res, next) => {
     try {
-        const token = req.headers['authorization'].split(' ')[1]
+        const token = req.headers['authorization']?.split(' ')[1]
+        if (!token) return res.status(404).json({ error: 'Access denied.' })
         const user = getUser(token)
-        const response = await userModel.findById({ _id: new ObjectId(user?.id) })
-        if (!response) return res.json({ middlewareError: 'Unauthorized!' })
+        req.user = user;
         next()
     } catch (error) {
         console.log('AuthenticateUser : ', error.message)
-        if (error.message === 'jwt malformed') return res.json({ authUser: '/login' })
-        if (error.message === 'jwt expired') return res.json({ authUser: '/login' })
-        return res.json({ authUser: '/login' })
+        if (error.message === 'jwt malformed') return res.json({ error: 'Access denied.' })
+        if (error.message === 'jwt expired') return res.json({ error: 'Access denied.' })
+        return res.status(403).json({ error: "Forbidden" });
     }
 }
 

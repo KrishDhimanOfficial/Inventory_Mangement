@@ -8,6 +8,7 @@ class DataSerice {
     async post(endURL: string, data: object, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem(config.token_name)}`,
             ...(headers || {})
         }
         const res: Response = await fetch(`${this.ClientAPI}${endURL}`, {
@@ -22,6 +23,7 @@ class DataSerice {
     async get(endURL: string, headers?: object, signal?: AbortSignal): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem(config.token_name)}`,
             ...(headers || {})
         }
         const res: Response = await fetch(`${this.ClientAPI}${endURL}`, {
@@ -36,6 +38,7 @@ class DataSerice {
     async put(endURL: string, data: object, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem(config.token_name)}`,
             ...(headers || {})
         }
         const res: Response = await fetch(`${this.ClientAPI}${endURL}`, {
@@ -50,6 +53,7 @@ class DataSerice {
     async patch(endURL: string, data?: object, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem(config.token_name)}`,
             ...(headers || {})
         }
         const res: Response = await fetch(`${this.ClientAPI}${endURL}`, {
@@ -64,6 +68,7 @@ class DataSerice {
     async delete(endURL: string, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem(config.token_name)}`,
             ...(headers || {})
         }
         const res: Response = await fetch(`${this.ClientAPI}${endURL}`, {

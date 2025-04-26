@@ -1,5 +1,5 @@
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2"
-import mongoose from "../config/DB.js"
+import mongoose from 'mongoose'
 
 const saleOrderSchema = new mongoose.Schema({
     quantity: { type: mongoose.Schema.Types.Number },

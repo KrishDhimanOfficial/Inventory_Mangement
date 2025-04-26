@@ -5,6 +5,7 @@ import { DropdownDivider, ListGroup, Row, Table, Col, Badge } from 'react-bootst
 import { useParams } from 'react-router';
 import DataTable from 'react-data-table-component';
 import { useSelector } from 'react-redux';
+import config from '../../config/config';
 interface Details {
     name: string,
     info: string
@@ -33,7 +34,7 @@ const ReturnDetails: React.FC<Details> = ({ name, info }) => {
 
     const columns = [
         { name: "Product", selector: (row: any) => row.product },
-        { name: `${salesReturnId ? 'Price' : 'Cost'}`, selector: (row: any) => salesReturnId? row.price : row.cost },
+        { name: `${salesReturnId ? 'Price' : 'Cost'}`, selector: (row: any) => salesReturnId ? row.price : row.cost },
         { name: "Quantity", selector: (row: any) => row.qty },
         { name: "Tax", selector: (row: any) => row.tax },
         { name: "SubTotal", selector: (row: any) => row.subtotal },
@@ -44,10 +45,8 @@ const ReturnDetails: React.FC<Details> = ({ name, info }) => {
             const endpoint = salesReturnId
                 ? `/sales-return/${salesReturnId}`
                 : `/purchase-return/${purchaseReturnId}`
-            const res = await DataService.get(endpoint)
+            const res = await DataService.get(endpoint, )
             setordersInfo(res)
-            console.log(res);
-            
             setcalDiscount(getDiscount(ordersInfo.discount, ordersInfo.subtotal))
             setcalOrdertax(getorderTax(ordersInfo.orderTax, ordersInfo.subtotal))
             setorders(

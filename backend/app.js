@@ -7,19 +7,22 @@ import helmet from 'helmet'
 import responseTime from 'response-time'
 import './services/cronJob.js'
 import config from './config/config.js'
+import rateLimit from 'express-rate-limit'
+import AuthenticateUser from './middleware/AuthenticateUser.js'
+import users_controllers from './controllers/users.controller.js'
+import restrictOrigin from './middleware/restrictOrigin.js'
 const app = express()
 
 // view engine setup
 app.set('views', app.use('/views', express.static('views')))
 app.set('view engine', 'jade')
 app.set('views', 'views')
-
 app.use(cors(
   {
-    origin: `${config.client_url}`,
+    origin: config.client_url,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+    credentials: false,
   }
 ))
 app.use(helmet(
@@ -35,13 +38,21 @@ app.use(compression(
     filter: (req, res) => compression.filter(req, res)
   }
 ))
+app.use(rateLimit(
+  {
+    windowMs: 15 * 60 * 1000, // 15 mins
+    max: 100, // limit each IP
+    message: 'Too many requests. Please try again later.'
+  }
+))
 app.use(responseTime((req, res, time) => console.log(`${req.method} ${req.url} - ${time.toFixed(2)} ms`)))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use('/uploads', express.static('uploads'))
 app.use('/public', express.static('public'))
-app.use('/api', apiRouter)
+app.use('/api/user/login', restrictOrigin, users_controllers.handleUserLogin)
+app.use('/api', restrictOrigin, AuthenticateUser, apiRouter)
 
 // error handler
 app.use((err, req, res,) => {
@@ -51,6 +62,7 @@ app.use((err, req, res,) => {
 
   // render the error page
   res.status(err.status || 500)
+  res.status(500).json({ error: 'Internal Server Error.' })
   return res.render('error')
 })
 

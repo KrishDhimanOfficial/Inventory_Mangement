@@ -1,4 +1,4 @@
-import mongoose from "../config/DB.js"
+import mongoose from 'mongoose'
 
 const salesReturnSchema = new mongoose.Schema({
     salesReturnId: {
@@ -15,6 +15,7 @@ const salesReturnSchema = new mongoose.Schema({
     },
     returnDate: {
         type: mongoose.Schema.Types.Date,
+        default:new Date()
     },
     payment_paid: {
         type: mongoose.Schema.Types.Number,

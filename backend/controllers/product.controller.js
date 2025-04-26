@@ -1125,7 +1125,6 @@ const pro_controllers = {
             return res.status(200).json(response[0])
         } catch (error) {
             console.log('getSalesDetail : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getAll_sales_Details: async (req, res) => {
@@ -1201,7 +1200,6 @@ const pro_controllers = {
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAll_sales_Details : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     createProductSales: async (req, res) => {
@@ -1244,7 +1242,6 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('createProductSales : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getSingleProductSales_Details: async (req, res) => {
@@ -1385,7 +1382,6 @@ const pro_controllers = {
             return res.status(200).json(response[0])
         } catch (error) {
             console.log('getSingleProductSales_Details : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updateProductSales: async (req, res) => {
@@ -1419,7 +1415,6 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updateProductSales : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updateSalesPayment: async (req, res) => {
@@ -1442,7 +1437,6 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updateSalesPayment : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     deleteProductSales: async (req, res) => {
@@ -1458,7 +1452,6 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted successfully!' })
         } catch (error) {
             console.log('deleteProductSales : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getAllPaymentMethods: async (req, res) => {
@@ -1467,7 +1460,6 @@ const pro_controllers = {
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAllPaymentMethods : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     createPaymentMethod: async (req, res) => {
@@ -1485,7 +1477,6 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Created Successfully.' })
         } catch (error) {
             console.log('createPaymentMethod : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getPaymentMethod: async (req, res) => {
@@ -1495,7 +1486,6 @@ const pro_controllers = {
             return res.status(200).json(response)
         } catch (error) {
             console.log('getPaymentMethod : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updatePaymentMethod: async (req, res) => {
@@ -1506,7 +1496,6 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updatePaymentMethod: async (req, res) => {' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     deletePaymentMethod: async (req, res) => {
@@ -1516,7 +1505,6 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted Successfully.' })
         } catch (error) {
             console.log('deletePaymentMethod: ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getAllPurchaseReturnDetails: async (req, res) => {
@@ -1568,7 +1556,7 @@ const pro_controllers = {
                     $addFields: {
                         date: {
                             $dateToString: {
-                                format: "%d-%m-%Y",
+                                format: '%d-%m-%Y',
                                 date: "$purchasereturns.returnDate"
                             }
                         },
@@ -1637,7 +1625,6 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('createProductReturn : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getSinglePurchaseReturnDetail: async (req, res) => {
@@ -1776,7 +1763,6 @@ const pro_controllers = {
             return res.status(200).json(response[0])
         } catch (error) {
             console.log('getSinglePurchaseReturnDetail : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updatePurchaseReturn: async (req, res) => {
@@ -1824,7 +1810,6 @@ const pro_controllers = {
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
             console.log('updatePurchaseReturn : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updatePurchaseReturnPayment: async (req, res) => {
@@ -1863,7 +1848,6 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted Successfully.' })
         } catch (error) {
             console.log('deleteProductReturn : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getAllSalesReturnDetails: async (req, res) => {
@@ -1943,7 +1927,6 @@ const pro_controllers = {
             return res.status(200).json(response)
         } catch (error) {
             console.log('getAllSalesReturnDetails : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     createSalesReturn: async (req, res) => {
@@ -1979,7 +1962,6 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Added Successfully.' })
         } catch (error) {
             console.log('createSalesReturn : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     getSingleSalesReturnDetail: async (req, res) => {
@@ -2093,9 +2075,10 @@ const pro_controllers = {
                 },
                 {
                     $addFields: {
-                        
-                        name: { $ifNull: ['$customer.name', '$sale.walkInCustomerDetails.name'] },
-                        phone: { $ifNull: ['$customer.phone', '$sale.walkInCustomerDetails.phone'] }
+                        walkInCustomerDetails: {
+                            name: { $ifNull: ['$sale.walkInCustomerDetails.name', '$sale.walkInCustomerDetails.name'] },
+                            phone: { $ifNull: ['$customer.phone', '$sale.walkInCustomerDetails.phone'] }
+                        },
                     }
                 },
                 {
@@ -2111,6 +2094,10 @@ const pro_controllers = {
                         salesReturnId: 1,
                         returnItems: 1,
                         selling_date: 1,
+                        walkInCustomerDetails: 1,
+                        'customer.name': 1,
+                        'customer.email': 1,
+                        'customer.phone': 1,
                         'warehouse.name': 1,
                         'payment.name': 1,
                         'sale.total': 1,
@@ -2125,7 +2112,6 @@ const pro_controllers = {
             return res.status(200).json(response[0])
         } catch (error) {
             console.log('getSingleSalesReturnDetail : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updateSalesReturn: async (req, res) => {
@@ -2169,7 +2155,6 @@ const pro_controllers = {
             return res.status(200).json({ success: 'updated successfully.' })
         } catch (error) {
             console.log('updateSalesReturn : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     updateSalesReturnPayment: async (req, res) => {
@@ -2189,7 +2174,6 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Saved.' })
         } catch (error) {
             console.log('updateSalesReturnPayment : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
     deleteSalesReturn: async (req, res) => {
@@ -2199,7 +2183,6 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Removed From DB.' })
         } catch (error) {
             console.log('deleteSalesReturn : ' + error.message)
-            return res.status(503).json({ error: 'Server currently unavailable.' })
         }
     },
 }

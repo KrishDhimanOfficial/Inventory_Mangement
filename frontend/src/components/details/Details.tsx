@@ -5,6 +5,7 @@ import { DropdownDivider, ListGroup, Row, Table, Col, Badge } from 'react-bootst
 import { useParams } from 'react-router';
 import DataTable from 'react-data-table-component';
 import { useSelector } from 'react-redux';
+import config from '../../config/config';
 interface Details {
     name: string,
     info: string
@@ -38,13 +39,13 @@ const Details: React.FC<Details> = ({ name, info }) => {
         { name: "Tax", selector: (row: any) => row.tax },
         { name: "SubTotal", selector: (row: any) => row.subtotal },
     ]
-    
+
     const getOrders = async () => {
         try {
             const endpoint = salesId
                 ? `/get/sales_details/${salesId}`
                 : `/get/purchase_details/${purchaseId}`
-            const res = await DataService.get(endpoint)
+            const res = await DataService.get(endpoint, )
             setordersInfo(res)
             setcalDiscount(getDiscount(res.discount, res.subtotal))
             setcalOrdertax(getorderTax(res.orderTax, res.subtotal))

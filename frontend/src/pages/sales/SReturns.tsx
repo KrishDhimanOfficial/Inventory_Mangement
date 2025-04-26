@@ -105,9 +105,7 @@ const SReturns = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res: any = await DataService.get(`/all-sales-return-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`, {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            const res: any = await DataService.get(`/all-sales-return-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`,)
             const data = res.collectionData?.map((pro: any) => ({
                 _id: pro.salesreturns._id,
                 date: pro.date,
@@ -123,6 +121,7 @@ const SReturns = () => {
             setRowCount(data.totalDocs), setdata(data), setloading(false)
         } catch (error) {
             console.error(error)
+            setloading(false)
         }
     }
 
@@ -158,6 +157,7 @@ const SReturns = () => {
                         tableHeader={tableHeader}
                         rowCount={rowCount}
                         paginationProps={{ pagination, setPagination }}
+                        isloading={loading}
                     />
                 </div>
             </Section>

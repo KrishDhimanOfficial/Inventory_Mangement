@@ -9,6 +9,7 @@ import { getUser } from '../services/auth.js';
 import mongoose from 'mongoose';
 import salesreturnModel from '../models/salesreturn.model.js';
 import purchasereturnModel from '../models/purchasereturn.model.js';
+import handleAggregatePagination from '../services/handlepagePagination.js';
 const ObjectId = mongoose.Types.ObjectId;
 const delay = 100;
 
@@ -17,7 +18,7 @@ const reportController = {
         try {
             const user = getUser(req.headers['authorization']?.split(' ')[1])
             const { startDate, endDate } = req.query;
-            const response = await userModel.aggregate([
+            const pipeline = [
                 {
                     $match: {
                         _id: new ObjectId(user?.id)
@@ -64,7 +65,7 @@ const reportController = {
                         date: {
                             $dateToString: {
                                 date: "$purchase_date",
-                                format: "%Y-%m-%d",
+                                format: '%d-%m-%Y',
                             }
                         },
                     }
@@ -88,7 +89,8 @@ const reportController = {
                         'supplier.phone': 0,
                     }
                 }
-            ])
+            ]
+            const response = await handleAggregatePagination(userModel, pipeline, req.query)
             setTimeout(() => res.status(200).json(response), delay)
         } catch (error) {
             console.log('getPurchaseReport : ' + error.message)
@@ -145,7 +147,7 @@ const reportController = {
                         date: {
                             $dateToString: {
                                 date: "$selling_date",
-                                format: "%Y-%m-%d",
+                                format: '%d-%m-%Y',
                             }
                         },
                     }
@@ -178,7 +180,7 @@ const reportController = {
     topsellinfProductsReport: async (req, res) => {
         try {
             const { startDate, endDate } = req.query;
-            const response = await salesModel.aggregate([
+            const pipeline = [
                 {
                     $match: {
                         selling_date: {
@@ -216,12 +218,13 @@ const reportController = {
                         date: {
                             $dateToString: {
                                 date: "$selling_date",
-                                format: "%d-%m-%Y"
+                                format: '%d-%m-%Y'
                             }
                         }
                     }
                 },
-            ])
+            ]
+            const response = await handleAggregatePagination(salesModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             console.log('topsellinfProductsReport : ' + error.message)
@@ -230,7 +233,7 @@ const reportController = {
     },
     getSuppliersReport: async (req, res) => {
         try {
-            const response = await supplierModel.aggregate([
+            const pipeline = [
                 {
                     $lookup: {
                         from: 'purchases',
@@ -251,7 +254,8 @@ const reportController = {
                         purchases: { $sum: '$purchase.orderItems.quantity' },
                     }
                 }
-            ])
+            ]
+            const response = await handleAggregatePagination(supplierModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             if (error.name === 'ValidationError') validate(res, error.errors)
@@ -260,7 +264,7 @@ const reportController = {
     },
     getCustomersReport: async (req, res) => {
         try {
-            const response = await customerModel.aggregate([
+            const pipeline = [
                 {
                     $lookup: {
                         from: 'sales',
@@ -310,7 +314,8 @@ const reportController = {
                         salesreturnIds: 0
                     }
                 }
-            ])
+            ]
+            const response = await handleAggregatePagination(customerModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             console.log('getCustomersReport : ' + error.message)
@@ -339,6 +344,15 @@ const reportController = {
                 },
                 { $unwind: '$category' },
                 {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                { $unwind: '$warehouse' },
+                {
                     $project: {
                         title: 1,
                         sku: 1,
@@ -346,17 +360,11 @@ const reportController = {
                         'unit.name': 1,
                         'unit.shortName': 1,
                         'category.name': 1,
+                        'warehouse.name': 1
                     }
                 }
             ]
-            if (warehouseId !== '') {
-                pipeline.unshift({
-                    $match: {
-                        warehouseId: new ObjectId(warehouseId)
-                    }
-                })
-            }
-            const response = await productModel.aggregate(pipeline)
+            const response = await handleAggregatePagination(productModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             console.log('getProductStockReport : ' + error.message)
@@ -365,92 +373,91 @@ const reportController = {
     getProductPurchaseReport: async (req, res) => {
         try {
             const { startDate, endDate } = req.query;
-            const response = await purchaseModel.aggregate(
-                [
-                    {
-                        $match: {
-                            purchase_date: {
-                                $gte: new Date(startDate),
-                                $lte: new Date(endDate)
-                            }
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: 'products',
-                            localField: 'orderItems.productId',
-                            foreignField: '_id',
-                            as: 'product'
-                        }
-                    },
-                    { $unwind: '$product' },
-                    {
-                        $group: {
-                            _id: {
-                                productId: '$product._id',
-                            },
-                            purchaseQty: { $first: { $first: '$orderItems.quantity' } },
-                            total: { $first: { $first: '$orderItems.productTaxPrice' } },
-                            supplierId: { $first: '$product.supplierId' },
-                            purchaseId: { $first: '$purchaseId' },
-                            purchase_date: { $first: '$product.purchase_date' },
-                            warehouseId: { $first: '$product.warehouseId' },
-                            purchase_date: { $first: '$purchase_date' },
-                            product: { $first: '$product.title' },
-                            payment_status: { $first: '$payment_status' },
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: 'suppliers',
-                            localField: 'supplierId',
-                            foreignField: '_id',
-                            as: 'supplier'
-                        }
-                    },
-                    { $unwind: '$supplier' },
-                    {
-                        $lookup: {
-                            from: 'warehouses',
-                            localField: 'warehouseId',
-                            foreignField: '_id',
-                            as: 'warehouse'
-                        }
-                    },
-                    { $unwind: '$warehouse' },
-                    {
-                        $addFields: {
-                            date: {
-                                $dateToString: {
-                                    date: "$purchase_date",
-                                    format: "%Y-%m-%d",
-                                }
-                            }
-                        }
-                    },
-                    {
-                        $project: {
-                            warehouseId: 0,
-                            supplierId: 0,
-                            purchase_date: 0,
-                            'supplier.address': 0,
-                            'supplier.city': 0,
-                            'supplier.country': 0,
-                            'supplier.createdAt': 0,
-                            'supplier.email': 0,
-                            'supplier.phone': 0,
-                            'supplier.updatedAt': 0,
-                            'warehouse.address': 0,
-                            'warehouse.city': 0,
-                            'warehouse.country': 0,
-                            'warehouse.createdAt': 0,
-                            'warehouse.zipcode': 0,
-                            'warehouse.phone': 0,
-                            'warehouse.updatedAt': 0,
+            const pipeline = [
+                {
+                    $match: {
+                        purchase_date: {
+                            $gte: new Date(startDate),
+                            $lte: new Date(endDate)
                         }
                     }
-                ]
-            );
+                },
+                {
+                    $lookup: {
+                        from: 'products',
+                        localField: 'orderItems.productId',
+                        foreignField: '_id',
+                        as: 'product'
+                    }
+                },
+                { $unwind: '$product' },
+                {
+                    $group: {
+                        _id: {
+                            productId: '$product._id',
+                        },
+                        purchaseQty: { $first: { $first: '$orderItems.quantity' } },
+                        total: { $first: { $first: '$orderItems.productTaxPrice' } },
+                        supplierId: { $first: '$product.supplierId' },
+                        purchaseId: { $first: '$purchaseId' },
+                        purchase_date: { $first: '$product.purchase_date' },
+                        warehouseId: { $first: '$product.warehouseId' },
+                        purchase_date: { $first: '$purchase_date' },
+                        product: { $first: '$product.title' },
+                        payment_status: { $first: '$payment_status' },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'suppliers',
+                        localField: 'supplierId',
+                        foreignField: '_id',
+                        as: 'supplier'
+                    }
+                },
+                { $unwind: '$supplier' },
+                {
+                    $lookup: {
+                        from: 'warehouses',
+                        localField: 'warehouseId',
+                        foreignField: '_id',
+                        as: 'warehouse'
+                    }
+                },
+                { $unwind: '$warehouse' },
+                {
+                    $addFields: {
+                        date: {
+                            $dateToString: {
+                                date: "$purchase_date",
+                                format: '%d-%m-%Y',
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        warehouseId: 0,
+                        supplierId: 0,
+                        purchase_date: 0,
+                        'supplier.address': 0,
+                        'supplier.city': 0,
+                        'supplier.country': 0,
+                        'supplier.createdAt': 0,
+                        'supplier.email': 0,
+                        'supplier.phone': 0,
+                        'supplier.updatedAt': 0,
+                        'warehouse.address': 0,
+                        'warehouse.city': 0,
+                        'warehouse.country': 0,
+                        'warehouse.createdAt': 0,
+                        'warehouse.zipcode': 0,
+                        'warehouse.phone': 0,
+                        'warehouse.updatedAt': 0,
+                    }
+                }
+            ]
+            const response = await handleAggregatePagination(purchaseModel, pipeline, req.query)
             return res.status(200).json(response)
         } catch (error) {
             console.log('getProductPurchaseReport : ' + error.message)
@@ -459,7 +466,7 @@ const reportController = {
     getProductSalesReport: async (req, res) => {
         try {
             const { startDate, endDate } = req.query;
-            const response = await salesModel.aggregate([
+            const pipeline = [
                 {
                     $match: {
                         selling_date: {
@@ -515,7 +522,7 @@ const reportController = {
                         date: {
                             $dateToString: {
                                 date: "$selling_date",
-                                format: "%Y-%m-%d",
+                                format: '%d-%m-%Y',
                             }
                         }
                     }
@@ -541,8 +548,8 @@ const reportController = {
                         'warehouse.updatedAt': 0,
                     }
                 }
-            ])
-            console.log(response);
+            ]
+            const response = await handleAggregatePagination(salesModel, pipeline, req.query)
 
             return res.status(200).json(response)
         } catch (error) {

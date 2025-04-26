@@ -94,9 +94,7 @@ const Sales = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get(`/get-all-sales-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`, {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
+            const res = await DataService.get(`/get-all-sales-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`,)
             const sales = res.collectionData?.map((item: any) => ({
                 id: item._id,
                 date: item.date,
@@ -149,6 +147,8 @@ const Sales = () => {
                         tableHeader={tableHeader}
                         rowCount={rowCount}
                         paginationProps={{ pagination, setPagination }}
+                        addPermission={permission.sales?.create}
+                        isloading={loading}
                     />
                 </div>
             </Section>

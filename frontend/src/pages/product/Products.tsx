@@ -38,7 +38,6 @@ const Products = () => {
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
     const { permission } = useSelector((state: any) => state.permission)
 
-
     const columns = [
         { accessorKey: 'id', header: 'ID', },
         { accessorKey: 'code', header: 'Code' },
@@ -93,6 +92,7 @@ const Products = () => {
             }))
             setRowCount(res.totalDocs), setdata(response), setloading(false)
         } catch (error) {
+            setloading(false)
             console.error(error)
         }
     }
@@ -121,6 +121,8 @@ const Products = () => {
                         tableHeader={tableHeader}
                         rowCount={rowCount}
                         paginationProps={{ pagination, setPagination }}
+                        addPermission={permission.product?.create}
+                        isloading={loading}
                     />
                 </div>
             </Section>

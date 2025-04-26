@@ -11,7 +11,6 @@ import Loader from './micro_components/Loader'
 import Static_Modal from './modal/Static_Modal'
 import DropDownMenu from './micro_components/DropDown'
 import Payment_Modal from './modal/Payment_Modal'
-import Canvas from './micro_components/Canvas'
 import GenerateBill from './pdf/GenerateBill'
 import Pie from './Charts/Pie'
 import Bars from './Charts/Bars'
@@ -32,7 +31,6 @@ export {
     TextArea,
     DropDownMenu,
     Payment_Modal,
-    Canvas,
     GenerateBill,
     Pie,
     Bars,

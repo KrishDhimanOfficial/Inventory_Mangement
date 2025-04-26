@@ -1,7 +1,6 @@
 import { useState, useEffect, lazy } from 'react'
-import { Sec_Heading, Section, Button, Loader, Static_Modal } from '../../../components/component'
-import { DataService, useFetchData, downloadCSV, generatePDF } from '../../../hooks/hook'
-import DataTable from 'react-data-table-component'
+import { Sec_Heading, Section, Button, Static_Modal, DataTable } from '../../../components/component'
+import { DataService, useFetchData, } from '../../../hooks/hook'
 import { useSelector } from 'react-redux'
 
 interface Supplier_Details { id: number, _id: string, name: string, address: string, email: string, city: string, country: string, phone: string }
@@ -16,19 +15,22 @@ const Suppliers = () => {
     const [Id, setId] = useState('')
     const { fetchData: fetchSupplierDetail } = useFetchData({ showmodal })
     const { permission } = useSelector((state: any) => state.permission)
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
 
     const columns = [
-        { name: "ID", selector: (row: any) => row.id, sortable: true },
-        { name: "Name", selector: (row: any) => row.name, sortable: true },
-        { name: "Email", selector: (row: any) => row.email, sortable: true },
-        { name: "Phone", selector: (row: any) => row.phone, sortable: true },
-        { name: "City", selector: (row: any) => row.city, sortable: true },
-        { name: "Country", selector: (row: any) => row.country, sortable: true },
-        { name: "Address", selector: (row: any) => row.address, sortable: true },
+        { header: "Name", accessorKey: 'name' },
+        { header: "Email", accessorKey: 'email' },
+        { header: "Phone", accessorKey: 'phone' },
+        { header: "City", accessorKey: 'city' },
+        { header: "Country", accessorKey: 'country' },
+        { header: "Address", accessorKey: 'address' },
         {
-            name: "Actions",
-            cell: (row: any) => (
-                <div className="d-flex justify-content-between">
+            header: "Actions",
+            enableColumnFilter: false,
+            enableSorting: false,
+            accessorFn: (row: any) => (
+                <div className="d-flex gap-2">
                     {
                         permission.supplier?.edit && (
                             <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
@@ -44,7 +46,7 @@ const Suppliers = () => {
         },
     ]
 
-    const pdfColumns = ["S.No", "Name", "Email", "Phone no", "Address", "City", "Country",]
+    const tableHeader = ["Name", "Email", "Phone no", "Address", "City", "Country",]
     const tableBody = data.map((supplier: Supplier_Details) => [
         supplier.id,
         supplier.name,
@@ -61,25 +63,25 @@ const Suppliers = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get('/all/supplier-details')
-            const response = res.map((supplier: Supplier_Details, i: number) => ({
+            const res = await DataService.get(`/all/supplier-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
+            const response = res.collectionData?.map((supplier: Supplier_Details, i: number) => ({
                 id: i + 1, _id: supplier._id, name: supplier.name,
                 email: supplier.email,
                 address: supplier.address, city: supplier.city,
                 country: supplier.country, phone: supplier.phone
             }))
-            setdata(response), setloading(false)
+            setRowCount(res.totalDocs), setdata(response), setloading(false)
         } catch (error) {
             console.error(error)
         }
     }
 
 
-    useEffect(() => { fetch() }, [refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/supplier/${Id}`}
-              handleClose={() => setwarnmodal(!warnModal)}
+                handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {
                     setwarnmodal(!warnModal)
                     setrefreshTable(!refreshTable)
@@ -95,42 +97,24 @@ const Suppliers = () => {
             <Sec_Heading page='Supplier Management' subtitle='suppliers' />
             <Section>
                 <div className="col-12">
-                    <div className="card">
-                        <div className="card-body pt-1">
-                            <DataTable
-                                title="Suppliers Details"
-                                columns={columns}
-                                data={data}
-                                progressPending={loading}
-                                progressComponent={<Loader />}
-                                pagination
-                                subHeader
-                                subHeaderComponent={
-                                    <div className="d-flex gap-3 justify-content-end">
-                                        <Button
-                                            text='Generate PDF'
-                                            className='btn btn-danger'
-                                            onclick={() => generatePDF('suppilers', pdfColumns, tableBody)}
-                                        />
-                                        <Button
-                                            text='CSV'
-                                            className='btn btn-success'
-                                            onclick={() => downloadCSV('suppliers', data)}
-                                        />
-                                        {
-                                            permission.supplier?.create && (
-                                                <Button
-                                                    text='Create'
-                                                    className='btn btn-primary'
-                                                    onclick={() => setmodal(!showmodal)}
-                                                />
-                                            )
-                                        }
-                                    </div>
-                                }
+                    <DataTable
+                        pdfName='customers'
+                        cols={columns}
+                        data={data}
+                        tablebody={tableBody}
+                        tableHeader={tableHeader}
+                        rowCount={rowCount}
+                        paginationProps={{ pagination, setPagination }}
+                        addPermission={permission.supplier?.create}
+                        isloading={loading}
+                        addbtn={
+                            <Button
+                                text='Add'
+                                className='btn btn-dark btn-sm bg-transparent text-dark h-fit'
+                                onclick={() => setmodal(!showmodal)}
                             />
-                        </div>
-                    </div>
+                        }
+                    />
                 </div>
             </Section>
         </>

@@ -1,16 +1,18 @@
-import { useEffect, useState, lazy } from 'react';
-import { Sec_Heading, Section, Button, Loader, } from '../../components/component';
-import DataTable from 'react-data-table-component';
-import { generatePDF, downloadCSV, DataService, } from '../../hooks/hook';
+import { useEffect, useState, } from 'react';
+import { Sec_Heading, Section, DataTable } from '../../components/component';
+import { DataService, } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
 import { DropdownButton, Dropdown, } from 'react-bootstrap';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import config from '../../config/config';
+import { useSelector } from 'react-redux';
 
 const TopSellingproducts = () => {
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
+    const { settings } = useSelector((state: any) => state.singleData)
     const [state, setState] = useState([
         {
             startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
@@ -19,38 +21,59 @@ const TopSellingproducts = () => {
         }
     ])
     const columns = [
-        { name: "Date", selector: (row: any) => row.date, sortable: true },
-        { name: "Code", selector: (row: any) => row.code, sortable: true },
-        { name: "product", selector: (row: any) => row.product, sortable: true },
-        { name: "Total Sales", selector: (row: any) => row.tsales, sortable: true },
-        { name: "Total Amount", selector: (row: any) => row.tamount, sortable: true },
+        {
+            id: 'date',
+            header: "Date",
+            filterVariant: 'date',
+            filterFn: (row: any, columnId: any, filterValue: any) => {
+                const [day, month, year] = row.original?.date.split('-')
+                const rowDate = new Date(`${year}-${month}-${day}`)
+                const filterDate = new Date(filterValue)
+                return rowDate.toLocaleDateString() === filterDate.toLocaleDateString()
+            },
+            accessorFn: (row: any) => {
+                const [day, month, year] = row.date?.split('-')
+                return new Date(`${year}-${month}-${day}`)
+            },
+            Cell: ({ cell }: { cell: any }) => {
+                return new Date(cell.getValue()).toLocaleDateString()
+            },
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'code', header: "Code",
+            enableColumnFilterModes: false,
+        },
+        {
+            accessorKey: 'product', header: "Product",
+            enableColumnFilterModes: false,
+        },
+        { accessorKey: 'tsales', header: 'Total Sales' },
+        { accessorKey: 'tamount', header: `Grand Total (${settings.currency?.value})` },
     ]
 
-    const tableBody = data.map((selledpro: any, i: number) => [
-        i + 1,
+    const tableBody = data.map((selledpro: any) => [
         selledpro.date,
         selledpro.code,
         selledpro.product,
         selledpro.tsales,
         selledpro.tamount,
     ])
-    const pdfColumns = ["S.no", "Date", "Reference", "product", "Total Sales", "Amount"]
+
+    const tableHeader = ["Date", "Reference", "product", "Total Sales", "Amount"]
 
     const getReport = async () => {
         try {
             setloading(true)
-            const res = await DataService.get(`/get/top-selling-products/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`, {
-                Authorization: `Bearer ${localStorage.getItem(config.token_name)}`
-            })
-            const data = res?.map((item: any) => ({
+            const res = await DataService.get(`/get/top-selling-products/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}&page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`,)
+            const data = res.collectionData?.map((item: any) => ({
                 date: item.date,
                 code: item._id?.sku,
                 product: item._id?.product,
                 tsales: item.tsales,
                 tamount: item.tamount,
             }))
-            setloading(false)
-            setdata(data)
+            setRowCount(res.totalDocs), setdata(data), setloading(false)
         } catch (error) {
             console.error(error)
         } finally {
@@ -64,46 +87,33 @@ const TopSellingproducts = () => {
             <Sec_Heading page={"Top Selling Products Report"} subtitle="Report" />
             <Section>
                 <div className="col-12">
-                    <div className="card">
-                        <div className="card-body pt-1">
-                            <DataTable
-                                title="Top Selling Products"
-                                columns={columns}
-                                data={data}
-                                progressPending={loading}
-                                progressComponent={<Loader />}
-                                pagination
-                                subHeader
-                                subHeaderComponent={
-                                    <div className="d-flex gap-3 justify-content-end">
-                                        <Button
-                                            text='Generate PDF'
-                                            className='btn btn-danger'
-                                            onclick={() => generatePDF('TopSellingProductsReport', pdfColumns, tableBody)}
-                                        />
-                                        <Button
-                                            text='CSV'
-                                            className='btn btn-success'
-                                            onclick={() => downloadCSV('TopSellingProductsReport', data)}
-                                        />
-                                        <DropdownButton id="dropdown-basic-button" title="Select Date">
-                                            <Dropdown.Item href="#" className='p-0'>
-                                                <DateRangePicker
-                                                    editableDateInputs={true}
-                                                    onChange={(item: any) => setState([item.selection])}
-                                                    moveRangeOnFirstSelection={false}
-                                                    ranges={state}
-                                                />
-                                            </Dropdown.Item>
-                                        </DropdownButton>
-                                    </div>
-                                }
-                            />
-                            <div style={{ textAlign: 'right', paddingInline: '1rem', fontWeight: 'bold' }}>
-                                Total Amount: ${data.reduce((sum, row: any) => parseFloat((sum + row.tamount).toFixed(2)), 0)}
-                            </div>
-                        </div>
+                    <div className="card py-2">
+                        <DropdownButton id="dropdown-basic-button"
+                            title={`${state[0].startDate.toLocaleDateString()} - ${state[0].endDate.toLocaleDateString()}`}
+                            className='mx-auto border-1 border-black'
+                            variant='white'>
+                            <Dropdown.Item href="#" className='p-0'>
+                                <DateRangePicker
+                                    editableDateInputs={true}
+                                    onChange={(item: any) => setState([item.selection])}
+                                    moveRangeOnFirstSelection={false}
+                                    ranges={state}
+                                />
+                            </Dropdown.Item>
+                        </DropdownButton>
                     </div>
+                </div>
+                <div className="col-12">
+                    <DataTable
+                        pdfName='Product Sales'
+                        cols={columns}
+                        data={data}
+                        tablebody={tableBody}
+                        tableHeader={tableHeader}
+                        rowCount={rowCount}
+                        paginationProps={{ pagination, setPagination }}
+                        isloading={loading}
+                    />
                 </div>
             </Section >
         </>

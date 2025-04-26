@@ -1,4 +1,5 @@
-import mongoose from "../config/DB.js"
+import mongoose from 'mongoose'
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2'
 
 const customerSchema = new mongoose.Schema({
     name: {
@@ -48,4 +49,5 @@ const customerSchema = new mongoose.Schema({
     timestamps: true
 })
 
+customerSchema.plugin(mongooseAggregatePaginate)
 export default mongoose.model('customer', customerSchema)
