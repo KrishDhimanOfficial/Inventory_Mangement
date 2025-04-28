@@ -100,7 +100,7 @@ const PurchaseReport = () => {
         }
     }
 
-    useEffect(() => { getReport() }, [state, setState])
+    useEffect(() => { getReport() }, [state, setState,pagination.pageIndex])
     return (
         <>
             <Sec_Heading page={"Purchase Report"} subtitle="Purchase Report" />

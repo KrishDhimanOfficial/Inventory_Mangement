@@ -81,7 +81,7 @@ const TopSellingproducts = () => {
         }
     }
 
-    useEffect(() => { getReport() }, [state, setState])
+    useEffect(() => { getReport() }, [state, setState, pagination.pageIndex])
     return (
         <>
             <Sec_Heading page={"Top Selling Products Report"} subtitle="Report" />

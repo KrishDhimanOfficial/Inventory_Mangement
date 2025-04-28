@@ -10,7 +10,7 @@ const Bars = () => {
     const [y_axis, sety_axis] = useState<number>(10)
     const [state, setState] = useState([
         {
-            startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
+            startDate: new Date(new Date().setDate(new Date().getDate() - 30)),
             endDate: new Date(),
             key: 'selection'
         }

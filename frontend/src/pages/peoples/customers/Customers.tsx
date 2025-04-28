@@ -70,7 +70,7 @@ const Customers = () => {
         }
     }
 
-    useEffect(() => { fetch() }, [!refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
     return (
         <>
             <title>Dashboard | Customer Management</title>

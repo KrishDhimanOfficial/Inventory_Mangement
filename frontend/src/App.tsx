@@ -369,6 +369,10 @@ const routes = [
         element: <NotFound />
       }
     ],
+  },
+  {
+    path: '/*',
+    element: <NotFound />
   }
 ]
 

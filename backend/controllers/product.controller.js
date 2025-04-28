@@ -123,7 +123,7 @@ const pro_controllers = {
                         }
                     }
                 ])
-                : await brandModel.aggregate([
+                : await handleAggregatePagination(brandModel, [
                     {
                         $lookup: {
                             from: 'categories',
@@ -132,8 +132,8 @@ const pro_controllers = {
                             as: 'category'
                         }
                     },
-                ])
-            return res.json(response)
+                ], req.query)
+            return res.status(200).json(response)
         } catch (error) {
             console.log('getAll_brands : ' + error.message)
         }
@@ -1452,6 +1452,15 @@ const pro_controllers = {
             return res.status(200).json({ success: 'Deleted successfully!' })
         } catch (error) {
             console.log('deleteProductSales : ' + error.message)
+        }
+    },
+    getAllPaymentMethodsWithPagination: async (req, res) => {
+        try {
+            const pipeline = []
+            const response = await handleAggregatePagination(paymentMethodModel, pipeline, req.query)
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('getAllPaymentMethodsWithPagination : ' + error.message)
         }
     },
     getAllPaymentMethods: async (req, res) => {

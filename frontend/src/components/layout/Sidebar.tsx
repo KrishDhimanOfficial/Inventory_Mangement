@@ -20,7 +20,7 @@ interface UserPermission {
 
 const Sidebar = () => {
     const dispatch = useDispatch()
-    const { settings } = useSelector((state: any) => state.singleData)
+    const { sidemenu, settings } = useSelector((state: any) => state.singleData)
     const [user, setuser] = useState<UserPermission>({
         role: '', permissions: {
             customer: { view: null },
@@ -48,11 +48,11 @@ const Sidebar = () => {
             {/* <!-- Sidebar --> */}
             <div className="sidebar">
                 <div className="user-panel mt-3 mb-3 d-flex border-0 align-items-center">
-                    <div className="image">
+                    <div className="image p-0">
                         <Image path={`${settings.logo}` || logo} className="img-circle object-fit-cover h-100" />
                     </div>
                     <div className="info">
-                        <Link to="#" className="d-block fs-3 text-decoration-none">{settings.name}</Link>
+                        <Link to="#" className={`d-block fs-3 text-decoration-none ${sidemenu ? '' : 'hide'}`}>{settings.name}</Link>
                     </div>
                 </div>
 
@@ -60,7 +60,7 @@ const Sidebar = () => {
                 <nav className="mt-2">
                     <Accordion className='border-0 mb-3'>
                         <Accordion.Item eventKey="5">
-                            <Accordion.Header className='hidearrow'>
+                            <Accordion.Header className={`hidearrow ${sidemenu ? '' : 'hide'}`}>
                                 <Link to="/dashboard" className="nav-link">
                                     <i className="fa-solid fa-gauge"></i>
                                     <p>Dashboard</p>
@@ -72,9 +72,9 @@ const Sidebar = () => {
                         {
                             user.permissions?.product.view && (
                                 <Accordion.Item eventKey="6">
-                                    <Accordion.Header>
+                                    <Accordion.Header className={sidemenu ? '' : 'hide'}>
                                         <i className="fa-solid fa-bars me-2"></i>
-                                        <p> Product  </p>
+                                        <p > Product  </p>
                                     </Accordion.Header>
                                     <Accordion.Body className='ps-0 '>
                                         <ul className="nav nav-treeview">
@@ -110,7 +110,7 @@ const Sidebar = () => {
                         {
                             user.permissions?.purchase.view && (
                                 <Accordion.Item eventKey="5">
-                                    <Accordion.Header>
+                                    <Accordion.Header className={sidemenu ? '' : 'hide'}>
                                         <i className="fa-solid fa-credit-card me-2"></i>
                                         <p>Purchase</p>
                                     </Accordion.Header>
@@ -140,7 +140,7 @@ const Sidebar = () => {
                         {
                             user.permissions?.sales.view && (
                                 <Accordion.Item eventKey="4">
-                                    <Accordion.Header>
+                                    <Accordion.Header className={sidemenu ? '' : 'hide'}>
                                         <i className="fa-solid fa-chart-area me-2"></i>
                                         <p>Sales </p>
                                     </Accordion.Header>
@@ -166,7 +166,7 @@ const Sidebar = () => {
                         {
                             user.permissions?.purchase.view && (
                                 <Accordion.Item eventKey="3">
-                                    <Accordion.Header className='hidearrow'>
+                                    <Accordion.Header className={`hidearrow ${sidemenu ? '' : 'hide'}`}>
                                         <Link to="/dashboard/purchase/returns" className="nav-link">
                                             <i className="fa-solid fa-arrow-left"></i>
                                             <p>Purchase Return</p>
@@ -178,7 +178,7 @@ const Sidebar = () => {
                         {
                             user.permissions?.sales.view && (
                                 <Accordion.Item eventKey="2">
-                                    <Accordion.Header className='hidearrow'>
+                                    <Accordion.Header className={`hidearrow ${sidemenu ? '' : 'hide'}`}>
                                         <Link to="/dashboard/sales/returns" className="nav-link">
                                             <i className="fa-solid fa-arrow-right"></i>
                                             <p>Sales Return</p>
@@ -188,7 +188,7 @@ const Sidebar = () => {
                             )
                         }
                         <Accordion.Item eventKey="1">
-                            <Accordion.Header>
+                            <Accordion.Header className={sidemenu ? '' : 'hide'}>
                                 <i className="fa-solid fa-chart-area me-2"></i>
                                 <p>Reports</p>
                             </Accordion.Header>
@@ -278,7 +278,7 @@ const Sidebar = () => {
                             </Accordion.Body>
                         </Accordion.Item>
                         <Accordion.Item eventKey="0">
-                            <Accordion.Header>
+                            <Accordion.Header className={sidemenu ? '' : 'hide'}>
                                 <i className="fa-solid fa-users me-2"></i>
                                 <p>Peoples</p>
                             </Accordion.Header>
@@ -289,7 +289,7 @@ const Sidebar = () => {
                                             <li className="nav-item">
                                                 <Link to="/dashboard/suppliers" className="nav-link">
                                                     <i className="fa-solid fa-users nav-icon"></i>
-                                                    <p className="text ms-2">Supplers</p>
+                                                    <p className="text ms-2">Suppliers</p>
                                                 </Link>
                                             </li>
                                         )
@@ -320,7 +320,7 @@ const Sidebar = () => {
                         {
                             user.role === 'admin' && (
                                 <Accordion.Item eventKey="7">
-                                    <Accordion.Header>
+                                    <Accordion.Header className={sidemenu ? '' : 'hide'}>
                                         <i className="fa-solid fa-gear me-2"></i>
                                         <p>Settings</p>
                                     </Accordion.Header>

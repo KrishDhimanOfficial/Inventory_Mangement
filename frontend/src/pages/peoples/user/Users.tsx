@@ -18,19 +18,18 @@ const Users = () => {
     const { fetchData: fetchUserDetail } = useFetchData({ showmodal })
     const [rowCount, setRowCount] = useState(0)
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
-    const { permission } = useSelector((state: any) => state.permission)
 
     const columns = [
-        { header: "ID", selector: (row: any) => row.id, sortable: true },
-        { header: "Name", selector: (row: any) => row.name, sortable: true },
-        { header: "Email", selector: (row: any) => row.email, sortable: true },
-        { header: "Phone", selector: (row: any) => row.phone, sortable: true },
+        { header: "ID", accessorKey: 'id' },
+        { header: "Name", accessorKey: 'name' },
+        { header: "Email", accessorKey: 'email' },
+        { header: "Phone", accessorKey: 'phone' },
         {
             header: "Actions",
             enableColumnFilter: false,
             enableSorting: false,
             accessorFn: (row: any) => (
-                <div className="d-flex justify-content-between">
+                <div className="d-flex gap-2">
                     <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
                     <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
                 </div>
@@ -56,7 +55,7 @@ const Users = () => {
         }
     }
 
-    useEffect(() => { fetch() }, [!refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
     return (
         <>
             <title>Dashboard | Users Management</title>
@@ -91,7 +90,6 @@ const Users = () => {
                         tableHeader={tableHeader}
                         rowCount={rowCount}
                         paginationProps={{ pagination, setPagination }}
-                        addPermission={permission.customer?.create}
                         isloading={loading}
                         addbtn={
                             <Button

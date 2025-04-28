@@ -65,7 +65,7 @@ const CustomerReport = () => {
         }
     }
 
-    useEffect(() => { getReport() }, [])
+    useEffect(() => { getReport() }, [pagination.pageIndex])
     return (
         <>
             <Sec_Heading page={"Customer Report"} subtitle="Report" />

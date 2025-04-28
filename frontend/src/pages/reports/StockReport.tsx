@@ -38,7 +38,7 @@ const StockReport = () => {
         }
     }
 
-    useEffect(() => { getReport() }, [])
+    useEffect(() => { getReport() }, [pagination.pageIndex])
     return (
         <>
             <Sec_Heading page={"Product Stock Report"} subtitle="Report" />

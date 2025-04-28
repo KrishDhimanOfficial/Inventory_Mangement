@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2'
 
 const paymentMethodSchema = new mongoose.Schema({
     name: {
@@ -9,4 +10,5 @@ const paymentMethodSchema = new mongoose.Schema({
     },
 })
 
+paymentMethodSchema.plugin(mongooseAggregatePaginate)
 export default mongoose.model('paymentmethod', paymentMethodSchema)

@@ -33,12 +33,12 @@ const Suppliers = () => {
                 <div className="d-flex gap-2">
                     {
                         permission.supplier?.edit && (
-                            <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
+                            <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-pen-to-square"></i>} />
                         )
                     }
                     {
                         permission.supplier?.delete && (
-                            <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                            <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-trash"></i>} />
                         )
                     }
                 </div>
@@ -64,7 +64,7 @@ const Suppliers = () => {
         try {
             setloading(true)
             const res = await DataService.get(`/all/supplier-details?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
-            const response = res.collectionData?.map((supplier: Supplier_Details, i: number) => ({
+            const response = res?.map((supplier: Supplier_Details, i: number) => ({
                 id: i + 1, _id: supplier._id, name: supplier.name,
                 email: supplier.email,
                 address: supplier.address, city: supplier.city,
@@ -72,12 +72,12 @@ const Suppliers = () => {
             }))
             setRowCount(res.totalDocs), setdata(response), setloading(false)
         } catch (error) {
-            console.error(error)
+            setloading(false), console.error(error)
         }
     }
 
 
-    useEffect(() => { fetch() }, [!refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/supplier/${Id}`}
@@ -98,7 +98,7 @@ const Suppliers = () => {
             <Section>
                 <div className="col-12">
                     <DataTable
-                        pdfName='customers'
+                        pdfName='suppliers'
                         cols={columns}
                         data={data}
                         tablebody={tableBody}

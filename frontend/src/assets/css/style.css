@@ -99,6 +99,20 @@ input::-webkit-inner-spin-button {
     background-image: none;
 }
 
+.hide .accordion-button.collapsed::after,
+.hide .accordion-button:not(.collapsed)::after,
+.hide .accordion-button::after,
+.hide .accordion-button p {
+    color: #2F3349;
+}
+
+.sidebar-mini.sidebar-collapse .main-sidebar:not(.sidebar-no-expand).sidebar-focused,
+.sidebar-mini.sidebar-collapse .main-sidebar:not(.sidebar-no-expand):hover {
+    .hide .accordion-button p {
+        color: #fff;
+    }
+}
+
 .accordion-button:not(.collapsed) {
     color: #fff;
     background: transparent;
@@ -157,7 +171,6 @@ input[type="number"] {
     border: none;
     /* box-shadow: none; */
 }
-
 
 .importantField {
     color: #d00000;

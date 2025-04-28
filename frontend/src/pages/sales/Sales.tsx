@@ -2,13 +2,12 @@ import { lazy, useEffect, useState } from 'react'
 import { Section, Sec_Heading, Static_Modal, DropDownMenu, DataTable } from '../../components/component'
 import { DataService } from '../../hooks/hook'
 import { useSelector } from 'react-redux';
-import config from '../../config/config';
 
 const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
 
 const Sales = () => {
     const [rowCount, setRowCount] = useState(0)
-    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 })
     const [loading, setloading] = useState(false)
     const [data, setdata] = useState([])
     const [Id, setId] = useState('')
@@ -114,7 +113,7 @@ const Sales = () => {
             setloading(false)
         }
     }
-    useEffect(() => { fetch() }, [!refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/sales/${Id}`}

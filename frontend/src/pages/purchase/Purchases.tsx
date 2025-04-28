@@ -123,7 +123,7 @@ const Purchases = () => {
         }
     }
 
-    useEffect(() => { fetch() }, [!refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
     return (
         <>
             <Static_Modal show={warnModal} endApi={`/purchase/${Id}`}

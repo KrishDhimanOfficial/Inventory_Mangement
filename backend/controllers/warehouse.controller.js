@@ -3,6 +3,7 @@ import validate from '../services/validateData.js'
 import warehouseModel from '../models/warehouse.model.js'
 import { getUser } from "../services/auth.js";
 import userModel from "../models/user.model.js";
+import handleAggregatePagination from "../services/handlepagePagination.js";
 
 const ObjectId = mongoose.Types.ObjectId;
 const delay = 100;
@@ -97,7 +98,7 @@ const warehouse_controllers = {
     },
     checkWarehouseIsUsedInOrNot: async (req, res) => {
         try {
-            const response = await warehouseModel.aggregate([
+            const pipeline = [
                 {
                     $lookup: {
                         from: 'products',
@@ -148,7 +149,8 @@ const warehouse_controllers = {
                         purchase_warehouseId: 1
                     }
                 }
-            ])
+            ]
+            const response = await handleAggregatePagination(warehouseModel, pipeline, req.query)
             if (response.length == 0) return res.json({ error: 'No Lookup Found!' })
             return res.status(200).json(response)
         } catch (error) {

@@ -19,8 +19,8 @@ interface Props {
     pdfName: string,
     paymentModal?: () => void
     addbtn?: React.ReactNode
-    rowCount?: number,
-    paginationProps?: any,
+    rowCount: number,
+    paginationProps: any,
     addPermission?: boolean,
     isloading: boolean,
 }
@@ -46,7 +46,7 @@ const DataTable: React.FC<Props> = ({ addURL, data, cols, isloading, tablebody, 
         data,
         columnFilterDisplayMode: 'popover',
         manualPagination: true,
-        rowCount, // total rows from the server
+        rowCount, // total rows 
         state: {
             pagination,
             isLoading: isloading,

@@ -42,7 +42,6 @@ const PReturns = () => {
                 return rowDate.toLocaleDateString() === filterDate.toLocaleDateString()
             },
             accessorFn: (row: any) => {
-                console.log(row.date?.split('-'));
                 const [day, month, year] = row.date.split('-')
                 return new Date(`${year}-${month}-${day}`)
             },
@@ -127,7 +126,7 @@ const PReturns = () => {
         }
     }
 
-    useEffect(() => { fetch() }, [!refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
     return (
         <>
             <Payment_Modal

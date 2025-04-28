@@ -15,7 +15,7 @@ const Pie = () => {
 
     const fetch = async () => {
         try {
-            const res = await DataService.get(`/get/top-selling-products/reports?startDate=${state[0].startDate}&endDate=${state[0].endDate}`)
+            const res = await DataService.get(`/get/top-selling-products/chart?startDate=${state[0].startDate}&endDate=${state[0].endDate}`)
             const data = res?.map((item: any) => ({
                 x: item._id?.product,
                 y: item.tsales,

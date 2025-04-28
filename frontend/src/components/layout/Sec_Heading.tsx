@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Breadcrumb from 'react-bootstrap/Breadcrumb'
 import { useLocation, useNavigate } from 'react-router';
 interface Props {
@@ -10,8 +10,10 @@ interface Props {
 const Sec_heading: React.FC<Props> = ({ page, subtitle, ispural }) => {
     const navigate = useNavigate()
     const location = useLocation()
+    const [lastBreadcrumb, setBreadcrumb] = useState(false)
     const previousPath = location.state?.from || '';
 
+    useEffect(() => { if (!ispural) setBreadcrumb(true) }, [])
     return (
         <div className="content-header">
             <div className="container-fluid">
@@ -22,7 +24,7 @@ const Sec_heading: React.FC<Props> = ({ page, subtitle, ispural }) => {
                     <div className="col-12">
                         <Breadcrumb>
                             <Breadcrumb.Item onClick={(e) => { e.preventDefault(), navigate('/dashboard') }}>Dashboard</Breadcrumb.Item>
-                            <Breadcrumb.Item onClick={(e) => { e.preventDefault(), navigate(previousPath) }}>
+                            <Breadcrumb.Item onClick={(e) => { e.preventDefault(); navigate(previousPath); }} active={lastBreadcrumb} >
                                 {ispural ? `${subtitle}s` : subtitle}
                             </Breadcrumb.Item>
                             {

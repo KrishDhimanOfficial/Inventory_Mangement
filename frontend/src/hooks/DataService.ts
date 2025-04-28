@@ -1,9 +1,10 @@
 import config from '../config/config'
-
 class DataSerice {
 
     ClientAPI: string | undefined;
-    constructor() { this.ClientAPI = config.serverURL; }
+    constructor() {
+        this.ClientAPI = config.serverURL;
+    }
 
     async post(endURL: string, data: object, headers?: object): Promise<any> {
         const finalHeaders: HeadersInit = {

@@ -231,6 +231,58 @@ const reportController = {
             return res.status(503).json({ error: 'Server unreached.' })
         }
     },
+    topsellinfProductsReportonChart: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.query;
+            const response = await salesModel.aggregate([
+                {
+                    $match: {
+                        selling_date: {
+                            $gte: new Date(startDate),
+                            $lte: new Date(endDate)
+                        }
+                    }
+                },
+                { $unwind: '$orderItems' },
+                {
+                    $lookup: {
+                        from: 'products',
+                        localField: 'orderItems.productId',
+                        foreignField: '_id',
+                        as: 'product'
+                    }
+                },
+                {
+                    $unwind: '$product'
+                },
+                {
+                    $group: {
+                        _id: {
+                            productId: '$product._id',
+                            product: '$product.title',
+                            sku: '$product.sku',
+                        },
+                        tsales: { $sum: '$orderItems.quantity' },
+                        tamount: { $sum: '$orderItems.productTaxPrice' },
+                        selling_date: { $first: '$selling_date' },
+                    }
+                },
+                {
+                    $addFields: {
+                        date: {
+                            $dateToString: {
+                                date: "$selling_date",
+                                format: '%d-%m-%Y'
+                            }
+                        }
+                    }
+                },
+            ])
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('topsellinfProductsReportonChart : ' + error.message)
+        }
+    },
     getSuppliersReport: async (req, res) => {
         try {
             const pipeline = [

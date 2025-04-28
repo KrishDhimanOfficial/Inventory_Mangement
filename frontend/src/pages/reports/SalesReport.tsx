@@ -33,7 +33,6 @@ const SalesReport = () => {
                 return rowDate.toLocaleDateString() === filterDate.toLocaleDateString()
             },
             accessorFn: (row: any) => {
-                console.log(row.date?.split('-'));
                 const [day, month, year] = row.date.split('-')
                 return new Date(`${year}-${month}-${day}`)
             },
@@ -102,7 +101,7 @@ const SalesReport = () => {
         }
     }
 
-    useEffect(() => { getReport() }, [state, setState])
+    useEffect(() => { getReport() }, [state, setState, pagination.pageIndex])
     return (
         <>
             <Sec_Heading page={"Sales Report"} subtitle="Sales Report" />

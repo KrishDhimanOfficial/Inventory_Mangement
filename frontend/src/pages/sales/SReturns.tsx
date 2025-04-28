@@ -125,7 +125,7 @@ const SReturns = () => {
         }
     }
 
-    useEffect(() => { fetch() }, [!refreshTable])
+    useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
     return (
         <>
             <Payment_Modal

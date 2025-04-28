@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2'
 
 const warehouseSchema = new mongoose.Schema({
     name: {
@@ -48,4 +49,5 @@ const warehouseSchema = new mongoose.Schema({
     timestamps: true
 })
 
+warehouseSchema.plugin(mongooseAggregatePaginate)
 export default mongoose.model('warehouse', warehouseSchema)
