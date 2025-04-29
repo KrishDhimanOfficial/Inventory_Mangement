@@ -3,8 +3,6 @@ import { Sec_Heading, Section, DataTable } from '../../components/component';
 import { DataService, } from '../../hooks/hook';
 import { DateRangePicker } from 'react-date-range'
 import { Dropdown, DropdownButton } from 'react-bootstrap';
-import 'react-date-range/dist/styles.css';
-import 'react-date-range/dist/theme/default.css';
 import { useSelector } from 'react-redux';
 
 const PurchaseReport = () => {

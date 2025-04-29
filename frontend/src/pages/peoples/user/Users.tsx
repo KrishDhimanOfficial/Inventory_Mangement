@@ -30,8 +30,8 @@ const Users = () => {
             enableSorting: false,
             accessorFn: (row: any) => (
                 <div className="d-flex gap-2">
-                    <Button text='' onclick={() => handleTableRow(row._id)} className='btn btn-success me-2' icon={<i className="fa-solid fa-pen-to-square"></i>} />
-                    <Button text='' onclick={() => deleteTableRow(row._id)} className='btn btn-danger' icon={<i className="fa-solid fa-trash"></i>} />
+                    <Button text='' onclick={() => handleTableRow(row._id)}  className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-pen-to-square"></i>} />
+                    <Button text='' onclick={() => deleteTableRow(row._id)}  className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-trash"></i>} />
                 </div>
             )
         },

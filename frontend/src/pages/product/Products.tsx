@@ -57,22 +57,51 @@ const Products = () => {
                             </Link>
                         )
                     }
-                    <Button text=''
-                        onclick={() => { deleteTableRow(row._id) }}
-                        className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-trash"></i>}
-                    />
                     {
-                        permission.product?.create && (
+                        permission.product?.delete && (
                             <Button text=''
-                                // onclick={() => printBarcode(row.code)}
-                                className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-print"></i>}
+                                onclick={() => { deleteTableRow(row._id) }}
+                                className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-trash"></i>}
                             />
                         )
                     }
+                    <Button text=''
+                        onclick={() => handlePrint(row.code)}
+                        className='btn btn-dark btn-sm bg-transparent text-dark h-fit' icon={<i className="fa-solid fa-print"></i>}
+                    />
+
                 </div>
             ),
         }
     ]
+    const handlePrint = (value: string) => {
+        const printWindow: any = window.open('', '_blank')
+        JsBarcode(barcodeRef.current, value, {
+            format: "CODE128",
+            lineColor: "#000",
+            width: 2,
+            height: 100,
+            displayValue: true,
+        })
+
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Print Barcode</title>
+              <style>
+                body { display: flex; align-items: center; justify-content: center; height: 100vh; }
+              </style>
+            </head>
+            <body>
+              <svg id="barcode">${barcodeRef.current.outerHTML}</svg>
+              <script>
+                setTimeout(() => { window.print(); window.close(); }, 500);
+              </script>
+            </body>
+          </html>
+        `)
+        printWindow.document.close()
+    }
 
     const tableBody = data.map((product: ProductSchema) => [product.id, product.code, product.name, product.category, product.brand,])
     const tableHeader = ["S.No", "SKU", "Title", "Category", "Brand"]
@@ -98,9 +127,10 @@ const Products = () => {
     }
 
     useEffect(() => { fetch() }, [!refreshTable, pagination.pageIndex])
+
     return (
         <>
-            {/* <svg ref={barcodeRef}  /> */}
+            <svg ref={barcodeRef} className='d-none' />
             <Static_Modal show={warnModal} endApi={`/product/${Id}`}
                 handleClose={() => setwarnmodal(!warnModal)}
                 refreshTable={() => {

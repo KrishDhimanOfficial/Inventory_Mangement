@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2'
 
 const productUnitSchema = new mongoose.Schema({
     name: {
@@ -15,4 +16,5 @@ const productUnitSchema = new mongoose.Schema({
     }
 })
 
+productUnitSchema.plugin(mongooseAggregatePaginate)
 export default mongoose.model('unit', productUnitSchema)

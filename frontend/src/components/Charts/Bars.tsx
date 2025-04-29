@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { VictoryChart, VictoryBar, VictoryGroup, VictoryAxis, VictoryLabel, VictoryLegend, VictoryTheme } from 'victory'
 import { DataService } from '../../hooks/hook'
-import config from '../../config/config';
-
+import { DateRangePicker } from 'react-date-range'
+import { DropdownButton, Dropdown, } from 'react-bootstrap';
 
 const Bars = () => {
     const [sales, setSales] = useState<any>([])
@@ -10,7 +10,7 @@ const Bars = () => {
     const [y_axis, sety_axis] = useState<number>(10)
     const [state, setState] = useState([
         {
-            startDate: new Date(new Date().setDate(new Date().getDate() - 30)),
+            startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
             endDate: new Date(),
             key: 'selection'
         }
@@ -44,12 +44,26 @@ const Bars = () => {
         }
     }
 
-    useEffect(() => { fetch() }, [])
+    useEffect(() => { fetch() }, [state, setState])
     return (
         <div className="card">
-            <div className="card-header bg-info">
+            <div className="card-header bg-info d-flex justify-content-between align-items-center w-100">
                 <h3 className='card-title mb-0'>Purchase & Sales</h3>
+                <DropdownButton id="dropdown-basic-button"
+                    title={`${state[0].startDate.toLocaleDateString()} - ${state[0].endDate.toLocaleDateString()}`}
+                    className='ms-auto border-1 border-black'
+                    variant='white'>
+                    <Dropdown.Item href="#" className='p-0'>
+                        <DateRangePicker
+                            editableDateInputs={true}
+                            onChange={(item: any) => setState([item.selection])}
+                            moveRangeOnFirstSelection={false}
+                            ranges={state}
+                        />
+                    </Dropdown.Item>
+                </DropdownButton>
             </div>
+
             <div className="card-body">
                 <VictoryChart
                     theme={VictoryTheme.clean}

@@ -40,11 +40,11 @@ const Units = () => {
     const fetch = async () => {
         try {
             setloading(true)
-            const res = await DataService.get('/all/units')
-            const response = res.map((unit: Unit_Details, i: number) => ({
-                id: i + 1, _id: unit._id, name: unit.name, symbol: unit.shortName
+            const res = await DataService.get(`/all/units-withPagination?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
+            const response = res.collectionData?.map((unit: Unit_Details) => ({
+                id: res.pageCounter++, _id: unit._id, name: unit.name, symbol: unit.shortName
             }))
-            setRowCount(res.length), setdata(response), setloading(false)
+            setRowCount(res.totalDocs), setdata(response), setloading(false)
         } catch (error) {
             console.error(error)
         }

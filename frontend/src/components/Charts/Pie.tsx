@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { VictoryPie, VictoryTheme } from 'victory'
 import { DataService } from '../../hooks/hook'
-import config from '../../config/config'
 
 const Pie = () => {
     const [data, setdata] = useState([])

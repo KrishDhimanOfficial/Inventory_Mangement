@@ -63,6 +63,7 @@ router.route('/brand/:id?')
     .delete(pro_controllers.deleteBrand)
 
 router.get('/all/units/:id?', pro_controllers.getProduct_units)
+router.get('/all/units-withPagination', pro_controllers.getProduct_unitswithPagination)
 router.route('/unit/:id?')
     .all(AuthenticateUser)
     .post(pro_controllers.createUnit)

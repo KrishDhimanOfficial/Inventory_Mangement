@@ -1,8 +1,6 @@
 import { useEffect, useState, } from 'react';
 import { Sec_Heading, Section, DataTable } from '../../components/component';
 import { DataService } from '../../hooks/hook';
-import 'react-date-range/dist/styles.css';
-import 'react-date-range/dist/theme/default.css';
 import { useSelector } from 'react-redux';
 
 const SupplierReport = () => {

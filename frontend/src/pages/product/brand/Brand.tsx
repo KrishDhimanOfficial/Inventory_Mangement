@@ -42,7 +42,7 @@ const Brand = () => {
         try {
             setloading(true)
             const res = await DataService.get(`/all/brands?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`)
-            const response = res.collectionData?.map((brand: Brand_Details, i: number) => ({
+            const response = res.collectionData?.map((brand: Brand_Details) => ({
                 id: res.pageCounter++, _id: brand._id, name: brand.name,
                 category: brand.category?.map((category: any, i: number) => (
                     i === brand.category?.length - 1 ? `${category.name}` : `${category.name} ,`

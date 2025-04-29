@@ -5,12 +5,14 @@ import cors from 'cors'
 import compression from 'compression'
 import helmet from 'helmet'
 import responseTime from 'response-time'
-import './services/cronJob.js'
 import config from './config/config.js'
 import rateLimit from 'express-rate-limit'
+import mongoSanitize from 'express-mongo-sanitize'
+import xss from 'xss-clean'
 import AuthenticateUser from './middleware/AuthenticateUser.js'
 import users_controllers from './controllers/users.controller.js'
 import restrictOrigin from './middleware/restrictOrigin.js'
+import './services/cronJob.js'
 const app = express()
 
 // view engine setup
@@ -22,7 +24,7 @@ app.use(cors(
     origin: config.client_url,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false,
+    credentials: true,
   }
 ))
 app.use(helmet(
@@ -45,8 +47,10 @@ app.use(rateLimit(
     message: 'Too many requests. Please try again later.'
   }
 ))
+app.use(mongoSanitize())
+app.use(xss())
 app.use(responseTime((req, res, time) => console.log(`${req.method} ${req.url} - ${time.toFixed(2)} ms`)))
-app.use(express.json())
+app.use(express.json())                            
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use('/uploads', express.static('uploads'))

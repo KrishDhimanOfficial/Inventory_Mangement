@@ -7,7 +7,6 @@ import * as yup from 'yup'
 import { useForm, Controller, useFieldArray } from 'react-hook-form'
 import { DataService, Notify } from '../../../hooks/hook'
 import Select from 'react-select'
-import config from '../../../config/config';
 
 interface Modal { show: boolean; handleClose: () => void, refreshTable: () => void }
 
@@ -48,7 +47,7 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
 
     const registeration = async (formdata: object) => {
         try {
-            const res = await DataService.post('/user', formdata, )
+            const res = await DataService.post('/user', formdata,)
             Notify(res), reset(), handleClose()
             if (res.success) refreshTable(), handleClose()
         } catch (error) {
@@ -222,12 +221,12 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                 <label className='m-0'>Set Permission </label>
                             </div>
                         </div>
-                        <div className="col-12">
-                            <div className="d-flex gap-3 mb-2">
-                                <div>
-                                    <label className='mb-0'>Purchase : </label>
+                        <div className="row flex-wrap gap-2 justify-content-between">
+                            <div className="col-md-2 col-4">
+                                <div className='mb-2'>
+                                    <label className='mb-0'>Purchase </label>
                                 </div>
-                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                <div className="d-flex flex-column flex-wrap gap-3 mb-0">
                                     {
                                         purchasFields.map((field, i) => (
                                             <div className="form-check" key={field.id}>
@@ -248,11 +247,11 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                     }
                                 </div>
                             </div>
-                            <div className="d-flex gap-3 mb-2">
-                                <div>
-                                    <label className='mb-0'>Sales : </label>
+                            <div className="col-md-2 col-4">
+                                <div className='mb-2'>
+                                    <label className='mb-0'>Sales </label>
                                 </div>
-                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                <div className="d-flex flex-column flex-wrap gap-3 mb-0">
                                     {
                                         salesFields.map((field, i) => (
                                             <div className="form-check" key={field.id}>
@@ -273,11 +272,11 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                     }
                                 </div>
                             </div>
-                            <div className="d-flex gap-3 mb-2">
-                                <div>
-                                    <label className='mb-0'>Product : </label>
+                            <div className="col-md-2 col-4">
+                                <div className='mb-2'>
+                                    <label className='mb-0'>Product </label>
                                 </div>
-                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                <div className="d-flex flex-column flex-wrap gap-3 mb-0">
                                     {
                                         productFields.map((field, i) => (
                                             <div className="form-check" key={field.id}>
@@ -298,11 +297,11 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                     }
                                 </div>
                             </div>
-                            <div className="d-flex gap-3 mb-2">
-                                <div>
-                                    <label className='mb-0'>Customers : </label>
+                            <div className="col-md-2 col-4">
+                                <div className='mb-2'>
+                                    <label className='mb-0'>Customers </label>
                                 </div>
-                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                <div className="d-flex flex-column flex-wrap gap-3 mb-0">
                                     {
                                         customerFields.map((field, i) => (
                                             <div className="form-check" key={field.id}>
@@ -323,11 +322,11 @@ const User_Modal: React.FC<Modal> = ({ show, handleClose, refreshTable }) => {
                                     }
                                 </div>
                             </div>
-                            <div className="d-flex gap-3">
-                                <div>
-                                    <label className='mb-0'>Supplier :</label>
+                            <div className="col-md-2 col-4">
+                                <div className='mb-2'>
+                                    <label className='mb-0'>Supplier </label>
                                 </div>
-                                <div className="form-group d-flex flex-wrap gap-3 mb-0">
+                                <div className="d-flex flex-column flex-wrap gap-3 mb-0">
                                     {
                                         supplierFields.map((field, i) => (
                                             <div className="form-check" key={field.id}>

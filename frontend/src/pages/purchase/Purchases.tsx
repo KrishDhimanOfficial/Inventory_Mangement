@@ -2,7 +2,6 @@ import { lazy, useEffect, useState } from 'react'
 import { Section, Sec_Heading, Static_Modal, DropDownMenu, DataTable } from '../../components/component'
 import { DataService } from '../../hooks/hook'
 import { useSelector } from 'react-redux';
-import config from '../../config/config';
 
 const Payment_Modal = lazy(() => import('../../components/modal/Payment_Modal'))
 

@@ -202,6 +202,14 @@ const pro_controllers = {
             console.log('deleteBrand : ' + error.message)
         }
     },
+    getProduct_unitswithPagination: async (req, res) => {
+        try {
+            const response = await handleAggregatePagination(unitModel, [], req.query)
+            return res.status(200).json(response)
+        } catch (error) {
+            console.log('getProduct_unitswithPagination : ' + error.message)
+        }
+    },
     getProduct_units: async (req, res) => {
         try {
             const response = req.params.id
@@ -219,7 +227,7 @@ const pro_controllers = {
                     { $replaceRoot: { newRoot: '$unit' } }
                 ])
                 : await unitModel.find({})
-            return setTimeout(() => res.json(response), delay)
+            return setTimeout(() => res.status(200).json(response), delay)
         } catch (error) {
             console.log('getProduct_units : ' + error.message)
         }
