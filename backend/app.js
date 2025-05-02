@@ -12,7 +12,6 @@ import config from './config/config.js'
 import AuthenticateUser from './middleware/AuthenticateUser.js'
 import users_controllers from './controllers/users.controller.js'
 import restrictOrigin from './middleware/restrictOrigin.js'
-import './services/cronJob.js'
 const app = express()
 
 // view engine setup
